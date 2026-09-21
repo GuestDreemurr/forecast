@@ -1,0 +1,30 @@
+# NOTE: All paths in this file can utilize decomp-toolkit's VFS (virtual file system).
+# This allows you to directly reference files inside of containers (disc images, .arc, etc.).
+# Files compressed with Yaz0 (SZS), Yay0 (SZP) are automatically decompressed.
+# Files compressed with NLZSS (Nintendo LZSS) can use a `:nlzss` suffix to decompress.
+# See https://github.com/encounter/decomp-toolkit#vfs-ls for more information on the VFS.
+
+
+name: main
+object: 00000001.app
+hash: 3c3bdec3e81441325e093c49380163e9d744597f
+object_base: orig/HAFE
+
+extract_objects: true
+
+
+symbols: config/HAFE/symbols.txt
+splits: config/HAFE/splits.txt
+
+mw_comment_version: 14
+
+
+quick_analysis: false
+detect_objects: true
+detect_strings: true
+write_asm: true
+symbols_known: false
+fill_gaps: true
+export_all: true
+globalize_symbols: true
+clean_extab: false

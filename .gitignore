@@ -13,6 +13,8 @@ orig/*/*
 *.dol
 *.rel
 *.elf
+*.wad
+*.WAD
 *.o
 *.map
 *.MAP
