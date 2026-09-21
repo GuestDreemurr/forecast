@@ -1,32 +1,26 @@
-Some Game  
-[![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress] [![Discord Badge]][discord]
+Forecast Channel
 =============
 
 <!--
 Replace with your repository's URL.
 -->
-[Build Status]: https://github.com/zeldaret/tww/actions/workflows/build.yml/badge.svg
-[actions]: https://github.com/zeldaret/tww/actions/workflows/build.yml
+[Build Status]: https://github.com/GuestDreemurr/forecast/actions/workflows/build.yml/badge.svg
+[actions]: https://github.com/GuestDreemurr/forecast/actions/workflows/build.yml
 <!--
-decomp.dev progress badges
-See https://decomp.dev/api for an API overview.
--->
 [Code Progress]: https://decomp.dev/zeldaret/tww.svg?mode=shield&measure=code&label=Code
 [Data Progress]: https://decomp.dev/zeldaret/tww.svg?mode=shield&measure=data&label=Data
 [progress]: https://decomp.dev/zeldaret/tww
-<!--
-Replace with your Discord server's ID and invite URL.
--->
 [Discord Badge]: https://img.shields.io/discord/727908905392275526?color=%237289DA&logo=discord&logoColor=%23FFFFFF
 [discord]: https://discord.gg/hKx3FJJgrV
+-->
 
-A work-in-progress decompilation of Some Game.
+A work-in-progress decompilation of The Wii's Forecast Channel.
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 
 Supported versions:
 
-- `GAMEID`: Rev 0 (USA)
+- `HAFE`: v7 (USA/NTSC)
 
 Dependencies
 ============
@@ -66,12 +60,11 @@ Building
 - Clone the repository:
 
   ```sh
-  git clone https://github.com/my/repo.git
+  git clone https://github.com/GuestDreemurr/forecast.git
   ```
 
-- Copy your game's disc image to `orig/GAMEID`.
-  - Supported formats: ISO (GCM), RVZ, WIA, WBFS, CISO, NFS, GCZ, TGC
-  - After the initial build, the disc image can be deleted to save space.
+- Copy your copy of the executable (should be named 0000000D.app in a unpacked WAD) to `orig/HAFE`
+  - It should be saved as either `forecast.app` or `forecast.dol` 
 
 - Configure:
 
@@ -79,7 +72,7 @@ Building
   python configure.py
   ```
 
-  To use a version other than `GAMEID` (USA), specify it with `--version`.
+  To use a version other than `HAFE` (USA/NTSC v7), specify it with `--version`.
 
 - Build:
 
