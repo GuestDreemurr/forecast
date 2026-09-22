@@ -12,3 +12,12 @@ Sections:
 	.sbss       type:bss align:32
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
+
+main.cpp:
+	.text start:
+
+revolution/OS/OSError.c:
+	.text       start:0x800E675C end:0x800E6E8C
+	.data       start:0x801B97F8 end:0x801B9B14
+	.bss        start:0x802CB470 end:0x802CB4B4
+	.sdata      start:0x80330520 end:0x80330528

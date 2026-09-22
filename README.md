@@ -85,3 +85,7 @@ Download the latest release from [encounter/objdiff](https://github.com/encounte
 Select an object from the left sidebar to begin diffing. Changes to the project will rebuild automatically: changes to source files, headers, `configure.py`, `splits.txt` or `symbols.txt`.
 
 ![](assets/objdiff.png)
+
+Credits
+=======
+[ogws](https://github.com/doldecomp/ogws): RVL_SDK, MSL
