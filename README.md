@@ -1,15 +1,15 @@
 Forecast Channel
-=============
+================
+[![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress]
+
 
 [Build Status]: https://github.com/GuestDreemurr/forecast/actions/workflows/build.yml/badge.svg
 [actions]: https://github.com/GuestDreemurr/forecast/actions/workflows/build.yml
-<!--
-[Code Progress]: https://decomp.dev/zeldaret/tww.svg?mode=shield&measure=code&label=Code
-[Data Progress]: https://decomp.dev/zeldaret/tww.svg?mode=shield&measure=data&label=Data
-[progress]: https://decomp.dev/zeldaret/tww
-[Discord Badge]: https://img.shields.io/discord/727908905392275526?color=%237289DA&logo=discord&logoColor=%23FFFFFF
-[discord]: https://discord.gg/hKx3FJJgrV
--->
+
+[Code Progress]: https://decomp.dev/GuestDreemurr/forecast.svg?mode=shield&measure=code&label=Code
+[Data Progress]: https://decomp.dev/GuestDreemurr/forecast.svg?mode=shield&measure=data&label=Data
+[progress]: https://decomp.dev/GuestDreemurr/forecast
+
 
 A **EXTREMELY!!!!** work-in-progress decompilation of The Wii's Forecast Channel.
 
