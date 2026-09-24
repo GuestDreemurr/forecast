@@ -13,8 +13,422 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+revolution/CNT/cnt.c:
+	.text       start:0x80045CB0 end:0x80045E40
+
+revolution/VF/pf_clib.c:
+	.text       start:0x80045FD4 end:0x800462D4
+
+revolution/VF/pf_code.c:
+	.text       start:0x800462D4 end:0x800462F0
+
+revolution/VF/pf_service.c:
+	.text       start:0x800462F0 end:0x80046418
+
+revolution/VF/pf_str.c:
+	.text       start:0x80046418 end:0x800469A0
+
+revolution/VF/pf_w_clib.c:
+	.text       start:0x800469A0 end:0x80046A34
+
+revolution/VF/pf_driver.c:
+	.text       start:0x80046A34 end:0x80047430
+
+revolution/VF/pdm_bpb.c:
+	.text       start:0x80047430 end:0x80047D50
+
+revolution/VF/pdm_disk.c:
+	.text       start:0x80047D50 end:0x800492B0
+
+revolution/VF/pdm_partition.c:
+	.text       start:0x800492B0 end:0x8004A6F8
+
+revolution/VF/pdm_mbr.c:
+	.text       start:0x8004A6F8 end:0x8004ACB8
+
+revolution/VF/pdm_dskmng.c:
+	.text       start:0x8004ACB8 end:0x8004AEDC
+	.bss        start:0x801F7740 end:0x801F82A8
+
+revolution/VF/pf_cache.c:
+	.text       start:0x8004AEDC end:0x8004CE10
+
+revolution/VF/pf_cluster.c:
+	.text       start:0x8004CE10 end:0x8004D2C8
+
+revolution/VF/pf_dir.c:
+	.text       start:0x8004DFD4 end:0x8004E064
+
+revolution/VF/pf_entry_iterator.c:
+	.text       start:0x8004FF64 end:0x8005197C
+	.sdata      start:0x80330200 end:0x80330228
+
+revolution/VF/pf_fat.c:
+	.text       start:0x80051988 end:0x8005485C
+	.rodata     start:0x8018FA88 end:0x8018FAC8
+
+revolution/VF/pf_fat12.c:
+	.text       start:0x8005485C end:0x80055344
+
+revolution/VF/pf_fat16.c:
+	.text       start:0x80055344 end:0x800558BC
+
+revolution/VF/pf_fat32.c:
+	.text       start:0x800558BC end:0x80055EFC
+
+revolution/VF/pf_file.c:
+	.text       start:0x80055F00 end:0x800594A4
+
+revolution/VF/pf_sector.c:
+	.text       start:0x8005C300 end:0x8005C9F0
+
+revolution/VF/pf_volume.c:
+	.text       start:0x8005C9F0 end:0x8005E45C
+	.bss        start:0x801F82A8 end:0x80220260
+
+revolution/VF/pf_cp932.c:
+	.text       start:0x8005E45C end:0x8005E96C
+	.rodata     start:0x8018FAC8 end:0x80193D40
+
+revolution/VF/pf_api_util.c:
+	.text       start:0x8005E96C end:0x8005EAD8
+	.data       start:0x801B3EA8 end:0x801B3F48
+
+revolution/VF/pf_attach.c:
+	.text       start:0x8005EAD8 end:0x8005EB5C
+
+revolution/VF/pf_fopen.c:
+	.text       start:0x8005EBF0 end:0x8005EC8C
+
+revolution/VF/pf_init_prfile2.c:
+	.text       start:0x8005EDE8 end:0x8005EE28
+
+revolution/VF/pf_filelock.c:
+	.text       start:0x8005EEF0 end:0x8005EF04
+	.sbss       start:0x80330C90 end:0x80330C98
+
+revolution/VF/pf_system.c:
+	.text       start:0x8005EF04 end:0x8005EF7C
+
+revolution/VF/d_vf.c:
+	.text       start:0x8005EF7C end:0x8005FED8
+	.bss        start:0x80220260 end:0x80220280
+	.sbss       start:0x80330C98 end:0x80330CA0
+
+revolution/VF/d_vf_sys.c:
+	.text       start:0x8005FED8 end:0x80062284
+	.data       start:0x801B3F48 end:0x801B3F58
+	.bss        start:0x80288280 end:0x802883B8
+	.sbss       start:0x80330CA0 end:0x80330CC0
+
+revolution/VF/d_hash.c:
+	.text       start:0x8006229C end:0x8006291C
+	.bss        start:0x802883B8 end:0x802885F8
+
+revolution/VF/nand_drv.c:
+	.text       start:0x80063694 end:0x80066604
+	.rodata     start:0x80193D40 end:0x80193D60
+	.bss        start:0x80288800 end:0x802889A0
+
+revolution/NWC24/NWC24FileApi.c:
+	.text       start:0x80068E54 end:0x8006A4D8
+	.data       start:0x801B42D8 end:0x801B4304
+	.sdata      start:0x80330278 end:0x80330284
+	.sbss       start:0x80330CE0 end:0x80330CF8
+
+revolution/NWC24/NWC24Manage.c:
+	.text       start:0x8006AB14 end:0x8006AFE0
+	.data       start:0x801B4370 end:0x801B4480
+	.sdata      start:0x803302A0 end:0x803302A8
+	.sbss       start:0x80330CF8 end:0x80330D10
+
+revolution/NWC24/NWC24Ipc.c:
+	.text       start:0x8006DC10 end:0x8006DD84
+	.sbss       start:0x80330D40 end:0x80330D48
+
+revolution/BASE/PPCArch.c:
+	.text       start:0x800E3310 end:0x800E347C
+	.data       start:0x801B8F28 end:0x801B8F60
+
+revolution/OS/OS.c:
+	.text       start:0x800E347C end:0x800E4830
+	.data       start:0x801B8F60 end:0x801B9360
+	.bss        start:0x802CB400 end:0x802CB470
+
+revolution/OS/OSAlloc.c:
+	.text       start:0x800E5014 end:0x800E531C
+	.sdata      start:0x80330510 end:0x80330518
+	.sbss       start:0x80331248 end:0x80331258
+
+revolution/OS/OSArena.c:
+	.text       start:0x800E531C end:0x800E53B0
+	.sdata      start:0x80330518 end:0x80330520
+	.sbss       start:0x80331258 end:0x80331260
+
+revolution/OS/OSAudioSystem.c:
+	.text       start:0x800E53F0 end:0x800E58A4
+	.data       start:0x801B9360 end:0x801B93E0
+
+revolution/OS/OSCache.c:
+	.text       start:0x800E58A4 end:0x800E5ED4
+
+revolution/OS/OSContext.c:
+	.text       start:0x800E5ED4 end:0x800E675C
+	.data       start:0x801B9618 end:0x801B97F8
+
 revolution/OS/OSError.c:
 	.text       start:0x800E675C end:0x800E6E8C
 	.data       start:0x801B97F8 end:0x801B9B14
 	.bss        start:0x802CB470 end:0x802CB4B4
 	.sdata      start:0x80330520 end:0x80330528
+
+revolution/OS/OSFatal.c:
+	.text       start:0x800E905C end:0x800E9C80
+	.bss        start:0x802CB4E0 end:0x802CB7C0
+	.sdata      start:0x80330538 end:0x8033053C
+	.sdata2     start:0x80332DA0 end:0x80332DE0
+
+revolution/OS/OSInterrupt.c:
+	.text       start:0x800EA948 end:0x800EB0CC
+	.data       start:0x801BA978 end:0x801BA9A8
+	.sbss       start:0x80331288 end:0x803312A0
+
+revolution/OS/OSMemory.c:
+	.text       start:0x800EB2E8 end:0x800EBAFC
+	.data       start:0x801BA9A8 end:0x801BA9B8
+
+revolution/OS/OSMutex.c:
+	.text       start:0x800EBAFC end:0x800EBE00
+
+revolution/OS/OSRtc.c:
+	.text       start:0x800EC6E4 end:0x800ED170
+	.bss        start:0x802CB7C0 end:0x802CB818
+
+revolution/OS/OSSync.c:
+	.text       start:0x800ED170 end:0x800ED1F0
+
+revolution/OS/OSThread.c:
+	.text       start:0x800ED1F0 end:0x800EE7A8
+	.bss        start:0x802CB818 end:0x802CC220
+	.sdata      start:0x80330550 end:0x80330558
+	.sbss       start:0x803312B8 end:0x803312C8
+
+revolution/OS/OSTime.c:
+	.text       start:0x800EE7A8 end:0x800EEE5C
+	.data       start:0x801BAC40 end:0x801BACA0
+
+revolution/OS/OSUtf.c:
+	.text       start:0x800EEE5C end:0x800EF094
+	.data       start:0x801BACA0 end:0x801C6AE0
+
+revolution/OS/OSIpc.c:
+	.text       start:0x800EF094 end:0x800EF0BC
+	.sdata      start:0x80330558 end:0x80330560
+	.sbss       start:0x803312C8 end:0x803312D0
+
+revolution/OS/OSStateTM.c:
+	.text       start:0x800EF0BC end:0x800EF800
+	.data       start:0x801C6AE0 end:0x801C6BA8
+	.bss        start:0x802CC220 end:0x802CC2E0
+	.sbss       start:0x803312D0 end:0x803312F0
+
+revolution/OS/__start.c:
+	.init       start:0x80004000 end:0x800042E0
+	.sbss       start:0x803312F0 end:0x803312F4
+
+revolution/OS/OSPlayRecord.c:
+	.text       start:0x800EF84C end:0x800EFF44
+	.sdata      start:0x80330560 end:0x80330568
+	.sbss       start:0x803312F8 end:0x80331318
+
+revolution/OS/OSStateFlags.c:
+	.text       start:0x800EFF44 end:0x800F0150
+	.data       start:0x801C6BF0 end:0x801C6C18
+	.bss        start:0x802CC4E0 end:0x802CC500
+
+revolution/EXI/EXIUart.c:
+	.text       start:0x800F25EC end:0x800F2920
+	.sbss       start:0x80331338 end:0x80331360
+
+revolution/EXI/EXICommon.c:
+	.text       start:0x800F2920 end:0x800F2AAC
+
+revolution/DB/db.c:
+	.text       start:0x800F3B94 end:0x800F3C7C
+	.data       start:0x801C6F30 end:0x801C6F48
+	.sbss       start:0x80331360 end:0x80331368
+
+revolution/MTX/mtxvec.c:
+	.text       start:0x800F9254 end:0x800F92A8
+
+revolution/MTX/mtx44.c:
+	.text       start:0x800F92A8 end:0x800F94C8
+	.sdata2     start:0x80332E20 end:0x80332E38
+
+revolution/MTX/vec.c:
+	.text       start:0x800F94C8 end:0x800F96D0
+	.sdata2     start:0x80332E38 end:0x80332E48
+
+revolution/GX/GXAttr.c:
+	.text       start:0x800FB258 end:0x800FC47C
+	.data       start:0x801C7C90 end:0x801C7F04
+	.sdata      start:0x803305D0 end:0x803305E0
+
+revolution/GX/GXGeometry.c:
+	.text       start:0x800FCBE8 end:0x800FD1A8
+
+revolution/GX/GXLight.c:
+	.text       start:0x800FDBE8 end:0x800FE2F8
+	.data       start:0x801C7FF8 end:0x801C8014
+	.sdata2     start:0x80332E80 end:0x80332EB8
+
+revolution/GX/GXBump.c:
+	.text       start:0x800FF178 end:0x800FF5C4
+	.sdata2     start:0x80332EF0 end:0x80332EF8
+
+revolution/GX/GXDraw.c:
+	.text       start:0x801003A8 end:0x8010139C
+	.bss        start:0x802CD068 end:0x802CD300
+	.sdata2     start:0x80332F48 end:0x80332F74
+
+revolution/GX/GXTransform.c:
+	.text       start:0x80101860 end:0x80101D7C
+	.sdata2     start:0x80332F74 end:0x80332F88
+
+revolution/DVD/dvdqueue.c:
+	.text       start:0x80107E20 end:0x80108078
+	.bss        start:0x802D1FB0 end:0x802D1FE0
+
+revolution/DVD/dvdidutils.c:
+	.text       start:0x8010897C end:0x80108A6C
+
+revolution/DVD/dvdFatal.c:
+	.text       start:0x80108A6C end:0x80108BA8
+	.rodata     start:0x801972E8 end:0x80197308
+	.sbss       start:0x80331568 end:0x80331570
+	.sdata2     start:0x80332F88 end:0x80332F90
+
+revolution/AI/ai.c:
+	.text       start:0x8010AE60 end:0x8010B3C4
+	.sdata      start:0x80330660 end:0x80330668
+	.sbss       start:0x80331598 end:0x803315E0
+
+revolution/AX/AXAlloc.c:
+	.text       start:0x8010B418 end:0x8010B8D0
+	.bss        start:0x802D23E0 end:0x802D24E0
+	.sbss       start:0x803315E0 end:0x803315E8
+
+revolution/AX/AXCL.c:
+	.text       start:0x8010C0E8 end:0x8010CB6C
+	.bss        start:0x802D5660 end:0x802D5760
+	.sbss       start:0x80331630 end:0x80331650
+
+revolution/AX/AXOut.c:
+	.text       start:0x8010CB6C end:0x8010D358
+	.bss        start:0x802D5760 end:0x802D6560
+	.sbss       start:0x80331650 end:0x80331690
+
+revolution/AX/AXSPB.c:
+	.text       start:0x8010D358 end:0x8010D778
+	.bss        start:0x802D6560 end:0x802D65E0
+	.sbss       start:0x80331690 end:0x803316E0
+
+revolution/AX/AXProf.c:
+	.text       start:0x8010ED88 end:0x8010EDC8
+	.sbss       start:0x80331700 end:0x80331710
+
+revolution/AXFX/AXFXReverbHi.c:
+	.text       start:0x8010EDC8 end:0x8010EEC4
+	.sdata2     start:0x80332FB0 end:0x80332FB8
+
+revolution/AXFX/AXFXHooks.c:
+	.text       start:0x8010FDF4 end:0x8010FE2C
+	.sdata      start:0x80330678 end:0x80330680
+
+revolution/MEM/mem_allocator.c:
+	.text       start:0x80110FCC end:0x80111050
+	.sdata2     start:0x80332FF8 end:0x80333008
+
+revolution/DSP/dsp.c:
+	.text       start:0x80111DE0 end:0x8011201C
+	.sbss       start:0x80331718 end:0x80331720
+
+revolution/DSP/dsp_task.c:
+	.text       start:0x8011206C end:0x80112900
+	.sbss       start:0x80331720 end:0x80331738
+
+revolution/SC/scapi.c:
+	.text       start:0x8011731C end:0x801177B4
+
+revolution/SC/scapi_prdinfo.c:
+	.text       start:0x80117940 end:0x80117B30
+	.data       start:0x801CD370 end:0x801CD3B8
+	.sdata      start:0x803307C8 end:0x803307D0
+
+revolution/IPC/ipcMain.c:
+	.text       start:0x801188A4 end:0x80118970
+	.sbss       start:0x80331768 end:0x80331790
+
+revolution/IPC/memory.c:
+	.text       start:0x8011A2E0 end:0x8011A804
+	.bss        start:0x802F12E0 end:0x802F1360
+
+revolution/IPC/ipcProfile.c:
+	.text       start:0x8011A804 end:0x8011A9C8
+	.bss        start:0x802F1360 end:0x802F1460
+	.sbss       start:0x80331790 end:0x80331798
+
+revolution/PAD/Pad.c:
+	.text       start:0x8011BF9C end:0x8011BFF8
+
+revolution/EUART/euart.c:
+	.text       start:0x8012CC94 end:0x8012D004
+	.sbss       start:0x80331828 end:0x80331838
+
+revolution/WUD/WUDHidHost.c:
+	.text       start:0x80132A2C end:0x80133028
+	.data       start:0x801D0598 end:0x801D0818
+
+revolution/BTE/rvl/gki_ppc.c:
+	.text       start:0x80134A14 end:0x80134CA4
+	.bss        start:0x802F80C8 end:0x80320BA8
+
+revolution/BTE/main/bte_logmsg.c:
+	.text       start:0x8013601C end:0x80136180
+	.bss        start:0x80322C40 end:0x80323420
+	.sdata      start:0x803308D8 end:0x803308DC
+
+revolution/BTE/bta/sys/bta_sys_conn.c:
+	.text       start:0x801367FC end:0x80136A50
+
+revolution/BTE/bta/sys/ptim.c:
+	.text       start:0x80136C94 end:0x80136E74
+
+revolution/BTE/stack/rfcomm/rfc_port_fsm.c:
+	.text       start:0x80157ABC end:0x80158C5C
+	.data       start:0x801D5470 end:0x801D5870
+
+revolution/BTE/stack/rfcomm/rfc_ts_frames.c:
+	.text       start:0x80159188 end:0x8015A7D0
+
+revolution/BTE/stack/rfcomm/rfc_utils.c:
+	.text       start:0x8015A7D0 end:0x8015AFB0
+	.rodata     start:0x80197890 end:0x80197990
+	.data       start:0x801D5870 end:0x801D58FC
+
+revolution/BTE/stack/sdp/sdp_discovery.c:
+	.text       start:0x8015CAE4 end:0x8015DD5C
+	.data       start:0x801D59E8 end:0x801D5C80
+
+revolution/TPL/TPL.c:
+	.text       start:0x80160618 end:0x8016074C
+	.data       start:0x801D5FE0 end:0x801D600C
+	.sdata      start:0x80330938 end:0x80330940
+
+revolution/NdevExi2AD/DebuggerDriver.c:
+	.text       start:0x8016082C end:0x80160B60
+	.sdata      start:0x80330940 end:0x80330948
+	.sbss       start:0x803318A0 end:0x803318B8
+
+revolution/NdevExi2AD/exi2.c:
+	.text       start:0x80160B60 end:0x801612EC
