@@ -85,6 +85,7 @@
 
 // Alignment attribute
 #define ALIGN(x) __attribute__((aligned(x)))
+#define ATTRIBUTE_ALIGN(x) ALIGN(x)
 
 // Place a symbol in a specific ELF section
 #define DECL_SECTION(x) __declspec(section x)

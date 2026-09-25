@@ -154,6 +154,7 @@ revolution/OS/OS.c:
 	.text       start:0x800E347C end:0x800E4830
 	.data       start:0x801B8F60 end:0x801B9360
 	.bss        start:0x802CB400 end:0x802CB470
+	.sdata      start:0x803304E8 end:0x80330510
 	.sbss       start:0x803311F8 end:0x80331240
 
 revolution/OS/OSAlloc.c:
@@ -433,3 +434,115 @@ revolution/NdevExi2AD/DebuggerDriver.c:
 
 revolution/NdevExi2AD/exi2.c:
 	.text       start:0x80160B60 end:0x801612EC
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/mainloop.c:
+	.text       start:0x80173AF8 end:0x80173BF0
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/nubevent.c:
+	.text       start:0x80173BF0 end:0x80173E18
+	.bss        start:0x8032D068 end:0x8032D090
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/nubinit.c:
+	.text       start:0x80173E18 end:0x80173F9C
+	.rodata     start:0x80198B18 end:0x80198B38
+	.bss        start:0x8032D090 end:0x8032D098
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/msg.c:
+	.text       start:0x80173F9C end:0x80173FC8
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/msgbuf.c:
+	.text       start:0x80173FC8 end:0x80174804
+	.rodata     start:0x80198B38 end:0x80198B58
+	.bss        start:0x8032D098 end:0x8032EA48
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/serpoll.c:
+	.text       start:0x80174804 end:0x801749B0
+	.bss        start:0x8032EA48 end:0x8032EA5C
+	.sbss       start:0x803318E8 end:0x803318F0
+
+MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/usr_put.c:
+	.text       start:0x801749B0 end:0x80174A3C
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/dispatch.c:
+	.text       start:0x80174A3C end:0x80174B84
+	.data       start:0x801D6CA8 end:0x801D6D18
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/msghndlr.c:
+	.text       start:0x80174B84 end:0x80175C60
+	.rodata     start:0x80198B58 end:0x80198B89
+	.data       start:0x801D6D18 end:0x801D6D50
+	.bss        start:0x8032EA60 end:0x8032EA68
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/support.c:
+	.text       start:0x80175C60 end:0x80176314
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/mutex_TRK.c:
+	.text       start:0x80176314 end:0x8017632C
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/notify.c:
+	.text       start:0x8017632C end:0x801763C4
+
+MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/flush_cache.c:
+	.text       start:0x801763C4 end:0x801763FC
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/mem_TRK.c:
+	.init       start:0x8000446C end:0x800044C0
+	.text       start:0x801763FC end:0x801764B4
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/string_TRK.c:
+	.text       start:0x801764B4 end:0x801764D0
+
+MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/targimpl.c:
+	.text       start:0x801764D0 end:0x80177EF0
+	.rodata     start:0x80198B90 end:0x80198C18
+	.data       start:0x801D6D50 end:0x801D6D80
+	.bss        start:0x8032EA68 end:0x8032EFE4
+
+MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Export/targsupp.s:
+	.text       start:0x80177EF0 end:0x80177F10
+
+MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/mpc_7xx_603e.c:
+	.text       start:0x80177F10 end:0x80178280
+
+MetroTRK/debugger/embedded/MetroTRK/Export/mslsupp.c:
+	.text       start:0x80178280 end:0x801783F8
+
+MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/exception.s:
+	.init       start:0x800044C0 end:0x800063F4
+
+MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk.c:
+	.init       start:0x800063F4 end:0x80006420
+	.text       start:0x801783F8 end:0x80178714
+	.data       start:0x801D6D80 end:0x801D6DBC
+	.bss        start:0x8032EFE8 end:0x8032EFEC
+
+MetroTRK/debugger/embedded/MetroTRK/Portable/main_TRK.c:
+	.text       start:0x80178714 end:0x80178758
+	.bss        start:0x8032EFF0 end:0x8032EFF8
+
+MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk_glue.c:
+	.text       start:0x80178758 end:0x80178C18
+	.rodata     start:0x80198C18 end:0x80198D20
+	.data       start:0x801D6DC0 end:0x801D6DE8
+	.bss        start:0x8032EFF8 end:0x8032F000
+
+MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/targcont.c:
+	.text       start:0x80178C18 end:0x80178C4C
+
+MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/target_options.c:
+	.text       start:0x80178C4C end:0x80178C68
+	.bss        start:0x8032F000 end:0x8032F001
+
+MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/UDP_Stubs.c:
+	.text       start:0x80178C68 end:0x80178CB0
+
+MetroTRK/gamedev/cust_connection/cc/exi2/GCN/EXI2_GDEV_GCN/main.c:
+	.text       start:0x80178CB0 end:0x80178F70
+	.bss        start:0x8032F008 end:0x8032F524
+	.sbss       start:0x803318F0 end:0x803318F4
+
+MetroTRK/gamedev/cust_connection/utils/common/CircleBuffer.c:
+	.text       start:0x80178F70 end:0x801791D8
+
+MetroTRK/gamedev/cust_connection/utils/gc/MWCriticalSection_gc.c:
+	.text       start:0x801791D8 end:0x80179230

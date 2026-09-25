@@ -254,6 +254,37 @@ cflags_rvl = [
     "-ipa file",
 ]
 
+
+cflags_trk = [
+    "-nodefaults",
+    "-proc gekko",
+    "-align powerpc",
+    "-enum int",
+    "-fp hardware",
+    "-Cpp_exceptions off",
+    "-O4,p",
+    "-inline deferred,auto",
+    '-pragma "cats off"',
+    '-pragma "warn_notinlined off"',
+    "-maxerrors 1",
+    "-nosyspath",
+    "-RTTI off",
+    "-fp_contract on",
+    "-str reuse,readonly",
+    "-use_lmw_stmw on",
+    "-sdata 0",
+    "-sdata2 0",
+    "-i include",
+    "-i include/MSL",
+    "-i include/MetroTRK",
+    f"-i build/{config.version}/include",
+    "-DMETRO_TRK",
+    "-D__REGISTER=register",
+    "-D__OSInterruptHandler=OSInterruptHandler",
+    f"-DBUILD_VERSION={version_num}",
+    f"-DVERSION_{config.version}",
+]
+
 # REL flags
 cflags_rel = [
     *cflags_base,
@@ -852,6 +883,43 @@ config.libs = [
         ],
     },
     {
+        "lib": "MetroTRK",
+        "mw_version": "GC/2.7",
+        "cflags": cflags_trk,
+        "progress_category": "metrotrk",
+        "objects": [
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/mainloop.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/nubevent.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/nubinit.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/msg.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/msgbuf.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/serpoll.c", extra_cflags=["-sdata 8"]),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/usr_put.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/dispatch.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/msghndlr.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/support.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/mutex_TRK.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/notify.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/flush_cache.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/mem_TRK.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/string_TRK.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/targimpl.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Export/targsupp.s"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/mpc_7xx_603e.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Export/mslsupp.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Processor/ppc/Generic/exception.s"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Portable/main_TRK.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk_glue.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/targcont.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/target_options.c"),
+            Object(Matching, "MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/UDP_Stubs.c"),
+            Object(Matching, "MetroTRK/gamedev/cust_connection/cc/exi2/GCN/EXI2_GDEV_GCN/main.c", extra_cflags=["-sdata 8"]),
+            Object(Matching, "MetroTRK/gamedev/cust_connection/utils/common/CircleBuffer.c"),
+            Object(Matching, "MetroTRK/gamedev/cust_connection/utils/gc/MWCriticalSection_gc.c"),
+        ],
+    },
+    {
             "lib": "Channel", # throwing shit at the wall here, im guessing this is what we should put forecast code as? not sure how forecast is structured yet.. -guestd
             "mw_version": config.linker_version,
             "cflags": cflags_base,
@@ -886,6 +954,7 @@ def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
 config.progress_categories = [
     ProgressCategory("channel", "Channel Code"),
     ProgressCategory("sdk", "RVL_SDK"),
+    ProgressCategory("metrotrk", "MetroTRK")
 ]
 config.progress_each_module = args.verbose
 # Optional extra arguments to `objdiff-cli report generate`

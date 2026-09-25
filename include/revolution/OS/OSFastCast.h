@@ -27,7 +27,7 @@ static void OSInitFastCast(void) {
         li r3, 7
         oris r3, r3, 7
         mtspr 0x395, r3
-    )
+    );
 }
 
 static void OSSetGQR6(register u32 type, register u32 scale) {
@@ -35,7 +35,7 @@ static void OSSetGQR6(register u32 type, register u32 scale) {
 
     ASM (
         mtspr 0x396, val
-    )
+    );
 }
 
 static void OSSetGQR7(register u32 type, register u32 scale) {
@@ -43,7 +43,7 @@ static void OSSetGQR7(register u32 type, register u32 scale) {
 
     ASM (
         mtspr 0x397, val
-    )
+    );
 }
 
 /******************************************************************************
@@ -56,7 +56,7 @@ static f32 __OSu8tof32(register u8* in) {
 
     ASM (
         psq_l ret, 0(in), 1, 2
-    )
+    );
 
     return ret;
 }
@@ -75,7 +75,7 @@ static f32 __OSu16tof32(register u16* arg) {
 
     ASM (
         psq_l ret, 0(arg), 1, 3
-    )
+    );
 
     return ret;
 }
@@ -94,7 +94,7 @@ static f32 __OSs16tof32(register s16* arg) {
 
     ASM (
         psq_l ret, 0(arg), 1, 5
-    )
+    );
 
     return ret;
 }
@@ -115,7 +115,7 @@ static u8 __OSf32tou8(register f32 arg) {
 
     ASM (
         psq_st arg, 0(ptr), 1, 2
-    )
+    );
 
     r = *(u8*)ptr;
     return r;
@@ -132,7 +132,7 @@ static u16 __OSf32tou16(register f32 arg) {
 
     ASM (
         psq_st arg, 0(ptr), 1, 3
-    )
+    );
 
     r = *(u16*)ptr;
     return r;
@@ -149,7 +149,7 @@ static s16 __OSf32tos16(register f32 arg) {
 
     ASM (
         psq_st arg, 0(ptr), 1, 5
-    )
+    );
 
     r = *(s16*)ptr;
     return r;
