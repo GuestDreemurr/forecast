@@ -167,14 +167,6 @@ asm void PPCMthid2(register u32 val) {
     // clang-format on
 }
 
-asm u32 PPCMfwpar(void) {
-    // clang-format off
-    nofralloc
-    sync
-    mfwpar r3
-    blr
-    // clang-format on
-}
 
 asm void PPCMtwpar(register u32 val) {
     // clang-format off
@@ -192,6 +184,14 @@ asm void PPCSetFpNonIEEEMode(void) {
     // clang-format off
     nofralloc
     mtfsb1 29
+    blr
+    // clang-format on
+}
+
+asm u32 PPCMfhid4(void) {
+    // clang-format off
+    nofralloc
+    mfspr r3, 1011
     blr
     // clang-format on
 }

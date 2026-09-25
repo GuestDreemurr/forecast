@@ -148,12 +148,13 @@ revolution/NWC24/NWC24Ipc.c:
 
 revolution/BASE/PPCArch.c:
 	.text       start:0x800E3310 end:0x800E347C
-	.data       start:0x801B8F28 end:0x801B8F60
+	.data       start:0x801B8F28 end:0x801B8F5F
 
 revolution/OS/OS.c:
 	.text       start:0x800E347C end:0x800E4830
 	.data       start:0x801B8F60 end:0x801B9360
 	.bss        start:0x802CB400 end:0x802CB470
+	.sbss       start:0x803311F8 end:0x80331240
 
 revolution/OS/OSAlloc.c:
 	.text       start:0x800E5014 end:0x800E531C

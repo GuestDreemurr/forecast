@@ -39,6 +39,7 @@ void PPCMtwpar(u32 val);
 void PPCDisableSpeculation(void);
 void PPCSetFpNonIEEEMode(void);
 
+u32 PPCMfhid4(void);
 void PPCMthid4(u32 val);
 
 #ifdef __cplusplus

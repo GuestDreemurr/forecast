@@ -343,7 +343,7 @@ config.libs = [
             Object(NonMatching, "revolution/AXFX/AXFXSrcCoef.c"),
 
             # BASE
-            Object(NonMatching, "revolution/BASE/PPCArch.c"),
+            Object(Matching, "revolution/BASE/PPCArch.c"),
 
             # BTE/audio_a2dp_hw
             Object(NonMatching, "revolution/BTE/audio_a2dp_hw/audio_a2dp_hw.c"),
