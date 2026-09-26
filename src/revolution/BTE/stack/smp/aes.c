@@ -43,7 +43,7 @@
 #endif
 #endif
 
-#include <stdlib.h>
+#include <cstdlib>
 
 /* define if you have fast 32-bit types on your system */
 #if 1

@@ -22,7 +22,7 @@
  *  applications that can run over an SMP.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #if SMP_INCLUDED == TRUE

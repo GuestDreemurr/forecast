@@ -6,7 +6,7 @@
 
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 #ifdef __cplusplus
 extern "C" {
 #endif

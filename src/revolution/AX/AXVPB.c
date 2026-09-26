@@ -1,7 +1,7 @@
-#include <math.h>
+#include <cmath>
 #include <revolution/AX.h>
 #include <revolution/OS.h>
-#include <string.h>
+#include <cstring>
 
 DECOMP_FORCELITERAL(AXVPB_c, 2.0f);
 

@@ -26,11 +26,11 @@
  *
  *
  ***********************************************************************************/
-#include <stdlib.h>
+#include <cstdlib>
 #include <time.h>
-#include <string.h>
+#include <cstring>
 #include <ctype.h>
-#include <stdio.h>
+#include <cstdio>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
@@ -38,7 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <private/android_filesystem_config.h>
 
 #define LOG_TAG "btif_config.c"

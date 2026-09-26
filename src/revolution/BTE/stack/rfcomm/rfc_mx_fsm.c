@@ -22,7 +22,7 @@
  *  channel of the RFCOMM unit
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 #include "gki.h"
 #include "bt_types.h"
 #include "rfcdefs.h"

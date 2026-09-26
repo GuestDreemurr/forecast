@@ -9,7 +9,7 @@
 #include <revolution/SI.h>
 
 #include <MetroTRK.h>
-#include <string.h>
+#include <cstring>
 
 OSExecParams __OSRebootParams;
 static DVDDriveInfo DriveInfo ALIGN(32);
@@ -376,7 +376,7 @@ static void ReportOSInfo(void) {
     u32 tdev;
 
     OSReport("\nRevolution OS\n");
-    OSReport("Kernel built : %s %s\n", "Apr 24 2007", "11:50:47");
+    OSReport("Kernel built : %s %s\n", "Jun 28 2007", "02:03:56");
 
     OSReport("Console Type : ");
     type = OSGetConsoleType();

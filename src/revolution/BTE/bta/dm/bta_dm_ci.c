@@ -27,7 +27,7 @@
 #include "bta_sys.h"
 #include "bta_api.h"
 #include "bta_dm_int.h"
-#include <string.h>
+#include <cstring>
 #include "bta_dm_ci.h"
 
 

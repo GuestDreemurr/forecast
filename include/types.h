@@ -6,9 +6,13 @@
 #include <cstddef>
 #include <new>
 #else
-#include <stdarg.h>
-#include <stddef.h>
+#include <cstdarg>
+#include <cstddef>
+#include <__internal/__NULL.h>
 #endif
+
+#include <stdint.h>
+#include <wchar_t.h>
 
 #include <decomp/compat.h>
 #include <decomp/decomp.h>

@@ -2,7 +2,7 @@
 #include <revolution/NWC24.h>
 #include <revolution/NWC24/NWC24Internal.h>
 
-#include <string.h>
+#include <cstring>
 
 #define NAND_RETRY_COUNT 3
 

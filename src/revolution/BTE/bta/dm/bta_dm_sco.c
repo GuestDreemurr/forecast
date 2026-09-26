@@ -25,7 +25,7 @@
  *  interface.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 #include "bta_api.h"
 #include "bta_sys.h"
 

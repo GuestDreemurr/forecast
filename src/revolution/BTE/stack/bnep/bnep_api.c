@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "bnep_api.h"
 #include "bnep_int.h"
 

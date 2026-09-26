@@ -29,7 +29,7 @@
 #include "bta_jv_api.h"
 #include "bta_jv_int.h"
 #include "gki.h"
-#include <string.h>
+#include <cstring>
 #include "port_api.h"
 #include "sdp_api.h"
 

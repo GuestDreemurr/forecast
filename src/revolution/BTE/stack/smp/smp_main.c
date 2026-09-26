@@ -20,7 +20,7 @@
 
 #if SMP_INCLUDED == TRUE
 
-    #include <string.h>
+    #include <cstring>
     #include "smp_int.h"
 
 

@@ -26,7 +26,7 @@
 
 #if defined(BTA_HH_INCLUDED) && (BTA_HH_INCLUDED == TRUE)
 
-#include <string.h>
+#include <cstring>
 
 #include "bta_hh_api.h"
 #include "bta_hh_int.h"

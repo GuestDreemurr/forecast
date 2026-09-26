@@ -28,9 +28,9 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 
 #include "bt_target.h"
 #include "gki.h"

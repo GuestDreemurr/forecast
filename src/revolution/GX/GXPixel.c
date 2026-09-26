@@ -1,6 +1,6 @@
 #include <revolution/GX.h>
 
-#include <math.h>
+#include <cmath>
 
 void GXSetFog(GXFogType type, GXColor color, f32 start, f32 end, f32 near,
               f32 far) {

@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "sbc_encoder.h"
 #include "sbc_enc_func_declare.h"
 

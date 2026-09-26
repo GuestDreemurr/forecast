@@ -25,7 +25,7 @@
 **
 *****************************************************************************/
 
-#include <stdio.h>
+#include <cstdio>
 #include <stdarg.h>
 #include <errno.h>
 #include <sys/times.h>

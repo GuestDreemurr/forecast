@@ -23,7 +23,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 
 #include "bt_types.h"
 #include "hcimsgs.h"

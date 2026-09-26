@@ -33,7 +33,7 @@
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <stdio.h>
+#include <cstdio>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>

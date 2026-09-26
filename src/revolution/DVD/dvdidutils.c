@@ -1,5 +1,5 @@
 #include <revolution/DVD.h>
-#include <string.h>
+#include <cstring>
 
 BOOL DVDCompareDiskID(const DVDDiskID* id1, const DVDDiskID* id2) {
     // Compare game name

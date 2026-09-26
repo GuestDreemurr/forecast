@@ -33,7 +33,7 @@
 #include "bta_av_api.h"
 #include "bta_av_int.h"
 #include "gki.h"
-#include <string.h>
+#include <cstring>
 
 /*****************************************************************************
 **  Constants

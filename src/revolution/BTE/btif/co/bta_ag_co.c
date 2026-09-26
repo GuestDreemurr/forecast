@@ -28,7 +28,7 @@
 #include <cutils/properties.h>
 #include <cutils/log.h>
 #else
-#include <stdio.h>
+#include <cstdio>
 #define LOGI(format, ...)  fprintf (stdout, LOG_TAG format"\n", ## __VA_ARGS__)
 #define LOGD(format, ...)  fprintf (stdout, LOG_TAG format"\n", ## __VA_ARGS__)
 #define LOGV(format, ...)  fprintf (stdout, LOG_TAG format"\n", ## __VA_ARGS__)

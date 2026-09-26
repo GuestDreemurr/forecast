@@ -20,8 +20,8 @@
 
 #include <ctype.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <stdint.h>
 #include <errno.h>
 #include <linux/uhid.h>

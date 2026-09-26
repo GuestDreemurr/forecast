@@ -22,7 +22,7 @@
  *  Utility functions.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #include "gki.h"

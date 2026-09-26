@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <revolution/GX.h>
 
 // +1 for null terminator
@@ -75,6 +75,50 @@ void GXDrawCylinder(u8 sides) {
     // Restore old VAT/VCD
     GXSetVtxDescv(vcd);
     GXSetVtxAttrFmtv(GX_VTXFMT3, vat);
+}
+// https://github.com/doldecomp/melee/blob/43c7de326a8192cac8eccd0af8272933e16a4e7d/libs/dolphin/src/dolphin/gx/GXDraw.c#L160
+void GXDrawTorus(f32 rc, u8 numc, u8 numt)
+{
+    GXAttrType ttype;
+    s32 i, j, k;
+    f32 s, t;
+    f32 x, y, z;
+    f32 twopi = 6.2831855f;
+    f32 rt;
+
+    ASSERTMSGLINE(0x13C, rc < 1.0f, "GXDrawTorus: doughnut too fat");
+
+    rt = 1.0f - rc;
+    GXGetVtxDesc(GX_VA_TEX0, &ttype);
+    GetVertState();
+    if (ttype != GX_NONE) {
+        GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+    }
+    for (i = 0; i < numc; i++) {
+        GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT3, (numt + 1) * 2);
+        for (j = 0; j <= numt; j++) {
+            for (k = 1; k >= 0; k--) {
+                s = (i + k) % numc;
+                t = j % numt;
+                x = (rt - rc * cosf(s * twopi / numc)) *
+                    cosf(t * twopi / numt);
+                y = (rt - rc * cosf(s * twopi / numc)) *
+                    sinf(t * twopi / numt);
+                z = rc * sinf(s * twopi / numc);
+                GXPosition3f32(x, y, z);
+                x = -cosf(t * twopi / numt) * cosf(s * twopi / numc);
+                y = -sinf(t * twopi / numt) * cosf(s * twopi / numc);
+                z = sinf(s * twopi / numc);
+                GXNormal3f32(x, y, z);
+                if (ttype != GX_NONE) {
+                    GXTexCoord2f32((i + k) / (f32) numc, j / (f32) numt);
+                }
+            }
+        }
+        GXEnd();
+    }
+    RestoreVertState();
 }
 
 void GXDrawSphere(u32 stacks, u32 sectors) {
@@ -159,4 +203,85 @@ void GXDrawSphere(u32 stacks, u32 sectors) {
     // Restore old VAT/VCD
     GXSetVtxDescv(vcd);
     GXSetVtxAttrFmtv(GX_VTXFMT3, vat);
+}
+
+static void GXDrawCubeFace(f32 nx, f32 ny, f32 nz, f32 tx, f32 ty, f32 tz,
+                           f32 bx, f32 by, f32 bz, GXAttrType binormal,
+                           GXAttrType texture)
+{
+    GXPosition3f32(0.57735026f * (nx + tx + bx), 0.57735026f * (ny + ty + by),
+                   0.57735026f * (nz + tz + bz));
+    GXNormal3f32(nx, ny, nz);
+    if (binormal != GX_NONE) {
+        GXNormal3f32(tx, ty, tz);
+        GXNormal3f32(bx, by, bz);
+    }
+    if (texture != GX_NONE) {
+        GXTexCoord2s8(1, 1);
+    }
+    GXPosition3f32(0.57735026f * (nx - tx + bx), 0.57735026f * (ny - ty + by),
+                   0.57735026f * (nz - tz + bz));
+    GXNormal3f32(nx, ny, nz);
+    if (binormal != GX_NONE) {
+        GXNormal3f32(tx, ty, tz);
+        GXNormal3f32(bx, by, bz);
+    }
+    if (texture != GX_NONE) {
+        GXTexCoord2s8(0, 1);
+    }
+    GXPosition3f32(0.57735026f * (nx - tx - bx), 0.57735026f * (ny - ty - by),
+                   0.57735026f * (nz - tz - bz));
+    GXNormal3f32(nx, ny, nz);
+    if (binormal != GX_NONE) {
+        GXNormal3f32(tx, ty, tz);
+        GXNormal3f32(bx, by, bz);
+    }
+    if (texture != GX_NONE) {
+        GXTexCoord2s8(0, 0);
+    }
+    GXPosition3f32(0.57735026f * (nx + tx - bx), 0.57735026f * (ny + ty - by),
+                   0.57735026f * (nz + tz - bz));
+    GXNormal3f32(nx, ny, nz);
+    if (binormal != GX_NONE) {
+        GXNormal3f32(tx, ty, tz);
+        GXNormal3f32(bx, by, bz);
+    }
+    if (texture != GX_NONE) {
+        GXTexCoord2s8(1, 0);
+    }
+}
+
+void GXDrawCube(void)
+{
+    GXAttrType ntype;
+    GXAttrType ttype;
+
+    GXGetVtxDesc(GX_VA_NBT, &ntype);
+    GXGetVtxDesc(GX_VA_TEX0, &ttype);
+    GetVertState();
+    if (ntype != GX_NONE) {
+        GXSetVtxDesc(GX_VA_NBT, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_NBT, GX_TEX_ST, GX_RGBA6, 0);
+    }
+    if (ttype != GX_NONE) {
+        GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_TEX0, GX_TEX_ST, GX_RGB8, 0);
+    }
+
+    GXBegin(GX_QUADS, GX_VTXFMT3, 24);
+    GXDrawCubeFace(-1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+                   ntype, ttype);
+    GXDrawCubeFace(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+                   ntype, ttype);
+    GXDrawCubeFace(0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                   ntype, ttype);
+    GXDrawCubeFace(0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+                   ntype, ttype);
+    GXDrawCubeFace(0.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                   ntype, ttype);
+    GXDrawCubeFace(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+                   ntype, ttype);
+    GXEnd();
+
+    RestoreVertState();
 }

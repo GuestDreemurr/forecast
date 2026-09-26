@@ -1,6 +1,6 @@
 #include <revolution/MTX.h>
 
-#include <math.h>
+#include <cmath>
 
 #define MY_EPSILON 1e-5f
 

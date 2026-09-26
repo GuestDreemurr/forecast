@@ -21,7 +21,7 @@
  *  This is the implementation file for the MCAP Data chahnel state machine.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #include "mca_api.h"

@@ -22,7 +22,7 @@
  *  machine.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #include "mca_api.h"

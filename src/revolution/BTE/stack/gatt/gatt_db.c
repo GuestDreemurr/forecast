@@ -28,8 +28,8 @@
 
 #include "bt_trace.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include "gatt_int.h"
 #include "l2c_api.h"
 

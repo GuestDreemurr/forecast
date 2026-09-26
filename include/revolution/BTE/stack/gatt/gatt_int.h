@@ -29,7 +29,7 @@
 #include "btm_ble_api.h"
 #include "btu.h"
 
-#include <string.h>
+#include <cstring>
 
 
 #define GATT_CREATE_CONN_ID(tcb_idx, gatt_if)  ((UINT16) ((((UINT8)(tcb_idx) ) << 8) | ((UINT8) (gatt_if))))

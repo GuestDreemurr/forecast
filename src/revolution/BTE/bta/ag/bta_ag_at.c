@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "gki.h"
 #include "bta_ag_at.h"
 #include "utl.h"

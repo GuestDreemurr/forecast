@@ -4,7 +4,7 @@
 #include <revolution/SC.h>
 #include <revolution/VI.h>
 
-#include <string.h>
+#include <cstring>
 
 static OSShutdownFunctionQueue ShutdownFunctionQueue;
 

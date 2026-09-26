@@ -56,7 +56,7 @@
 
 #include "gki.h"
 #include "ptim.h"
-#include <string.h>
+#include <cstring>
 #if( defined BTA_AR_INCLUDED ) && (BTA_AR_INCLUDED == TRUE)
 #include "bta_ar_api.h"
 #endif

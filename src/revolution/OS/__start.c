@@ -2,7 +2,7 @@
 #include <revolution/DB.h>
 #include <revolution/DVD.h>
 #include <revolution/OS.h>
-#include <string.h>
+#include <cstring>
 
 int main(int argc, char** argv);
 

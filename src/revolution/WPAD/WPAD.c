@@ -7,7 +7,7 @@
 #include <revolution/WPAD.h>
 #include <revolution/WUD.h>
 
-#include <string.h>
+#include <cstring>
 
 #define DPD_CONFIG1_SIZE 9
 #define DPD_CONFIG2_SIZE 2

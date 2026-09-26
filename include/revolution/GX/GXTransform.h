@@ -47,10 +47,7 @@ void GXLoadTexMtxImm(const Mtx mtx, u32 id, GXMtxType type);
 void GXSetViewportJitter(f32 ox, f32 oy, f32 sx, f32 sy, f32 near, f32 far,
                          u32 nextField);
 void GXSetViewport(f32 ox, f32 oy, f32 sx, f32 sy, f32 near, f32 far);
-void GXGetViewportv(f32 view[GX_VIEWPORT_SZ]);
-void GXSetZScaleOffset(f32 scale, f32 offset);
 void GXSetScissor(u32 x, u32 y, u32 w, u32 h);
-void GXGetScissor(u32* x, u32* y, u32* w, u32* h);
 void GXSetScissorBoxOffset(u32 ox, u32 oy);
 void GXSetClipMode(GXClipMode mode);
 

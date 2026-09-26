@@ -23,9 +23,9 @@
  ******************************************************************************/
 
 #include "bt_target.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 
 #include "gki.h"
 #include "bt_types.h"

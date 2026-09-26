@@ -2,7 +2,7 @@
 #include <revolution/NWC24/NWC24Internal.h>
 #include <revolution/SC.h>
 
-#include <string.h>
+#include <cstring>
 
 #define CHECK_CALLING_STATUS() CheckCallingStatus(__FUNCTION__)
 

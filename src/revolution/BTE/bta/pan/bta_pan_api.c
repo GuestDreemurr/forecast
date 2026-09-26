@@ -34,7 +34,7 @@
 #include "bta_pan_api.h"
 #include "bta_pan_int.h"
 #include "bd.h"
-#include <string.h>
+#include <cstring>
 
 static const tBTA_SYS_REG bta_pan_reg =
 {

@@ -1,6 +1,6 @@
 #include <revolution/NAND.h>
 #include <revolution/OS.h>
-#include <stdio.h>
+#include <cstdio>
 
 static void nandOpenCallback(s32 result, void* arg);
 static s32 nandSafeOpenAsync(const char* path, NANDFileInfo* info, u8 access,

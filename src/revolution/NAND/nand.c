@@ -1,8 +1,8 @@
 #include <revolution/FS.h>
 #include <revolution/NAND.h>
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 static void nandSplitPerm(u8 perm, u32* ownerPerm, u32* groupPerm,
                           u32* otherPerm) DECOMP_DONT_INLINE;

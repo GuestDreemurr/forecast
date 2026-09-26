@@ -26,10 +26,10 @@
  ***********************************************************************************/
 #include <hardware/bluetooth.h>
 #include <hardware/bt_hh.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <errno.h>
-#include <string.h>
+#include <cstring>
 
 #define LOG_TAG "BTIF_HH"
 

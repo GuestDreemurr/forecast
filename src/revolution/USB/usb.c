@@ -2,7 +2,7 @@
 #include <revolution/OS.h>
 #include <revolution/USB.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 #define USB_HEAP_SIZE 0x1000
 

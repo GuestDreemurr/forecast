@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <revolution/MTX.h>
 
 void C_MTXFrustum(Mtx44 mtx, f32 t, f32 b, f32 l, f32 r, f32 n, f32 f) {

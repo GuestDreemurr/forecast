@@ -22,7 +22,7 @@
  *  Protocol (MCAP).
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #include "btm_api.h"

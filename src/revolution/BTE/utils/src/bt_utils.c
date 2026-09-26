@@ -30,8 +30,8 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/resource.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 #include <utils/ThreadDefs.h>
 

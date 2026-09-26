@@ -21,7 +21,7 @@
  *  ommon API for the Advanced Audio Distribution Profile (A2DP)
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 #include "bt_target.h"
 #include "sdpdefs.h"
 #include "a2d_api.h"

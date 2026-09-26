@@ -23,8 +23,8 @@
  *
  *****************************************************************************/
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include "gki.h"
 #include "bnep_api.h"
 #include "pan_api.h"

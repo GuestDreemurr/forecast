@@ -28,7 +28,7 @@
 #include "bta_av_int.h"
 #include "bta_av_ci.h"
 
-#include <string.h>
+#include <cstring>
 
 /*******************************************************************************
 **

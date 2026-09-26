@@ -34,7 +34,7 @@
 #include "bta_pan_api.h"
 #include "bta_pan_int.h"
 #include "bta_pan_co.h"
-#include <string.h>
+#include <cstring>
 
 
 /* RX and TX data flow mask */

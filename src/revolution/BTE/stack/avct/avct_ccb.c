@@ -23,7 +23,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "data_types.h"
 #include "bt_target.h"
 #include "avct_api.h"

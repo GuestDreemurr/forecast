@@ -30,7 +30,7 @@
 #include <pthread.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <stdio.h>
+#include <cstdio>
 #include <sys/socket.h>
 #include "bt_hci_bdroid.h"
 #include "userial.h"

@@ -234,16 +234,6 @@ void GXSetViewport(f32 ox, f32 oy, f32 sx, f32 sy, f32 near, f32 far) {
     gxdt->gxDirtyFlags |= GX_DIRTY_VIEWPORT;
 }
 
-void GXGetViewportv(f32 view[GX_VIEWPORT_SZ]) {
-    Copy6Floats(view, gxdt->view);
-}
-
-void GXSetZScaleOffset(f32 scale, f32 offset) {
-    gxdt->offsetZ = (f32)0xFFFFFF * offset;      // ???
-    gxdt->scaleZ = 1.0f + (f32)0xFFFFFF * scale; // ???
-    gxdt->gxDirtyFlags |= GX_DIRTY_VIEWPORT;
-}
-
 void GXSetScissor(u32 x, u32 y, u32 w, u32 h) {
     u32 x1, y1, x2, y2;
     u32 reg;
@@ -266,21 +256,6 @@ void GXSetScissor(u32 x, u32 y, u32 w, u32 h) {
     GX_BP_LOAD_REG(gxdt->scissorTL);
     GX_BP_LOAD_REG(gxdt->scissorBR);
     gxdt->lastWriteWasXF = FALSE;
-}
-
-void GXGetScissor(u32* x, u32* y, u32* w, u32* h) {
-    u32 y2, y1;
-    u32 x2, x1;
-
-    x1 = GX_BP_GET_SCISSORTL_LEFT(gxdt->scissorTL);
-    y1 = GX_BP_GET_SCISSORTL_TOP(gxdt->scissorTL);
-    x2 = GX_BP_GET_SCISSORBR_RIGHT(gxdt->scissorBR);
-    y2 = GX_BP_GET_SCISSORBR_BOT(gxdt->scissorBR);
-
-    *x = x1 - 342;
-    *y = y1 - 342;
-    *w = x2 - x1 + 1;
-    *h = y2 - y1 + 1;
 }
 
 void GXSetScissorBoxOffset(u32 ox, u32 oy) {

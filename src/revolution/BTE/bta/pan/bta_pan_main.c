@@ -26,7 +26,7 @@
 
 #if defined(BTA_PAN_INCLUDED) && (BTA_PAN_INCLUDED == TRUE)
 
-#include <string.h>
+#include <cstring>
 #include "bta_api.h"
 #include "bta_sys.h"
 #include "gki.h"

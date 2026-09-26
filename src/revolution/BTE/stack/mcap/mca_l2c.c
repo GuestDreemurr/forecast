@@ -21,7 +21,7 @@
  *  This is the implementation file for the MCAP at L2CAP Interface.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #include "btm_api.h"

@@ -26,9 +26,9 @@
  *
  *
  */
-#include <stdlib.h>
+#include <cstdlib>
 #include <time.h>
-#include <string.h>
+#include <cstring>
 #include <ctype.h>
 #include <alloca.h>
 

@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "bt_target.h"
 #include "gki.h"
 #include "rfcdefs.h"

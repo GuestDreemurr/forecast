@@ -15,8 +15,8 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "bta_api.h"
 #include "bta_sys.h"

@@ -24,7 +24,7 @@
 #include "bt_target.h"
 
 #if BLE_INCLUDED == TRUE
-    #include <string.h>
+    #include <cstring>
     #include "stdio.h"
     #include "gki.h"
 

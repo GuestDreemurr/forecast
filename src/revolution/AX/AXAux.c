@@ -1,6 +1,6 @@
 #include <revolution/AX.h>
 #include <revolution/OS.h>
-#include <string.h>
+#include <cstring>
 
 /**
  * Ring buffers have three entries:

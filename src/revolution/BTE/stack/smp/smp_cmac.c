@@ -25,8 +25,8 @@
 #include "bt_target.h"
 
 #if SMP_INCLUDED == TRUE
-    #include <stdio.h>
-    #include <string.h>
+    #include <cstdio>
+    #include <cstring>
 
     #include "btm_ble_api.h"
     #include "smp_int.h"

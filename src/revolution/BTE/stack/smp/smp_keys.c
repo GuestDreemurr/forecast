@@ -27,9 +27,9 @@
 
 #if SMP_INCLUDED == TRUE
     #if SMP_DEBUG == TRUE
-        #include <stdio.h>
+        #include <cstdio>
     #endif
-    #include <string.h>
+    #include <cstring>
 
     #include "btm_ble_api.h"
     #include "smp_int.h"

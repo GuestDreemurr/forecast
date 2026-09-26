@@ -28,7 +28,7 @@
 #define LOG_TAG "bt_mct"
 
 #include <utils/Log.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <fcntl.h>
 #include "bt_hci_bdroid.h"
 #include "hci.h"

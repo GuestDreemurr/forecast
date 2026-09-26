@@ -21,7 +21,7 @@
  *  This is the implementation file for the file system call-in functions.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bta_api.h"
 #include "bta_sys.h"

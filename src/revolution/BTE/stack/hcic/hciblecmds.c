@@ -31,7 +31,7 @@
 #include "btu.h"
 
 #include <stddef.h>
-#include <string.h>
+#include <cstring>
 
 #if (defined BLE_INCLUDED) && (BLE_INCLUDED == TRUE)
 

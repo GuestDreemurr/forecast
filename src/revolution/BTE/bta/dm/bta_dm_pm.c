@@ -30,7 +30,7 @@
 #include "bta_dm_int.h"
 #include "btm_api.h"
 
-#include <string.h>
+#include <cstring>
 
 
 static void bta_dm_pm_cback(tBTA_SYS_CONN_STATUS status, UINT8 id, UINT8 app_id, BD_ADDR peer_addr);

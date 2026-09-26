@@ -22,7 +22,7 @@
  *  Functions.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 #include "bt_target.h"
 #include "gki.h"
 #include "btm_api.h"

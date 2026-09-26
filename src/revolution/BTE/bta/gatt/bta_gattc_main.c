@@ -26,7 +26,7 @@
 
 #if defined(BTA_GATT_INCLUDED) && (BTA_GATT_INCLUDED == TRUE)
 
-#include <string.h>
+#include <cstring>
 
 #include "bta_gattc_int.h"
 #include "gki.h"

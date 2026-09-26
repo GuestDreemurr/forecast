@@ -2,7 +2,7 @@
 #include <revolution/IPC.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 #define MENU_TITLE_ID 0x0000000100000002
 #define TICKET_VIEW_SIZE 0xD8

@@ -37,7 +37,7 @@
 #include "l2c_api.h"
 
 
-#include <string.h>
+#include <cstring>
 
 /*****************************************************************************
 **  Constants

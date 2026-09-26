@@ -274,7 +274,7 @@ revolution/MTX/vec.c:
 revolution/GX/GXAttr.c:
 	.text       start:0x800FB258 end:0x800FC47C
 	.data       start:0x801C7C90 end:0x801C7F04
-	.sdata      start:0x803305D0 end:0x803305E0
+	.sdata      start:0x803305D0 end:0x803305DC
 
 revolution/GX/GXGeometry.c:
 	.text       start:0x800FCBE8 end:0x800FD1A8
@@ -282,20 +282,20 @@ revolution/GX/GXGeometry.c:
 revolution/GX/GXLight.c:
 	.text       start:0x800FDBE8 end:0x800FE2F8
 	.data       start:0x801C7FF8 end:0x801C8014
-	.sdata2     start:0x80332E80 end:0x80332EB8
+	.sdata2     start:0x80332E80 end:0x80332EB4
 
 revolution/GX/GXBump.c:
 	.text       start:0x800FF178 end:0x800FF5C4
 	.sdata2     start:0x80332EF0 end:0x80332EF8
 
 revolution/GX/GXDraw.c:
-	.text       start:0x801003A8 end:0x8010139C
+	.text       start:0x801003A8 end:0x801017EC
 	.bss        start:0x802CD068 end:0x802CD300
-	.sdata2     start:0x80332F48 end:0x80332F74
+	.sdata2     start:0x80332F48 end:0x80332F78
 
 revolution/GX/GXTransform.c:
 	.text       start:0x80101860 end:0x80101D7C
-	.sdata2     start:0x80332F74 end:0x80332F88
+	.sdata2     start:0x80332F78 end:0x80332F84
 
 revolution/DVD/dvdqueue.c:
 	.text       start:0x80107E20 end:0x80108078
@@ -424,7 +424,7 @@ revolution/BTE/stack/sdp/sdp_discovery.c:
 
 revolution/TPL/TPL.c:
 	.text       start:0x80160618 end:0x8016074C
-	.data       start:0x801D5FE0 end:0x801D600C
+	.data       start:0x801D5FE0 end:0x801D6010
 	.sdata      start:0x80330938 end:0x80330940
 
 revolution/NdevExi2AD/DebuggerDriver.c:
@@ -434,6 +434,292 @@ revolution/NdevExi2AD/DebuggerDriver.c:
 
 revolution/NdevExi2AD/exi2.c:
 	.text       start:0x80160B60 end:0x801612EC
+
+MSL_C/alloc.c:
+	extab       start:0x800066E8 end:0x80006700
+	extabindex  start:0x80006C1C end:0x80006C40
+	.text       start:0x80162358 end:0x8016286C
+	.rodata     start:0x80197A38 end:0x80197A50
+	.bss        start:0x8032CC88 end:0x8032CCC0
+	.sbss       start:0x803318C0 end:0x803318C1
+
+MSL_C/errno.c:
+	.sbss       start:0x803318C8 end:0x803318CC
+
+MSL_C/ansi_files.c:
+	extab       start:0x80006700 end:0x80006710
+	extabindex  start:0x80006C40 end:0x80006C58
+	.text       start:0x8016286C end:0x8016297C
+	.data       start:0x801D6010 end:0x801D6150
+	.bss        start:0x8032CCC0 end:0x8032CFC0
+
+MSL_C/ansi_fp.c:
+	extab       start:0x80006710 end:0x80006748
+	extabindex  start:0x80006C58 end:0x80006CAC
+	.text       start:0x8016297C end:0x801642EC
+	.rodata     start:0x80197A50 end:0x80197B2D
+	.data       start:0x801D6150 end:0x801D62B8
+	.sdata2     start:0x80333150 end:0x80333188
+
+MSL_C/ctype.c:
+	.rodata     start:0x80197B30 end:0x80197F30
+
+MSL_C/locale.c:
+	.rodata     start:0x80197F30 end:0x80198036
+	.data       start:0x801D62B8 end:0x801D64B0
+	.sdata2     start:0x80333188 end:0x8033319B
+
+MSL_C/arith.c:
+	.text       start:0x801642EC end:0x801642FC
+
+MSL_C/buffer_io.c:
+	extab       start:0x80006760 end:0x80006768
+	extabindex  start:0x80006CD0 end:0x80006CDC
+	.text       start:0x80164640 end:0x80164720
+
+MSL_C/direct_io.c:
+	extab       start:0x80006768 end:0x80006770
+	extabindex  start:0x80006CDC end:0x80006CE8
+	.text       start:0x80164720 end:0x80164A28
+
+MSL_C/file_io.c:
+	extab       start:0x80006770 end:0x80006780
+	extabindex  start:0x80006CE8 end:0x80006D00
+	.text       start:0x80164A28 end:0x80164CD8
+
+MSL_C/FILE_POS.c:
+	extab       start:0x80006788 end:0x80006790
+	extabindex  start:0x80006D0C end:0x80006D18
+	.text       start:0x80164DC8 end:0x80165038
+
+MSL_C/mbstring.c:
+	extab       start:0x80006790 end:0x800067A0
+	extabindex  start:0x80006D18 end:0x80006D30
+	.text       start:0x80165038 end:0x80165230
+
+MSL_C/mem.c:
+	extab       start:0x800067A0 end:0x800067A8
+	extabindex  start:0x80006D30 end:0x80006D3C
+	.text       start:0x80165230 end:0x801653A0
+
+MSL_C/mem_funcs.c:
+	.text       start:0x801653A0 end:0x80165670
+
+MSL_C/math_api.c:
+	extab       start:0x800067A8 end:0x800067B8
+	extabindex  start:0x80006D3C end:0x80006D54
+	.text       start:0x80165670 end:0x80165708
+
+MSL_C/misc_io.c:
+	.text       start:0x80165708 end:0x80165718
+
+MSL_C/printf.c:
+	extab       start:0x800067B8 end:0x80006828
+	extabindex  start:0x80006D54 end:0x80006DFC
+	.text       start:0x80165718 end:0x80167C6C
+	.rodata     start:0x80198038 end:0x80198063
+	.data       start:0x801D64B0 end:0x801D6700
+	.sdata      start:0x80330950 end:0x80330952
+	.sdata2     start:0x803331A0 end:0x803331A8
+
+MSL_C/rand.c:
+	.text       start:0x80167DDC end:0x80167E04
+	.sdata      start:0x80330958 end:0x8033095C
+
+MSL_C/float.c:
+	.sdata      start:0x80330960 end:0x80330970
+
+MSL_C/scanf.c:
+	extab       start:0x80006830 end:0x80006848
+	extabindex  start:0x80006E08 end:0x80006E2C
+	.text       start:0x80167E04 end:0x80169370
+	.rodata     start:0x80198068 end:0x80198090
+	.data       start:0x801D6700 end:0x801D6820
+
+MSL_C/signal.c:
+	extab       start:0x80006848 end:0x80006850
+	extabindex  start:0x80006E2C end:0x80006E38
+	.text       start:0x80169370 end:0x80169420
+	.bss        start:0x8032CFC0 end:0x8032CFDC
+
+MSL_C/string.c:
+	extab       start:0x80006850 end:0x80006868
+	extabindex  start:0x80006E38 end:0x80006E5C
+	.text       start:0x80169420 end:0x801699CC
+
+MSL_C/strtold.c:
+	extab       start:0x80006868 end:0x80006870
+	extabindex  start:0x80006E5C end:0x80006E68
+	.text       start:0x801699CC end:0x8016ADC0
+	.rodata     start:0x80198090 end:0x801980A0
+	.sdata2     start:0x803331A8 end:0x803331C8
+
+MSL_C/wctype.c:
+	.rodata     start:0x801981C8 end:0x801987C8
+
+MSL_C/strtoul.c:
+	extab       start:0x80006870 end:0x80006898
+	extabindex  start:0x80006E68 end:0x80006EA4
+	.text       start:0x8016ADC0 end:0x8016B90C
+	.data       start:0x801D6820 end:0x801D68A8
+
+MSL_C/wmem.c:
+	.text       start:0x8016D2F8 end:0x8016D328
+
+MSL_C/wprintf.c:
+	extab       start:0x800068E8 end:0x80006928
+	extabindex  start:0x80006F1C end:0x80006F7C
+	.text       start:0x8016D328 end:0x8016F56C
+	.rodata     start:0x801987C8 end:0x801987C9
+	.data       start:0x801D6A00 end:0x801D6CA6
+	.sdata2     start:0x803331E8 end:0x803331F0
+
+MSL_C/wstring.c:
+	.text       start:0x8016F56C end:0x8016F5FC
+
+MSL_C/wchar_io.c:
+	.text       start:0x8016F5FC end:0x8016F680
+
+MSL_C/uart_console_io_gcn.c:
+	extab       start:0x80006928 end:0x80006930
+	extabindex  start:0x80006F7C end:0x80006F88
+	.text       start:0x8016F690 end:0x8016F768
+	.sbss       start:0x803318D0 end:0x803318D4
+
+MSL_C/abort_exit_ppc_eabi.c:
+	extab       start:0x80006930 end:0x80006938
+	extabindex  start:0x80006F88 end:0x80006F94
+	.text       start:0x8016F768 end:0x8016F79C
+	.sbss       start:0x803318D8 end:0x803318E0
+
+MSL_C/math_sun.c:
+	extab       start:0x80006938 end:0x80006940
+	extabindex  start:0x80006F94 end:0x80006FA0
+	.text       start:0x8016F79C end:0x8016F7DC
+
+MSL_C/extras.c:
+	.text       start:0x8016F7DC end:0x8016F888
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_acos.c:
+	.text       start:0x8016F88C end:0x8016FB50
+	.sdata2     start:0x803331F0 end:0x80333278
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_asin.c:
+	.text       start:0x8016FB50 end:0x8016FDE8
+	.sdata2     start:0x80333278 end:0x80333300
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_atan2.c:
+	.text       start:0x8016FDE8 end:0x80170058
+	.sdata2     start:0x80333300 end:0x80333358
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_exp.c:
+	.text       start:0x80170058 end:0x8017028C
+	.rodata     start:0x801987D0 end:0x80198800
+	.sdata2     start:0x80333358 end:0x803333D0
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_fmod.c:
+	.text       start:0x8017028C end:0x801705BC
+	.rodata     start:0x80198800 end:0x80198810
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_log.c:
+	.text       start:0x801705BC end:0x80170870
+	.sbss       start:0x803318E0 end:0x803318E8
+	.sdata2     start:0x803333D0 end:0x80333450
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_pow.c:
+	.text       start:0x80170870 end:0x801710B8
+	.rodata     start:0x80198810 end:0x80198840
+	.sdata2     start:0x80333450 end:0x80333560
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_rem_pio2.c:
+	.text       start:0x801710B8 end:0x80171450
+	.rodata     start:0x80198840 end:0x801989C8
+	.sdata2     start:0x80333560 end:0x803335B8
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/k_cos.c:
+	.text       start:0x80171450 end:0x80171560
+	.sdata2     start:0x803335B8 end:0x80333600
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/k_rem_pio2.c:
+	.text       start:0x80171560 end:0x80172C6C
+	.rodata     start:0x801989C8 end:0x80198A18
+	.sdata2     start:0x80333600 end:0x80333640
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/k_sin.c:
+	.text       start:0x80172C6C end:0x80172D2C
+	.sdata2     start:0x80333640 end:0x80333678
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/k_tan.c:
+	.text       start:0x80172D2C end:0x80172F84
+	.rodata     start:0x80198A18 end:0x80198A80
+	.sdata2     start:0x80333678 end:0x803336B0
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_atan.c:
+	.text       start:0x80172F84 end:0x801731C4
+	.rodata     start:0x80198A80 end:0x80198B18
+	.sdata2     start:0x803336B0 end:0x803336D8
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_ceil.c:
+	.text       start:0x801731C4 end:0x80173304
+	.sdata2     start:0x803336D8 end:0x803336E8
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_copysign.c:
+	.text       start:0x80173304 end:0x80173330
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_cos.c:
+	.text       start:0x80173330 end:0x80173404
+	.sdata2     start:0x803336E8 end:0x803336F0
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_floor.c:
+	.text       start:0x80173404 end:0x80173548
+	.sdata2     start:0x803336F0 end:0x80333700
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_frexp.c:
+	.text       start:0x80173548 end:0x801735D0
+	.sdata2     start:0x80333700 end:0x80333708
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_ldexp.c:
+	.text       start:0x801735D0 end:0x8017373C
+	.sdata2     start:0x80333708 end:0x80333730
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_sin.c:
+	.text       start:0x8017373C end:0x80173814
+	.sdata2     start:0x80333730 end:0x80333738
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/s_tan.c:
+	.text       start:0x80173814 end:0x8017388C
+	.sdata2     start:0x80333738 end:0x80333740
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_acos.c:
+	.text       start:0x8017388C end:0x80173890
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_asin.c:
+	.text       start:0x80173890 end:0x80173894
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_atan2.c:
+	.text       start:0x80173894 end:0x80173898
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_exp.c:
+	.text       start:0x80173898 end:0x8017389C
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_fmod.c:
+	.text       start:0x8017389C end:0x801738A0
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_log.c:
+	.text       start:0x801738A0 end:0x801738A4
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_pow.c:
+	.text       start:0x801738A4 end:0x801738A8
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/e_sqrt.c:
+	.text       start:0x801738A8 end:0x80173AF0
+	.sdata2     start:0x80333740 end:0x80333748
+
+MSL_C/PPC_EABI/SRC/math_ppc.c:
+	.text       start:0x80173AF0 end:0x80173AF4
+
+MSL_C/MSL_Common_Embedded/Math/Double_precision/w_sqrt.c:
+	.text       start:0x80173AF4 end:0x80173AF8
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/mainloop.c:
 	.text       start:0x80173AF8 end:0x80173BF0

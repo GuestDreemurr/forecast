@@ -25,9 +25,9 @@
  *
  ***********************************************************************************/
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <hardware/bluetooth.h>
-#include <string.h>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

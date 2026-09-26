@@ -22,8 +22,8 @@
  *
  ******************************************************************************/
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <stddef.h>
 
 #include "bt_types.h"

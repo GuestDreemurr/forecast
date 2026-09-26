@@ -26,7 +26,7 @@
 #include "bt_target.h"
 
 #if (A2D_SBC_INCLUDED == TRUE)
-#include <string.h>
+#include <cstring>
 #include "a2d_api.h"
 #include "a2d_int.h"
 #include "a2d_sbc.h"

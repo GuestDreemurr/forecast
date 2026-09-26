@@ -2,8 +2,8 @@
 #include <revolution/NAND.h>
 #include <revolution/OS.h>
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <wchar.h>
 
 #define NAND_BANNER_MAGIC 'WIBN'

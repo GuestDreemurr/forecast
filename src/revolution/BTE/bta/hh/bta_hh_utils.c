@@ -15,7 +15,7 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "bt_target.h"
 #if defined(BTA_HH_INCLUDED) && (BTA_HH_INCLUDED == TRUE)

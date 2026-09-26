@@ -20,7 +20,7 @@
 
 #if SMP_INCLUDED == TRUE
 
-    #include <string.h>
+    #include <cstring>
     #include "btm_int.h"
     #include "l2c_api.h"
     #include "smp_int.h"

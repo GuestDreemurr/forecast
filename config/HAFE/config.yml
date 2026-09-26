@@ -28,3 +28,7 @@ fill_gaps: true
 export_all: true
 globalize_symbols: true
 clean_extab: false
+
+
+block_relocations:
+- source: 0x80192B28

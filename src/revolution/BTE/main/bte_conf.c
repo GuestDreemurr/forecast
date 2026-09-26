@@ -28,9 +28,9 @@
 #define LOG_TAG "bte_conf"
 
 #include <utils/Log.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <ctype.h>
 
 #include "bt_target.h"

@@ -26,7 +26,7 @@
 
 #if SMP_INCLUDED == TRUE
 
-#include <string.h>
+#include <cstring>
 #include "btm_ble_api.h"
 #include "l2c_api.h"
 

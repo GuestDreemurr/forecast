@@ -39,7 +39,7 @@
 #include "sdp_api.h"
 #include "l2c_api.h"
 #include "port_api.h"
-#include <string.h>
+#include <cstring>
 #include "rfcdefs.h"
 #include "avct_api.h"
 #include "avdt_api.h"

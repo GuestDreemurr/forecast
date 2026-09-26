@@ -1,6 +1,6 @@
 #include <revolution/BASE.h>
 #include <revolution/OS.h>
-#include <string.h>
+#include <cstring>
 
 #define OS_PHYS_SYSCALL_INTR 0xC00
 #define OS_INTR_SLOT_SIZE 0x100

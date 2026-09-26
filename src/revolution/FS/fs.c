@@ -2,7 +2,7 @@
 #include <revolution/IPC.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 #define FS_HEAP_SIZE 0x1500
 

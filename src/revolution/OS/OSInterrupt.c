@@ -5,7 +5,7 @@
 #include <revolution/IPC.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 static OSInterruptHandler* InterruptHandlerTable;
 s64 __OSLastInterruptTime;

@@ -30,7 +30,7 @@
 #include "bta_ag_int.h"
 #include "port_api.h"
 #include "utl.h"
-#include <string.h>
+#include <cstring>
 #include "bta_dm_int.h"
 #include "l2c_api.h"
 

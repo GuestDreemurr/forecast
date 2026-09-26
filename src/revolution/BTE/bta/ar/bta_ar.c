@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "bta_ar_api.h"
 #include "bta_ar_int.h"
 

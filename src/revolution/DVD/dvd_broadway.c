@@ -3,7 +3,7 @@
 #include <revolution/IPC.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 #define DVD_LOW_CTX_MAX 4
 #define DVD_LOW_CMD_MAX 4

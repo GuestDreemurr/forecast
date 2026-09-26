@@ -25,7 +25,7 @@
 
 #include "bt_types.h"
 #include "bt_target.h"
-#include <string.h>
+#include <cstring>
 #include "btm_int.h"
 
 /* Global BTM control block structure

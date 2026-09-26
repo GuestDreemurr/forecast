@@ -34,7 +34,7 @@
 #include "bta_gatts_int.h"
 #include "bta_gatts_co.h"
 
-#include <string.h>
+#include <cstring>
 
 static void bta_gatts_nv_save_cback(BOOLEAN is_saved, tGATTS_HNDL_RANGE *p_hndl_range);
 static BOOLEAN bta_gatts_nv_srv_chg_cback(tGATTS_SRV_CHG_CMD cmd, tGATTS_SRV_CHG_REQ *p_req, tGATTS_SRV_CHG_RSP *p_rsp);

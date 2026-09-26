@@ -4,7 +4,7 @@
 #include <revolution/OS.h>
 #include <revolution/VI.h>
 
-#include <string.h>
+#include <cstring>
 
 /**
  * Framebuffer formatted as 32-bits per two pixels

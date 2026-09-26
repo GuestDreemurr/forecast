@@ -21,7 +21,7 @@
  *  nterface to AVRCP mandatory commands
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "gki.h"
 #include "avrc_api.h"

@@ -29,8 +29,8 @@
 #include "bta_ag_at.h"
 #include "port_api.h"
 #include "utl.h"
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 /*****************************************************************************
 **  Constants

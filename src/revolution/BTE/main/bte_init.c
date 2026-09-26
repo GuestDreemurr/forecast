@@ -24,7 +24,7 @@
  ******************************************************************************/
 
 #include "bt_target.h"
-#include <string.h>
+#include <cstring>
 
 #ifndef BTA_INCLUDED
 #define BTA_INCLUDED FALSE

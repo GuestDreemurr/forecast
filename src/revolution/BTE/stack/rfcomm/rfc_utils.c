@@ -34,7 +34,7 @@
 #include "rfc_int.h"
 #include "btu.h"
 
-#include <string.h>
+#include <cstring>
 
 /*******************************************************************************
 **

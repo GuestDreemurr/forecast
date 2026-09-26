@@ -2,7 +2,7 @@
 #include <revolution/EXI.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 #if defined(VERSION_RSPE01_00)
 const char* __EXIVersion =

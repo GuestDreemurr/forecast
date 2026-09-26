@@ -24,7 +24,7 @@
  *
  ******************************************************************************/
 #include <fcntl.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <assert.h>
 
 #include "gki.h"

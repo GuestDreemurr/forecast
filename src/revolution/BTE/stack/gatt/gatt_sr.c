@@ -25,7 +25,7 @@
 #include "bt_target.h"
 
 #if BLE_INCLUDED == TRUE
-#include <string.h>
+#include <cstring>
 #include "gatt_int.h"
 #include "l2c_api.h"
 

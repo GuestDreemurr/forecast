@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <string.h>
+#include <cstring>
 #include "bt_target.h"
 #include "l2cdefs.h"
 #include "l2c_int.h"

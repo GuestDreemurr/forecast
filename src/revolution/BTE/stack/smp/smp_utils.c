@@ -26,7 +26,7 @@
 #if SMP_INCLUDED == TRUE
 
 #include "bt_types.h"
-#include <string.h>
+#include <cstring>
 #include <ctype.h>
 #include "hcidefs.h"
 #include "btm_ble_api.h"

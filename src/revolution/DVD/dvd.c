@@ -2,7 +2,7 @@
 #include <revolution/ESP.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 #define DISK_TOC_OFFSET 0x40000
 #define DISK_TOC_SIZE ROUND_UP(sizeof(DVDGameToc), 32)

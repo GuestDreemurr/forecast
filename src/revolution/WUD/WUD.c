@@ -6,7 +6,7 @@
 #include <revolution/WPAD.h>
 #include <revolution/WUD.h>
 
-#include <string.h>
+#include <cstring>
 
 #define DEBUGPrint WUD_DEBUGPrint
 

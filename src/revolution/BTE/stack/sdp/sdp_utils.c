@@ -22,10 +22,10 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <netinet/in.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include "gki.h"
 #include "bt_types.h"

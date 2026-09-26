@@ -21,7 +21,7 @@
  *  AVRCP SDP related functions
  *
  ******************************************************************************/
-#include <string.h>
+#include <cstring>
 
 #include "gki.h"
 #include "avrc_api.h"

@@ -3,7 +3,7 @@
 #include <revolution/OS.h>
 #include <revolution/SC.h>
 
-#include <string.h>
+#include <cstring>
 
 #define SC_CONF_MIN_SIZE (sizeof(SCConfHeader) + sizeof(u32))
 #define SC_CONF_MAX_SIZE 0x4000

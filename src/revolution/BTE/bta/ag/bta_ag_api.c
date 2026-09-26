@@ -30,7 +30,7 @@
 #include "bta_ag_api.h"
 #include "bta_ag_int.h"
 #include "gki.h"
-#include <string.h>
+#include <cstring>
 
 /*****************************************************************************
 **  Constants

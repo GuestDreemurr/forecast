@@ -24,7 +24,7 @@
  ******************************************************************************/
 
 #include "bt_target.h"
-#include <string.h>
+#include <cstring>
 #include "dyn_mem.h"
 
 #include "btu.h"

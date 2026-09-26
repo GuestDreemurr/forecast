@@ -2,7 +2,7 @@
 #include <revolution/AXFX.h>
 #include <revolution/OS.h>
 
-#include <string.h>
+#include <cstring>
 
 static BOOL __AllocDelayLine(AXFX_DELAY* fx);
 static void __FreeDelayLine(AXFX_DELAY* fx);
