@@ -17,7 +17,7 @@ typedef enum {
     NWC24_FAIL_FATAL = 1 << 2
 } NWC24FailFlag;
 
-RVL_LIB_VERSION(NWC24, "May 10 2007", "17:58:59", "0x4199_60831");
+RVL_LIB_VERSION(NWC24, "Jun 28 2007", "18:29:32", "0x4199_60831");
 
 NWC24iWork* NWC24WorkP = NULL;
 
@@ -209,36 +209,26 @@ BOOL NWC24IsMsgLibOpenBlocking(void) {
     return Opened == NWC24_LIB_BLOCKED;
 }
 
-NWC24Err NWC24BlockOpenMsgLib(BOOL block) {
-    s32 result;
-    BOOL enabled;
-
-    result = NWC24_OK;
-    enabled = OSDisableInterrupts();
-
-    if (block) {
-        if (Opened == NWC24_LIB_CLOSED) {
-            Opened = NWC24_LIB_BLOCKED;
-        } else if (Opened == NWC24_LIB_OPENED) {
-            result = NWC24_ERR_LIB_OPENED;
-        } else {
-            result = NWC24_ERR_BUSY;
-        }
-    } else {
-        if (Opened == NWC24_LIB_BLOCKED) {
-            Opened = NWC24_LIB_CLOSED;
-        } else {
-            result = NWC24_ERR_LIB_NOT_OPENED;
-        }
-    }
-
-    OSRestoreInterrupts(enabled);
-    return result;
-}
-
 NWC24Err NWC24iSetNewMsgArrived(u32 flags) {
     YouGotMail |= flags;
     return NWC24_OK;
+}
+NWC24Err NWC24Check(u32 usage) {
+    NWC24Err result;
+    GlobalErrorCode = 0;
+
+    if (Opened == 1){
+        result = NWC24_ERR_DISABLED;
+        do {
+            
+        }
+    }
+    else{
+
+    };
+}
+s32 NWC24GetErrorCode(void) {
+    return GlobalErrorCode;
 }
 
 void NWC24iSetErrorCode(u32 code) {

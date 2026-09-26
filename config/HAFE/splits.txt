@@ -359,13 +359,21 @@ revolution/DSP/dsp_task.c:
 	.text       start:0x8011206C end:0x80112900
 	.sbss       start:0x80331720 end:0x80331738
 
+revolution/SC/scsystem.c:
+	.text       start:0x80115848 end:0x8011731C
+	.rodata     start:0x80197450 end:0x801974A8
+	.data       start:0x801CD198 end:0x801CD370
+	.bss        start:0x802E8080 end:0x802F0220
+	.sdata      start:0x803306C0 end:0x803307C8
+	.sbss       start:0x80331750 end:0x80331768
+
 revolution/SC/scapi.c:
 	.text       start:0x8011731C end:0x801177B4
 
 revolution/SC/scapi_prdinfo.c:
 	.text       start:0x80117940 end:0x80117B30
-	.data       start:0x801CD370 end:0x801CD3B8
-	.sdata      start:0x803307C8 end:0x803307D0
+	.data       start:0x801CD370 end:0x801CD3C8
+	.sdata      start:0x803307C8 end:0x803307D8
 
 revolution/IPC/ipcMain.c:
 	.text       start:0x801188A4 end:0x80118970

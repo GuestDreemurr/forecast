@@ -35,18 +35,18 @@ typedef struct NWC24iWork {
     char pathWork[NWC24i_PATH_WORK_SIZE];  // at 0x800
     u8 readBuffer[NWC24i_IO_BUFFER_SIZE];  // at 0x900
     u8 writeBuffer[NWC24i_IO_BUFFER_SIZE]; // at 0xB00
-    u8 config[WORK_SIZE(NWC24iConfig)];    // at 0xD00
-    NWC24iMBCHeader sendCtrl;              // at 0x1100
-    NWC24iMBCHeader recvCtrl;              // at 0x1180
-    NWC24iMBCEntry mbcEntry;               // at 0x1200
-    char WORK_0x1280[128];
-    char base64Work[NWC24_BASE64_TABLE_SIZE]; // at 0x1300
-    char WORK_0x1400[0x2400 - 0x1400];
-    u8 flHeader[WORK_SIZE(NWC24iFLHeader)];             // at 0x2400
-    u8 secretFlHeader[WORK_SIZE(NWC24iSecretFLHeader)]; // at 0x2800
-    u8 dlHeader[WORK_SIZE(NWC24iDlHeader)];             // at 0x3000
-    u8 dlTask[WORK_SIZE(NWC24iDlTask)];                 // at 0x3800
-    u8 padding[0x4000 - 0x3A00];
+    char WORK_0xD00[0x1300 - 0xD00];
+    u8 config[WORK_SIZE(NWC24iConfig)];    // at 0x1300
+    NWC24iMBCHeader sendCtrl;              // at 0x1700
+    NWC24iMBCHeader recvCtrl;              // at 0x1780
+    NWC24iMBCEntry mbcEntry;               // at 0x1800
+    char WORK_0x1880[128];
+    char base64Work[NWC24_BASE64_TABLE_SIZE]; // at 0x1900
+    char WORK_0x1A00[0x2A00 - 0x1A00];
+    u8 flHeader[WORK_SIZE(NWC24iFLHeader)];             // at 0x2A00
+    u8 secretFlHeader[WORK_SIZE(NWC24iSecretFLHeader)]; // at 0x2E00
+    u8 dlHeader[WORK_SIZE(NWC24iDlHeader)];             // at 0x3600
+    u8 dlTask[WORK_SIZE(NWC24iDlTask)];                 // at 0x3E00
 } NWC24iWork;
 #undef WORK_SIZE
 
@@ -54,6 +54,8 @@ extern NWC24iWork* NWC24WorkP;
 
 void NWC24iRegister(void);
 NWC24Err NWC24iSetNewMsgArrived(u32 flags);
+NWC24Err NWC24Check(u32 usage);
+s32 NWC24GetErrorCode(void);
 void NWC24iSetErrorCode(u32 code);
 
 #ifdef __cplusplus

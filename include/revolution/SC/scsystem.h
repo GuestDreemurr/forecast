@@ -50,6 +50,7 @@ typedef enum {
 
     // Bluetooth settings
     SC_ITEM_BT_DINF, // Bluetooth device info
+    SC_ITEM_BT_CDIF, // Bluetooth connected device info
     SC_ITEM_BT_SENS, // Remote sensitivity
     SC_ITEM_BT_SPKV, // WPAD speaker volume
     SC_ITEM_BT_MOT,  // WPAD motor mode
