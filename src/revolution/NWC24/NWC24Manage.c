@@ -219,9 +219,6 @@ NWC24Err NWC24Check(u32 usage) {
 
     if (Opened == 1){
         result = NWC24_ERR_DISABLED;
-        do {
-            
-        }
     }
     else{
 
