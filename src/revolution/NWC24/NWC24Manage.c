@@ -217,6 +217,8 @@ NWC24Err NWC24iSetNewMsgArrived(u32 flags) {
     YouGotMail |= flags;
     return NWC24_OK;
 }
+NWC24Err AnalyzeScdErrors(s32* pErrorCode, u32 usage);
+NWC24Err AnalyzeErrorCode(s32 errorCode, u32 usage, u32* pScore);
 
 NWC24Err NWC24Check(u32 usage) {
     NWC24Err result;
