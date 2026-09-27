@@ -1,3 +1,4 @@
+#include "revolution/NWC24/NWC24Types.h"
 #include <revolution/NWC24.h>
 #include <revolution/NWC24/NWC24Internal.h>
 #include <revolution/OS.h>
@@ -217,12 +218,16 @@ NWC24Err NWC24Check(u32 usage) {
     NWC24Err result;
     GlobalErrorCode = 0;
 
-    if (Opened == 1){
-        result = NWC24_ERR_DISABLED;
+    if (Opened != NWC24_LIB_OPENED){
+        result = NWC24_ERR_LIB_NOT_OPENED;
     }
     else{
-
+        result = NWC24_ERR_DISABLED;
+        do {
+            
+        } while (0);
     };
+    return result;
 }
 s32 NWC24GetErrorCode(void) {
     return GlobalErrorCode;
