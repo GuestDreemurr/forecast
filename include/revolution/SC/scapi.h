@@ -66,11 +66,47 @@ typedef struct SCBtDeviceInfoArray {
     };
 } SCBtDeviceInfoArray;
 
+#define SC_PARENTAL_PASSWORD_LENGTH 4
+#define SC_PARENTAL_SECRET_ANSWER_LENGTH 32
+
+typedef struct SCParentalControlsInfo {
+    u8 enable;                                          // at 0x0
+    u8 org;                                             // at 0x1
+    u8 rating;                                          // at 0x2
+    char password[SC_PARENTAL_PASSWORD_LENGTH];         // at 0x3
+    u8 secretQuestion;                                  // at 0x7
+    u16 secretAnswer[SC_PARENTAL_SECRET_ANSWER_LENGTH]; // at 0x8
+    u16 secretAnswerLength;                             // at 0x48
+} SCParentalControlsInfo;
+
+#define SC_PARENTAL_FLAG_ENABLED (1 << 7)
+
+#define SC_NET_RESTRICTIONS_NONE 0
+#define SC_NET_RESTRICTIONS_OPERA (1 << 0)
+#define SC_NET_RESTRICTIONS_MSG_BOARD (1 << 1)
+#define SC_NET_RESTRICTIONS_SHOPPING (1 << 2)
+
+#define SC_WC_FLAGS_DISABLED 0
+#define SC_WC_FLAGS_ENABLED 1
+
+#define SC_SIMPLE_ADDRESS_ID_COUNTRY 24
+#define SC_SIMPLE_ADDRESS_ID_REGION 16
+#define SC_SIMPLE_ADDRESS_ID_CITY 0
+
+typedef struct SCSimpleAddress {
+    u32 id;                   // 0x00
+    u16 countryName[16][64];  // 0x04
+    u16 regionName[16][64];   // 0x804
+    u16 latitude;             // 0x1004
+    u16 longitude;            // 0x1006
+} SCSimpleAddress;
+
 u8 SCGetAspectRatio(void);
 s8 SCGetDisplayOffsetH(void);
 u8 SCGetEuRgb60Mode(void);
 void SCGetIdleMode(SCIdleModeInfo* mode);
 u8 SCGetLanguage(void);
+BOOL SCGetParentalControl(SCParentalControlsInfo* pcInfo);
 u8 SCGetProgressiveMode(void);
 u8 SCGetScreenSaverMode(void);
 u8 SCGetSoundMode(void);
@@ -83,6 +119,11 @@ BOOL SCSetWpadMotorMode(u8 mode);
 u8 SCGetWpadSensorBarPosition(void);
 u8 SCGetWpadSpeakerVolume(void);
 BOOL SCSetWpadSpeakerVolume(u8 vol);
+u32 SCGetSimpleAddressID(void);
+BOOL SCGetSimpleAddressData(SCSimpleAddress* address);
+u32 SCGetNetContentRestrictions(void);
+BOOL SCGetEULA(void);
+u32 SCGetWCFlags(void);
 
 #ifdef __cplusplus
 }

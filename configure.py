@@ -779,7 +779,7 @@ config.libs = [
             Object(NonMatching, "revolution/NWC24/NWC24FileApi.c"),
             Object(NonMatching, "revolution/NWC24/NWC24FriendList.c"),
             Object(Matching, "revolution/NWC24/NWC24Ipc.c"),
-            Object(NonMatching, "revolution/NWC24/NWC24Manage.c"),
+            Object(Matching, "revolution/NWC24/NWC24Manage.c"),
             Object(NonMatching, "revolution/NWC24/NWC24MBoxCtrl.c"),
             Object(NonMatching, "revolution/NWC24/NWC24Mime.c"),
             Object(NonMatching, "revolution/NWC24/NWC24MsgCommit.c"),

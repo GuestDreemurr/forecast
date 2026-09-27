@@ -34,6 +34,23 @@ s32 VFi_NandCreate(const char* path, u8 perm, u8 attr) {
     challenge = VF_nand_retry_max;
     error = 0;
     while (challenge-- > 0) {
+        error = NANDCreate(path, perm, attr);
+        if (error != NAND_RESULT_BUSY) {
+            return error;
+        } else {
+            _SleepAfewMiliSec();
+        }
+    }
+    return error;
+}
+
+s32 VFi_NANDPrivateCreate(const char* path, u8 perm, u8 attr) {
+    s32 challenge;
+    s32 error;
+
+    challenge = VF_nand_retry_max;
+    error = 0;
+    while (challenge-- > 0) {
         error = NANDPrivateCreate(path, perm, attr);
         if (error != NAND_RESULT_BUSY) {
             return error;
@@ -45,6 +62,23 @@ s32 VFi_NandCreate(const char* path, u8 perm, u8 attr) {
 }
 
 s32 VFi_NandDelete(const char* path) {
+    s32 challenge;
+    s32 error;
+
+    challenge = VF_nand_retry_max;
+    error = 0;
+    while (challenge-- > 0) {
+        error = NANDDelete(path);
+        if (error != NAND_RESULT_BUSY) {
+            return error;
+        } else {
+            _SleepAfewMiliSec();
+        }
+    }
+    return error;
+}
+
+s32 VFi_NANDPrivateDelete(const char* path) {
     s32 challenge;
     s32 error;
 
@@ -164,6 +198,23 @@ s32 VFi_NandRead(struct NANDFileInfo* info, void* buf, u32 length) {
 }
 
 s32 VFi_NandCreateDir(const char* path, u8 perm, u8 attr) {
+    s32 challenge;
+    s32 error;
+
+    challenge = VF_nand_retry_max;
+    error = 0;
+    while (challenge-- > 0) {
+        error = NANDCreateDir(path, perm, attr);
+        if (error != NAND_RESULT_BUSY) {
+            return error;
+        } else {
+            _SleepAfewMiliSec();
+        }
+    }
+    return error;
+}
+
+s32 VFi_NANDPrivateCreateDir(const char* path, u8 perm, u8 attr) {
     s32 challenge;
     s32 error;
 

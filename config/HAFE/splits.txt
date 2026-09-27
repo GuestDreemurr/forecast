@@ -60,7 +60,7 @@ revolution/VF/pf_dir.c:
 	.text       start:0x8004DFD4 end:0x8004E064
 
 revolution/VF/pf_entry_iterator.c:
-	.text       start:0x8004FF64 end:0x8005197C
+	.text       start:0x8004FF64 end:0x80051988
 	.sdata      start:0x80330200 end:0x80330228
 
 revolution/VF/pf_fat.c:
@@ -137,9 +137,9 @@ revolution/NWC24/NWC24FileApi.c:
 	.sbss       start:0x80330CE0 end:0x80330CF8
 
 revolution/NWC24/NWC24Manage.c:
-	.text       start:0x8006AB14 end:0x8006AFE0
+	.text       start:0x8006AB14 end:0x8006B4C0
 	.data       start:0x801B4370 end:0x801B4480
-	.sdata      start:0x803302A0 end:0x803302A8
+	.sdata      start:0x803302A0 end:0x803302A4
 	.sbss       start:0x80330CF8 end:0x80330D10
 
 revolution/NWC24/NWC24Ipc.c:
@@ -163,7 +163,7 @@ revolution/OS/OSAlloc.c:
 	.sbss       start:0x80331248 end:0x80331258
 
 revolution/OS/OSArena.c:
-	.text       start:0x800E531C end:0x800E53B0
+	.text       start:0x800E531C end:0x800E53F0
 	.sdata      start:0x80330518 end:0x80330520
 	.sbss       start:0x80331258 end:0x80331260
 
@@ -240,6 +240,7 @@ revolution/OS/__start.c:
 
 revolution/OS/OSPlayRecord.c:
 	.text       start:0x800EF84C end:0x800EFF44
+	.data       start:0x801C6BA8 end:0x801C6BF0
 	.sdata      start:0x80330560 end:0x80330568
 	.sbss       start:0x803312F8 end:0x80331318
 
@@ -368,7 +369,8 @@ revolution/SC/scsystem.c:
 	.sbss       start:0x80331750 end:0x80331768
 
 revolution/SC/scapi.c:
-	.text       start:0x8011731C end:0x801177B4
+	.text       start:0x8011731C end:0x80117940
+	.bss        start:0x802F0220 end:0x802F1240
 
 revolution/SC/scapi_prdinfo.c:
 	.text       start:0x80117940 end:0x80117B30

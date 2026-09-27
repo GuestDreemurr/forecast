@@ -1,4 +1,13 @@
+#include "revolution/SC/scsystem.h"
+#include "types.h"
+#include <revolution/OS.h>
 #include <revolution/SC.h>
+
+#include <cstring>
+
+static SCSimpleAddress TempSimpleAddress;
+
+#define MASK(x) (0xFF << (x))
 
 u8 SCGetAspectRatio(void) {
     u8 item;
@@ -56,6 +65,10 @@ u8 SCGetLanguage(void) {
     }
 
     return item;
+}
+
+BOOL SCGetParentalControl(SCParentalControlsInfo* pcInfo) {
+    return SCFindByteArrayItem(pcInfo, sizeof(*pcInfo), SC_ITEM_IPL_PC);
 }
 
 u8 SCGetProgressiveMode(void) {
@@ -119,11 +132,7 @@ u32 SCGetBtDpdSensibility(void) {
     u32 item;
 
     if (!SCFindU32Item(&item, SC_ITEM_BT_SENS)) {
-#if defined(VERSION_RSPE01_00)
-        item = 5;
-#elif defined(VERSION_RSPE01_01)
         item = 2;
-#endif
     } else if (item < 1) {
         item = 1;
     } else if (item > 5) {
@@ -165,12 +174,7 @@ u8 SCGetWpadSpeakerVolume(void) {
     u8 item;
 
     if (!SCFindU8Item(&item, SC_ITEM_BT_SPKV)) {
-#if defined(VERSION_RSPE01_00)
-        //! 127 is max volume.
-        item = 127;
-#elif defined(VERSION_RSPE01_01)
         item = 89;
-#endif
     } else if (item > 127) {
         item = 127;
     }
@@ -180,4 +184,61 @@ u8 SCGetWpadSpeakerVolume(void) {
 
 BOOL SCSetWpadSpeakerVolume(u8 vol) {
     return SCReplaceU8Item(vol, SC_ITEM_BT_SPKV);
+}
+
+u32 SCGetSimpleAddressID(void) {
+    if (SCGetSimpleAddressData(&TempSimpleAddress)) {
+        return TempSimpleAddress.id;
+    }
+    return 0xFFFFFFFF;
+}
+
+BOOL SCGetSimpleAddressData(SCSimpleAddress* address) {
+    BOOL enabled;
+    u32 id;
+
+    if (SCFindByteArrayItem(address, sizeof(*address), SC_ITEM_IPL_SADR) && address->id != 0xFFFFFFFF &&
+        (address->id & MASK(SC_SIMPLE_ADDRESS_ID_COUNTRY)) != 0 && (address->id & MASK(SC_SIMPLE_ADDRESS_ID_COUNTRY)) != 0xFF000000 &&
+        (address->id & MASK(SC_SIMPLE_ADDRESS_ID_REGION)) != 0xFF0000) {
+        enabled = OSDisableInterrupts();
+        id = address->id;
+
+        if ((address->id & MASK(SC_SIMPLE_ADDRESS_ID_REGION)) == 0) {
+            memset(address, 0, sizeof(*address));
+            address->id = id;
+        }
+
+        OSRestoreInterrupts(enabled);
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+u32 SCGetNetContentRestrictions(void) {
+    u32 item;
+
+    if (!SCFindU32Item(&item, SC_ITEM_NET_CTPC)) {
+        item = 0;
+    }
+
+    return item;
+}
+BOOL SCGetEULA(void) {
+    BOOL item;
+
+    if (!SCFindBoolItem(&item, SC_ITEM_IPL_EULA)) {
+        item = FALSE;
+    }
+
+    return item;
+}
+
+u32 SCGetWCFlags(void) {
+    u32 item;
+
+    if (!SCFindU32Item(&item, SC_ITEM_NET_WCFG)) {
+        item = 0;
+    }
+
+    return item;
 }

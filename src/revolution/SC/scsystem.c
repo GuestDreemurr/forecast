@@ -65,19 +65,19 @@ typedef struct SCControl {
     union {
         NANDStatus fileAttr;
         u8 fileType;
-    }; // at 0x14C
-    u8 nandCbState;                          // at 0x154
-    u8 isFileOpen;                           // at 0x155
-    u8 openFileType;                         // at 0x156
-    SCAsyncCallback asyncCallback;           // at 0x158
-    s32 asyncResult;                         // at 0x15C
-    const char* filePaths[SC_CONF_FILE_MAX]; // at 0x160
-    u8* fileBuffers[SC_CONF_FILE_MAX];       // at 0x168
-    u32 bufferSizes[SC_CONF_FILE_MAX];       // at 0x170
-    u32 fileSizes[SC_CONF_FILE_MAX];         // at 0x178
-    SCFlushCallback flushCallback;           // at 0x180
-    SCStatus flushStatus;                    // at 0x184
-    u32 flushSize;                           // at 0x188
+    }; // at 0x150
+    u8 nandCbState;                          // at 0x158
+    u8 isFileOpen;                           // at 0x159
+    u8 openFileType;                         // at 0x15A
+    SCAsyncCallback asyncCallback;           // at 0x15C
+    s32 asyncResult;                         // at 0x160
+    const char* filePaths[SC_CONF_FILE_MAX]; // at 0x164
+    u8* fileBuffers[SC_CONF_FILE_MAX];       // at 0x16C
+    u32 bufferSizes[SC_CONF_FILE_MAX];       // at 0x174
+    u32 fileSizes[SC_CONF_FILE_MAX];         // at 0x17C
+    SCFlushCallback flushCallback;           // at 0x184
+    SCStatus flushStatus;                    // at 0x188
+    u32 flushSize;                           // at 0x18C
 } SCControl;
 
 typedef struct SCNameAndID {
@@ -974,6 +974,17 @@ BOOL SCFindS8Item(s8* dst, SCItemID id) {
 
 BOOL SCFindU32Item(u32* dst, SCItemID id) {
     return SCFindIntegerItem(dst, id, SC_ITEM_LONG);
+}
+
+BOOL SCFindBoolItem(BOOL* dst, SCItemID id) {
+    u8 dstVal;
+
+    if (SCFindIntegerItem(&dstVal, id, SC_ITEM_BOOL)) {
+        *dst = dstVal ? TRUE : FALSE;
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 BOOL SCReplaceU8Item(u8 data, SCItemID id) {

@@ -74,6 +74,7 @@ BOOL SCReplaceByteArrayItem(const void* src, u32 len, SCItemID id);
 BOOL SCFindU8Item(u8* dst, SCItemID id);
 BOOL SCFindS8Item(s8* dst, SCItemID id);
 BOOL SCFindU32Item(u32* dst, SCItemID id);
+BOOL SCFindBoolItem(BOOL* dst, SCItemID id);
 
 BOOL SCReplaceU8Item(u8 data, SCItemID id);
 
