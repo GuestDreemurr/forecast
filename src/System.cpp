@@ -1166,8 +1166,8 @@ void StartFade(s32 type, s32 duration, s32 nextType, s32 nextDuration) {
     }
 }
 
-void SetCursor(s32 chan, s32 arg) {
-    gCursor->Set(chan, arg);
+void SetCursor(s32 chan, s32 type) {
+    gCursor->Set(chan, type);
 }
 
 static inline BOOL IsControllerActive(s32 chan) {

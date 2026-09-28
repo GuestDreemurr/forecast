@@ -12,13 +12,10 @@ public:
     void Reset();
     void Calc();
     void Draw();
-    void Set(s32 chan, s32 arg);
+    void Set(s32 chan, s32 type);
 
     u8 unk0[0x20];  // at 0x0
-    s32 unk20;      // at 0x20
-    s32 unk24;      // at 0x24
-    s32 unk28;      // at 0x28
-    s32 unk2C;      // at 0x2C
+    s32 mType[4];   // at 0x20, cursor style per controller (set via SetCursor)
     u8 unk30[0x30]; // at 0x30
     u8 unk60;       // at 0x60
     u8 unk61[0x3];  // at 0x61

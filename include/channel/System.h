@@ -143,7 +143,7 @@ void DrawTextureAt(TPLPalette* palette, u32 id, f32 scaleX, f32 scaleY, const Ve
 void SetRenderMode(GXRenderModeObj* rmode);
 void SetScaledScissor(u32 left, u32 top, u32 width, u32 height);
 void StartFade(s32 type, s32 duration, s32 nextType, s32 nextDuration);
-void SetCursor(s32 chan, s32 arg);
+void SetCursor(s32 chan, s32 type);
 void StartRumble(s32 chan, s32 frames, s32 cooldown);
 void StopRumble(s32 chan, s32 cooldown);
 void ReturnToMenu(void);

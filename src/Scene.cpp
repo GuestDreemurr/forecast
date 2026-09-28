@@ -45,10 +45,9 @@ u8 GetLanguage(void) {
 }
 
 void Cursor::Reset() {
-    unk20 = 0;
-    unk24 = 0;
-    unk28 = 0;
-    unk2C = 0;
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        mType[i] = 0;
+    }
 }
 
 FatalScene::FatalScene() {
