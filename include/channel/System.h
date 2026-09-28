@@ -128,6 +128,8 @@ void ChangeScene(u32 scene);
 void SetDefaultGXState(void);
 void SetOrthoProjection(void);
 void MakeTransformMtx(const Vec* scale, const Vec2* rotation, const Vec* trans, Mtx out);
+s32 GetAreaGroup(void);
+u8 GetLanguage(void);
 const char* GetLanguageCode(void);
 void* LoadContentFile(u32 content, const char* path, s32 align, u32* sizeOut, MEMiHeapHead* heap);
 void* LoadCompressedContentFile(u32 content, const char* path, s32 align, u32* sizeOut,
@@ -141,7 +143,7 @@ void DrawTextureAt(TPLPalette* palette, u32 id, f32 scaleX, f32 scaleY, const Ve
 void SetRenderMode(GXRenderModeObj* rmode);
 void SetScaledScissor(u32 left, u32 top, u32 width, u32 height);
 void StartFade(s32 type, s32 duration, s32 nextType, s32 nextDuration);
-void SetCursor(s32 chan, s32 arg);
+void SetCursor(s32 chan, s32 type);
 void StartRumble(s32 chan, s32 frames, s32 cooldown);
 void StopRumble(s32 chan, s32 cooldown);
 void ReturnToMenu(void);

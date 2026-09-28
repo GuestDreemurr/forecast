@@ -2,6 +2,8 @@
 #define CHANNEL_SCENE_H
 #include <types.h>
 
+class LayoutObj;
+
 // Pointer cursor shared by every scene
 class Cursor {
 public:
@@ -10,9 +12,11 @@ public:
     void Reset();
     void Calc();
     void Draw();
-    void Set(s32 chan, s32 arg);
+    void Set(s32 chan, s32 type);
 
-    u8 unk0[0x60];  // at 0x0
+    u8 unk0[0x20];  // at 0x0
+    s32 mType[4];   // at 0x20, cursor style per controller (set via SetCursor)
+    u8 unk30[0x30]; // at 0x30
     u8 unk60;       // at 0x60
     u8 unk61[0x3];  // at 0x61
 };
@@ -47,8 +51,8 @@ public:
     void Calc();
     void Draw();
 
-    void* unk0; // at 0x0
-    u32 unk4;   // at 0x4
+    LayoutObj* mLayout; // at 0x0
+    s32 mExitTimer; // at 0x4
 };
 
 extern Cursor* gCursor;

@@ -22,16 +22,16 @@ extern "C" void fn_8003D6D0(void);
 extern "C" void fn_8003D9E0(void);
 
 // Not yet decompiled (libraries)
-extern "C" void fn_80071FD8(HomeButtonInfo* info);
-extern "C" void fn_80072100(void);
-extern "C" void fn_80072184(void);
-extern "C" s32 fn_800721B0(void* controllers);
-extern "C" void fn_800721F4(void);
-extern "C" s32 fn_80072320(void);
-extern "C" void fn_80072340(u8 widescreen);
-extern "C" void fn_80072530(void* soundData, void* soundBuffer, u32 soundBufferSize);
-extern "C" void fn_800725EC(void);
-extern "C" void fn_80072620(void);
+extern "C" void HBMCreate(HomeButtonInfo* info);
+extern "C" void HBMDelete(void);
+extern "C" void HBMInit(void);
+extern "C" s32 HBMCalc(void* controllers);
+extern "C" void HBMDraw(void);
+extern "C" s32 HBMGetSelectBtnNum(void);
+extern "C" void HBMSetAdjustFlag(u8 widescreen);
+extern "C" void HBMCreateSound(void* soundData, void* soundBuffer, u32 soundBufferSize);
+extern "C" void HBMDeleteSound(void);
+extern "C" void HBMUpdateSound(void);
 extern "C" void fn_80083A80(MEMAllocator* allocator1, MEMAllocator* allocator2);
 extern "C" s32 fn_80083AD8(void);
 extern "C" void fn_80083ADC(void);
@@ -47,7 +47,7 @@ extern "C" const char* fn_80083CA0(void (*callback)(u8, GXRenderModeObj*), const
 extern "C" void fn_80083CA4(const char* page);
 extern "C" void fn_80083CAC(s32 arg0);
 extern "C" void fn_80083D04(HomeButtonInfo* info);
-extern "C" u32 fn_80110A04(MEMiHeapHead* heap);
+extern "C" u32 MEMGetTotalFreeSizeForExpHeap(MEMiHeapHead* heap);
 
 extern void* lbl_80330BBC;
 
@@ -173,9 +173,9 @@ HomeButton::HomeButton(u32 manualContent, const char* manualPath, const char* ma
             mAllocator2 = allocator2;
             fn_80083A80(allocator1, allocator2);
             fn_80083D04(mInfo);
-            fn_80071FD8(mInfo);
-            fn_80072530(mSoundData, mSoundBuffer, HOME_BUTTON_SOUND_BUFFER_SIZE);
-            fn_80072340(gWidescreen);
+            HBMCreate(mInfo);
+            HBMCreateSound(mSoundData, mSoundBuffer, HOME_BUTTON_SOUND_BUFFER_SIZE);
+            HBMSetAdjustFlag(gWidescreen);
         }
     }
 
@@ -200,8 +200,8 @@ HomeButton::HomeButton(u32 manualContent, const char* manualPath, const char* ma
 
 HomeButton::~HomeButton() {
     if (mIsReady) {
-        fn_800725EC();
-        fn_80072100();
+        HBMDeleteSound();
+        HBMDelete();
     }
 
     if (mSoundBuffer != NULL) {
@@ -243,7 +243,7 @@ s32 HomeButton::Calc() {
     if (!mIsActive && !mOpenManual) {
         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
             if (gTrig[i] & WPAD_BUTTON_HOME) {
-                fn_80072184();
+                HBMInit();
                 mIsActive = TRUE;
                 break;
             }
@@ -295,8 +295,8 @@ s32 HomeButton::Calc() {
             }
         }
 
-        if (fn_800721B0(controllers) >= 0) {
-            switch (fn_80072320()) {
+        if (HBMCalc(controllers) >= 0) {
+            switch (HBMGetSelectBtnNum()) {
             case 0:
                 break;
             case 1:
@@ -314,7 +314,7 @@ s32 HomeButton::Calc() {
 
             mIsActive = FALSE;
         } else {
-            fn_80072620();
+            HBMUpdateSound();
         }
     }
 
@@ -371,15 +371,15 @@ void HomeButton::Draw() {
         GXLoadPosMtxImm(view, GX_PNMTX1);
         GXSetProjection(proj, GX_ORTHOGRAPHIC);
 
-        fn_800721F4();
+        HBMDraw();
     }
 }
 
 inline void HomeButton::CheckHeaps() {
-    fn_80110A04(mAllocator1->heap);
-    fn_80110A04(mAllocator2->heap);
-    fn_80110A04(gMEM1Heap);
-    fn_80110A04(gMEM2Heap);
+    MEMGetTotalFreeSizeForExpHeap(mAllocator1->heap);
+    MEMGetTotalFreeSizeForExpHeap(mAllocator2->heap);
+    MEMGetTotalFreeSizeForExpHeap(gMEM1Heap);
+    MEMGetTotalFreeSizeForExpHeap(gMEM2Heap);
 }
 
 BOOL HomeButton::OpenManual() {
