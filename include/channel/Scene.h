@@ -2,6 +2,8 @@
 #define CHANNEL_SCENE_H
 #include <types.h>
 
+class LayoutObj;
+
 // Pointer cursor shared by every scene
 class Cursor {
 public:
@@ -52,7 +54,7 @@ public:
     void Calc();
     void Draw();
 
-    void* mLayout; // at 0x0
+    LayoutObj* mLayout; // at 0x0
     s32 mExitTimer; // at 0x4
 };
 

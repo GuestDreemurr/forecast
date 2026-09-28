@@ -9,37 +9,31 @@
 #include <new>
 
 // Not yet decompiled (channel)
-extern "C" s32 fn_8002C0CC(void);
-extern "C" u8 fn_8002C124(void);
 extern "C" void fn_80032610(void);
 extern "C" void fn_800326BC(void);
 extern "C" void fn_8003C120(WeatherScene* scene);
 
 // Not yet decompiled (libraries)
-extern "C" void fn_80045ABC(void);
-extern "C" void fn_80045B00(void);
-extern "C" void fn_80045B04(u32 content, ContentHandle* handle, MEMAllocator* allocator);
-extern "C" s32 fn_80045C28(ContentHandle* handle, const char* path, CNTFileInfo* file);
-extern "C" s32 fn_80045D98(CNTFileInfo* file, void* dst, u32 len, s32 offset);
-extern "C" void fn_8005EF90(void);
-extern "C" void fn_800B506C(s32 arg0);
+extern "C" void CNTInit(void);
+extern "C" void CNTShutdown(void);
+extern "C" void contentInitHandleNAND(u32 content, ContentHandle* handle, MEMAllocator* allocator);
+extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
+extern "C" void VFInit(void);
 extern "C" void fn_800D82C4(void);
-extern "C" void fn_800EC1B4(void);
-extern "C" void fn_800EC2D0(u32 arg0);
-extern "C" u32 fn_800F609C(void);
-extern "C" u32 fn_80110A04(MEMiHeapHead* heap);
-extern "C" u32 fn_80111950(const void* src);
-extern "C" void fn_80111990(const void* src, void* dst);
-extern "C" void fn_80111AD0(const void* src, void* dst);
-extern "C" void fn_80129CF0(s32 chan, f32 arg1, f32 arg2);
-extern "C" void fn_80129D0C(s32 chan, f32 arg1, f32 arg2);
-extern "C" void fn_80129EFC(Vec2* out, const Vec2* pos, const Vec2* rect, f32 ratio);
+extern "C" void OSRestart(u32 arg0);
+extern "C" u32 VIGetNextField(void);
+extern "C" u32 MEMGetTotalFreeSizeForExpHeap(MEMiHeapHead* heap);
+extern "C" u32 CXGetUncompressedSize(const void* src);
+extern "C" void CXUncompressLZ(const void* src, void* dst);
+extern "C" void CXUncompressHuffman(const void* src, void* dst);
+extern "C" void KPADGetProjectionPos(Vec2* out, const Vec2* pos, const Vec2* rect, f32 ratio);
 extern "C" void fn_80129F48(s32 chan);
-extern "C" s32 fn_8012BF30(s32 chan, KPADStatus* statuses, u32 count);
-extern "C" void fn_8012C65C(void);
-extern "C" void fn_8016074C(TPLPalette* palette, GXTexObj* texObj, u32 id);
+extern "C" void TPLGetGXTexObjFromPalette(TPLPalette* palette, GXTexObj* texObj, u32 id);
 
 namespace nw4r {
+namespace g3d {
+void G3dInit(bool enableLockedCache);
+}
 namespace math {
 f32 SinFIdx(f32 fidx);
 }
@@ -100,12 +94,12 @@ void SystemInit(void) {
     gMEM2FreeSize = 0;
 
     WPADRegisterAllocator(AllocWPAD, FreeWPAD);
-    fn_8012C65C();
+    KPADInit();
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         fn_80129F48(i);
-        fn_80129CF0(i, 0.05f, 1.0f);
-        fn_80129D0C(i, 0.03f, 1.0f);
+        KPADSetPosParam(i, 0.05f, 1.0f);
+        KPADSetHoriParam(i, 0.03f, 1.0f);
 
         gCursorX[i] = GetScreenWidth() / 2;
         gCursorY[i] = 228.0f;
@@ -136,13 +130,13 @@ void SystemInit(void) {
     PSMTXIdentity(texMtx);
     GXLoadTexMtxImm(texMtx, GX_IDENTITY, GX_MTX_3x4);
 
-    gLanguage = fn_8002C124();
+    gLanguage = GetLanguage();
     if (gLanguage != SCGetLanguage()) {
         SCSetLanguage(gLanguage);
         SCFlushSync();
     }
 
-    switch (fn_8002C0CC()) {
+    switch (GetAreaGroup()) {
     case 0:
         gRegion = 0;
         break;
@@ -177,17 +171,17 @@ void SystemInit(void) {
         SetVideoMode(SCGetProgressiveMode() == 1, SCGetAspectRatio() == 1, FALSE);
     }
 
-    fn_8005EF90();
+    VFInit();
     gUnk80330B40 = 0;
     fn_80032610();
-    fn_80045ABC();
+    CNTInit();
 
     for (u32 i = 4; i < CONTENT_HANDLE_MAX; i++) {
-        fn_80045B04(i + 2, &gContentHandles[i], &gMEM1Allocator32);
+        contentInitHandleNAND(i + 2, &gContentHandles[i], &gMEM1Allocator32);
     }
 
     gUnk80330B64 = 7;
-    fn_800B506C(1);
+    nw4r::g3d::G3dInit(true);
     PPCMthid4(PPCMfhid4() & ~0x60000000);
     fn_800D82C4();
     gRandSeed = OSGetTime();
@@ -234,7 +228,7 @@ void SystemCalc(void) {
         int j;
 
         gConnected[i] = FALSE;
-        count = fn_8012BF30(i, gKPADStatus[i], KPAD_READ_MAX);
+        count = KPADRead(i, gKPADStatus[i], KPAD_READ_MAX);
         gKPADReadCount[i] = count;
 
         if (count > 0) {
@@ -273,7 +267,7 @@ void SystemCalc(void) {
             if (status->wpad_err == WPAD_ERR_OK) {
                 Vec2 pos;
 
-                fn_80129EFC(&pos, &status->pos, screenRect, pointerRatio);
+                KPADGetProjectionPos(&pos, &status->pos, screenRect, pointerRatio);
                 gPointerX[i][j] = pos.x * pointerScale + 0.5f * GetScreenWidth();
                 gPointerY[i][j] = pos.y * pointerScale + 0.5f * GetScreenHeight();
                 gPointerDist[i][j] = status->dist;
@@ -495,8 +489,8 @@ void SystemCalc(void) {
             break;
         }
 
-        fn_80045B00();
-        fn_800EC1B4();
+        CNTShutdown();
+        OSShutdownSystem();
     }
 
     gFrameCount++;
@@ -571,7 +565,7 @@ static inline void DrawFadeZoom(GXTexObj* texObj, u8 alpha, f32 progress, f32 wi
 void SystemDraw(void) {
     if (gRenderMode.field_rendering) {
         GXSetViewportJitter(0.0f, 0.0f, gRenderMode.fbWidth, gRenderMode.efbHeight, 0.0f, 1.0f,
-                            fn_800F609C());
+                            VIGetNextField());
     } else {
         GXSetViewport(0.0f, 0.0f, gRenderMode.fbWidth, gRenderMode.efbHeight, 0.0f, 1.0f);
     }
@@ -710,11 +704,11 @@ void ChangeScene(u32 scene) {
     }
 
     leaked = FALSE;
-    freeSize = fn_80110A04(gMEM1Heap);
+    freeSize = MEMGetTotalFreeSizeForExpHeap(gMEM1Heap);
     if (gMEM1FreeSize != freeSize && gMEM1FreeSize != 0) {
         leaked = TRUE;
     }
-    freeSize = fn_80110A04(gMEM2Heap);
+    freeSize = MEMGetTotalFreeSizeForExpHeap(gMEM2Heap);
     if (gMEM2FreeSize != freeSize && gMEM2FreeSize != 0) {
         leaked = TRUE;
     }
@@ -724,8 +718,8 @@ void ChangeScene(u32 scene) {
     }
 
     gScene = scene;
-    gMEM1FreeSize = fn_80110A04(gMEM1Heap);
-    gMEM2FreeSize = fn_80110A04(gMEM2Heap);
+    gMEM1FreeSize = MEMGetTotalFreeSizeForExpHeap(gMEM1Heap);
+    gMEM2FreeSize = MEMGetTotalFreeSizeForExpHeap(gMEM2Heap);
 
     switch (gScene) {
     case SCENE_NONE:
@@ -826,12 +820,12 @@ void* LoadContentFile(u32 content, const char* path, s32 align, u32* sizeOut, ME
     result = NULL;
     size = 0;
 
-    if (fn_80045C28(&gContentHandles[content], path, &file) == 0) {
+    if (contentOpenNAND(&gContentHandles[content], path, &file) == 0) {
         length = (contentGetLengthNAND(&file) + 31) & ~31;
         buf = MEMAllocFromExpHeapEx(heap, length, align);
 
         if (buf != NULL) {
-            read = fn_80045D98(&file, buf, length, 0);
+            read = contentReadNAND(&file, buf, length, 0);
 
             contentCloseNAND(&file);
             if (read == 0) {
@@ -862,16 +856,16 @@ void* LoadCompressedContentFile(u32 content, const char* path, s32 align, u32* s
     compressed = LoadContentFile(content, path, -align, NULL, heap);
 
     if (compressed != NULL) {
-        size = fn_80111950(compressed);
+        size = CXGetUncompressedSize(compressed);
         buf = MEMAllocFromExpHeapEx(heap, size, align);
 
         if (buf != NULL) {
             switch (*(u8*)compressed & 0xF0) {
             case 0x10:
-                fn_80111990(compressed, buf);
+                CXUncompressLZ(compressed, buf);
                 break;
             case 0x20:
-                fn_80111AD0(compressed, buf);
+                CXUncompressHuffman(compressed, buf);
                 break;
             default:
                 OSPanic("System.cpp", 2247, "CXCompressionType %d unsupported.");
@@ -1017,7 +1011,7 @@ void SetVideoMode(BOOL progressive, BOOL widescreen, BOOL narrow) {
 }
 
 void GetTexObj(TPLPalette* palette, u32 id, GXTexObj* texObj) {
-    fn_8016074C(palette, texObj, id);
+    TPLGetGXTexObjFromPalette(palette, texObj, id);
 }
 
 u32 GetTexWidth(TPLPalette* palette, u32 id) {
@@ -1032,7 +1026,7 @@ void DrawTextureAt(TPLPalette* palette, u32 id, f32 scaleX, f32 scaleY, const Ve
     GXTexObj texObj;
     f32 x0, y0, x1, y1;
 
-    fn_8016074C(palette, &texObj, id);
+    TPLGetGXTexObjFromPalette(palette, &texObj, id);
     GXLoadTexObj(&texObj, GX_TEXMAP0);
 
     x0 = pos->x;
@@ -1235,7 +1229,7 @@ void Restart(void) {
     VISetBlack(TRUE);
     VIFlush();
     VIWaitForRetrace();
-    fn_800EC2D0(0);
+    OSRestart(0);
 }
 
 void* MEM1Alloc(u32 size, s32 align) {

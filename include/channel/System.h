@@ -128,6 +128,8 @@ void ChangeScene(u32 scene);
 void SetDefaultGXState(void);
 void SetOrthoProjection(void);
 void MakeTransformMtx(const Vec* scale, const Vec2* rotation, const Vec* trans, Mtx out);
+s32 GetAreaGroup(void);
+u8 GetLanguage(void);
 const char* GetLanguageCode(void);
 void* LoadContentFile(u32 content, const char* path, s32 align, u32* sizeOut, MEMiHeapHead* heap);
 void* LoadCompressedContentFile(u32 content, const char* path, s32 align, u32* sizeOut,
