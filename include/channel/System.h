@@ -56,8 +56,8 @@ extern u8 gWidescreen;
 extern u8 gProgressive;
 
 // Scenes
-extern u32 gScene;
-extern u32 gNextScene;
+extern s32 gScene;
+extern s32 gNextScene;
 
 // Controllers
 extern u8 gPointerZoomBase[WPAD_MAX_CONTROLLERS];
