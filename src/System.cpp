@@ -45,6 +45,10 @@ f32 SinFIdx(f32 fidx);
 }
 }
 
+static inline f32 OneMinus(f32 x) {
+    return 1.0f - x;
+}
+
 static void* AllocWPAD(u32 size);
 static BOOL FreeWPAD(void* block);
 static void PowerCallback(void);
@@ -296,7 +300,7 @@ void SystemCalc(void) {
             if (rate > 1.0f) {
                 rate = 1.0f;
             }
-            gCursorY[i] = rate * gPointerY[i][0] + (1.0f - rate) * gCursorY[i];
+            gCursorY[i] = rate * gPointerY[i][0] + OneMinus(rate) * gCursorY[i];
         }
 
         {
