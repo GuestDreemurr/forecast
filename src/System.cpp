@@ -288,7 +288,8 @@ void SystemCalc(void) {
             gCursorX[i] = rate * gPointerX[i][0] + (1.0f - rate) * gCursorX[i];
 
             dy = gPointerY[i][0] - gCursorY[i];
-            rate = 0.002f * __fabsf(dy);
+            rate = __fabsf(dy);
+            rate = 0.002f * rate;
             if (rate < 0.1f) {
                 rate = 0.1f;
             }
