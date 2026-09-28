@@ -53,6 +53,19 @@ static inline f32 GetPointerY(s32 chan) {
     return gPointerY[chan][0];
 }
 
+static inline f32 CalcCursorRate(f32 diff) {
+    f32 rate = __fabsf(diff);
+    rate = 0.002f * rate;
+
+    if (rate < 0.1f) {
+        rate = 0.1f;
+    }
+    if (rate > 1.0f) {
+        rate = 1.0f;
+    }
+    return rate;
+}
+
 static void* AllocWPAD(u32 size);
 static BOOL FreeWPAD(void* block);
 static void PowerCallback(void);
@@ -283,26 +296,10 @@ void SystemCalc(void) {
         }
 
         {
-            f32 dx = gPointerX[i][0] - gCursorX[i];
-            f32 dy;
-            f32 rate = 0.002f * __fabsf(dx);
-
-            if (rate < 0.1f) {
-                rate = 0.1f;
-            }
-            if (rate > 1.0f) {
-                rate = 1.0f;
-            }
+            f32 rate = CalcCursorRate(GetPointerX(i) - gCursorX[i]);
             gCursorX[i] = rate * GetPointerX(i) + (1.0f - rate) * gCursorX[i];
 
-            dy = gPointerY[i][0] - gCursorY[i];
-            rate = 0.002f * __fabsf(dy);
-            if (rate < 0.1f) {
-                rate = 0.1f;
-            }
-            if (rate > 1.0f) {
-                rate = 1.0f;
-            }
+            rate = CalcCursorRate(GetPointerY(i) - gCursorY[i]);
             gCursorY[i] = rate * GetPointerY(i) + (1.0f - rate) * gCursorY[i];
         }
 
