@@ -42,15 +42,15 @@ BOOL MEMFreeByStateToFrmHeap(MEMiHeapHead* heap, u32 id);
 u32 MEMAdjustFrmHeap(MEMiHeapHead* heap);
 u32 MEMResizeForMBlockFrmHeap(MEMiHeapHead* heap, void* memBlock, u32 size);
 
-static MEMiHeapHead* MEMCreateFrmHeap(void* start, u32 size) {
+static inline MEMiHeapHead* MEMCreateFrmHeap(void* start, u32 size) {
     return MEMCreateFrmHeapEx(start, size, 0);
 }
 
-static void* MEMAllocFromFrmHeap(MEMiHeapHead* heap, u32 size) {
+static inline void* MEMAllocFromFrmHeap(MEMiHeapHead* heap, u32 size) {
     return MEMAllocFromFrmHeapEx(heap, size, 4);
 }
 
-static u32 MEMGetAllocatableSizeForFrmHeap(MEMiHeapHead* heap) {
+static inline u32 MEMGetAllocatableSizeForFrmHeap(MEMiHeapHead* heap) {
     return MEMGetAllocatableSizeForFrmHeapEx(heap, 4);
 }
 

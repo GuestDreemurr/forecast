@@ -253,6 +253,14 @@ cflags_rvl = [
     "-ipa file",
 ]
 
+# Channel (game code) flags
+cflags_channel = [
+    *cflags_base,
+    "-inline noauto",
+    "-fp_contract off",
+    "-i include/channel",
+]
+
 # MetroTRK flags
 cflags_trk = [
     "-nodefaults",
@@ -1020,12 +1028,15 @@ config.libs = [
     },
     {
             "lib": "Channel", # throwing shit at the wall here, im guessing this is what we should put forecast code as? not sure how forecast is structured yet.. -guestd
-            "mw_version": config.linker_version,
-            "cflags": cflags_base,
+            "mw_version": "GC/3.0a5.2",
+            "cflags": cflags_channel,
             "progress_category": "channel",
             "objects": [
-                Object(NonMatching, "main.cpp")
-            ],    
+                Object(NonMatching, "HomeButton.cpp"),
+                Object(Matching, "main.cpp"),
+                Object(Matching, "DrawUtil.cpp"),
+                Object(NonMatching, "System.cpp"),
+            ],
     },
 ]
 

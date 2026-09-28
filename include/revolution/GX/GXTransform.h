@@ -55,7 +55,7 @@ void __GXSetProjection(void);
 void __GXSetViewport(void);
 void __GXSetMatrixIndex(GXAttr index);
 
-static void GXSetViewportv(const f32 view[GX_VIEWPORT_SZ]) {
+static inline void GXSetViewportv(const f32 view[GX_VIEWPORT_SZ]) {
     GXSetViewport(view[0], view[1], view[2], view[3], view[4], view[5]);
 }
 

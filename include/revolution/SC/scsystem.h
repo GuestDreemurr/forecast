@@ -67,6 +67,7 @@ typedef void (*SCFlushCallback)(SCStatus status);
 
 void SCInit(void);
 u32 SCCheckStatus(void);
+s32 SCFlushSync(void);
 
 BOOL SCFindByteArrayItem(void* dst, u32 len, SCItemID id);
 BOOL SCReplaceByteArrayItem(const void* src, u32 len, SCItemID id);

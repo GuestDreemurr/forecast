@@ -106,6 +106,7 @@ s8 SCGetDisplayOffsetH(void);
 u8 SCGetEuRgb60Mode(void);
 void SCGetIdleMode(SCIdleModeInfo* mode);
 u8 SCGetLanguage(void);
+BOOL SCSetLanguage(u8 language);
 BOOL SCGetParentalControl(SCParentalControlsInfo* pcInfo);
 u8 SCGetProgressiveMode(void);
 u8 SCGetScreenSaverMode(void);

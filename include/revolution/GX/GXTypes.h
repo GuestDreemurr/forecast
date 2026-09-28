@@ -433,6 +433,22 @@ typedef enum _GXLogicOp {
     GX_LO_SET
 } GXLogicOp;
 
+typedef enum _GXTexOffset {
+    GX_TO_ZERO,
+    GX_TO_SIXTEENTH,
+    GX_TO_EIGHTH,
+    GX_TO_FOURTH,
+    GX_TO_HALF,
+    GX_TO_ONE,
+    GX_MAX_TEXOFFSET
+} GXTexOffset;
+
+typedef enum _GXGamma {
+    GX_GM_1_0,
+    GX_GM_1_7,
+    GX_GM_2_2
+} GXGamma;
+
 typedef enum _GXMtxType {
     GX_MTX_3x4,
     GX_MTX_2x4,

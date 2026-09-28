@@ -22,6 +22,8 @@ void OSSetMEM2ArenaLo(void* lo);
 void OSSetArenaLo(void* lo);
 
 void* OSAllocFromMEM1ArenaLo(size_t size, u32 align);
+void* OSAllocFromMEM1ArenaHi(size_t size, u32 align);
+void* OSAllocFromMEM2ArenaHi(size_t size, u32 align);
 
 #ifdef __cplusplus
 }

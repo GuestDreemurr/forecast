@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include <cstddef>
 #include <new>
+#include <__internal/__NULL.h>
 #else
 #include <cstdarg>
 #include <cstddef>

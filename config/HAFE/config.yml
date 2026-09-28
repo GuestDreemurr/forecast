@@ -32,3 +32,54 @@ clean_extab: false
 
 block_relocations:
 - source: 0x80192B28
+
+# System.cpp: lis/addi pairs split by register spills, which analysis cannot pair
+add_relocations:
+- source: 0x8002FAD4
+  type: ha
+  target: gPointerX
+- source: 0x8002FB00
+  type: l
+  target: gPointerX
+- source: 0x8002FAE4
+  type: ha
+  target: gPointerY
+- source: 0x8002FB20
+  type: l
+  target: gPointerY
+- source: 0x8002FAFC
+  type: ha
+  target: gPointerDist
+- source: 0x8002FB40
+  type: l
+  target: gPointerDist
+- source: 0x8002FB1C
+  type: ha
+  target: gCursorX
+- source: 0x8002FB60
+  type: l
+  target: gCursorX
+- source: 0x8002FB3C
+  type: ha
+  target: gCursorY
+- source: 0x8002FB7C
+  type: l
+  target: gCursorY
+- source: 0x8002FB5C
+  type: ha
+  target: gZoomBaseDist
+- source: 0x8002FB9C
+  type: l
+  target: gZoomBaseDist
+- source: 0x8002FB78
+  type: ha
+  target: gZoom
+- source: 0x8002FBBC
+  type: l
+  target: gZoom
+- source: 0x8002FB98
+  type: ha
+  target: gRepeatSlowButtons
+- source: 0x8002FBDC
+  type: l
+  target: gRepeatSlowButtons

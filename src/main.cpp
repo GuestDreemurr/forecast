@@ -1,10 +1,10 @@
-#include <revolution/BASE.h>
+#include <channel/System.h>
 
+void main(void) {
+    SystemInit();
 
-void main(void){
-    
-}
-
-void exit(int __status){
-    PPCHalt();
+    while (true) {
+        SystemCalc();
+        SystemDraw();
+    }
 }

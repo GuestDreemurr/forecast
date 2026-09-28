@@ -47,7 +47,7 @@ void __GXSetVCD(void);
 void __GXCalculateVLim(void);
 void __GXSetVAT(void);
 
-static void GXSetTexCoordGen(GXTexCoordID id, GXTexGenType type,
+static inline void GXSetTexCoordGen(GXTexCoordID id, GXTexGenType type,
                              GXTexGenSrc src, u32 texMtxIdx) {
     GXSetTexCoordGen2(id, type, src, texMtxIdx, FALSE, GX_PTIDENTITY);
 }
