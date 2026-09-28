@@ -296,8 +296,7 @@ void SystemCalc(void) {
             gCursorX[i] = rate * GetPointerX(i) + (1.0f - rate) * gCursorX[i];
 
             dy = gPointerY[i][0] - gCursorY[i];
-            rate = __fabsf(dy);
-            rate = 0.002f * rate;
+            rate = 0.002f * __fabsf(dy);
             if (rate < 0.1f) {
                 rate = 0.1f;
             }
