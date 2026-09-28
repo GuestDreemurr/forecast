@@ -207,8 +207,8 @@ void SystemCalc(void) {
     screenRect[1].y = 456.0f;
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        u8 wasConnected = gConnected[i];
         u32 prevHold = gHold[i];
+        u8 wasConnected = gConnected[i];
         s32 count;
         int j;
 
@@ -275,7 +275,9 @@ void SystemCalc(void) {
         }
 
         {
-            f32 rate = 0.002f * __fabsf(gPointerX[i][0] - gCursorX[i]);
+            f32 dx = gPointerX[i][0] - gCursorX[i];
+            f32 dy;
+            f32 rate = 0.002f * __fabsf(dx);
 
             if (rate < 0.1f) {
                 rate = 0.1f;
@@ -285,7 +287,8 @@ void SystemCalc(void) {
             }
             gCursorX[i] = rate * gPointerX[i][0] + (1.0f - rate) * gCursorX[i];
 
-            rate = 0.002f * __fabsf(gPointerY[i][0] - gCursorY[i]);
+            dy = gPointerY[i][0] - gCursorY[i];
+            rate = 0.002f * __fabsf(dy);
             if (rate < 0.1f) {
                 rate = 0.1f;
             }
@@ -297,7 +300,7 @@ void SystemCalc(void) {
 
         {
             BOOL found = FALSE;
-            BOOL zooming = FALSE;
+            BOOL zooming;
 
             for (j = 0; j < gKPADReadCount[i]; j++) {
                 if (gKPADStatus[i][j].dpd_valid_fg == 2) {
@@ -315,6 +318,7 @@ void SystemCalc(void) {
                 }
             }
 
+            zooming = FALSE;
             if (found) {
                 if (!gPointerZoomActive[i]) {
                     gPointerZoomActive[i] = TRUE;
@@ -335,7 +339,7 @@ void SystemCalc(void) {
                 f32 zoom = gZoomBaseDist[i] / gPointerDist[i][0];
 
                 if (zoom < 1.0f) {
-                    zoom = zoom * (1.2f + 3.0f * (zoom - 1.0f));
+                    zoom *= 1.2f + 3.0f * (zoom - 1.0f);
                 } else {
                     zoom = 1.2f + 10.0f * (zoom - 1.0f);
                 }
@@ -361,7 +365,8 @@ void SystemCalc(void) {
         gRepeatFast[i] = FALSE;
 
         if (prevHold != 0 && prevHold == gHold[i] && gKPADLatest[i] >= 0) {
-            if (++gHoldFrames[i] > 40) {
+            gHoldFrames[i]++;
+            if (gHoldFrames[i] > 40) {
                 if ((gHoldFrames[i] & 3) == 0) {
                     gRepeatFast[i] = TRUE;
                 }
@@ -394,14 +399,15 @@ void SystemCalc(void) {
     }
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        BOOL rumble = FALSE;
+        u32 rumble = FALSE;
 
         if (gMotorTimer[i] > 0) {
             rumble = TRUE;
         }
 
         if (gMotorPattern[i] != NULL) {
-            char c = gMotorPattern[i][gMotorPatternPos[i]++];
+            char c = gMotorPattern[i][gMotorPatternPos[i]];
+            gMotorPatternPos[i]++;
 
             if (c == '\0') {
                 gMotorPattern[i] = NULL;
@@ -502,7 +508,8 @@ static inline void LoadFadeMatrices(void) {
     PSMTXIdentity(view);
     GXLoadPosMtxImm(view, GX_PNMTX0);
     GXSetCurrentMtx(GX_PNMTX0);
-    C_MTXOrtho(proj, 0.0f, 456.0f, 0.0f, GetScreenWidth(), -100.0f, 100.0f);
+    f32 width = GetScreenWidth();
+    C_MTXOrtho(proj, 0.0f, 456.0f, 0.0f, width, -100.0f, 100.0f);
     GXSetProjection(proj, GX_ORTHOGRAPHIC);
 }
 
@@ -1278,8 +1285,8 @@ u32 gXfbSize;
 void* gXfb1;
 void* gXfb2;
 void* gCurrentXfb;
-u32 gScene;
-u32 gNextScene;
+s32 gScene;
+s32 gNextScene;
 u8 gPointerZoomBase[WPAD_MAX_CONTROLLERS];
 u8 gPointerZoomActive[WPAD_MAX_CONTROLLERS];
 u8 gPointerWasValid[WPAD_MAX_CONTROLLERS];
