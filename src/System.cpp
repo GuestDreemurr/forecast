@@ -45,8 +45,12 @@ f32 SinFIdx(f32 fidx);
 }
 }
 
-static inline f32 OneMinus(f32 x) {
-    return 1.0f - x;
+static inline f32 GetPointerX(s32 chan) {
+    return gPointerX[chan][0];
+}
+
+static inline f32 GetPointerY(s32 chan) {
+    return gPointerY[chan][0];
 }
 
 static void* AllocWPAD(u32 size);
@@ -289,7 +293,7 @@ void SystemCalc(void) {
             if (rate > 1.0f) {
                 rate = 1.0f;
             }
-            gCursorX[i] = rate * gPointerX[i][0] + (1.0f - rate) * gCursorX[i];
+            gCursorX[i] = rate * GetPointerX(i) + (1.0f - rate) * gCursorX[i];
 
             dy = gPointerY[i][0] - gCursorY[i];
             rate = __fabsf(dy);
@@ -300,7 +304,7 @@ void SystemCalc(void) {
             if (rate > 1.0f) {
                 rate = 1.0f;
             }
-            gCursorY[i] = rate * gPointerY[i][0] + OneMinus(rate) * gCursorY[i];
+            gCursorY[i] = rate * GetPointerY(i) + (1.0f - rate) * gCursorY[i];
         }
 
         {
