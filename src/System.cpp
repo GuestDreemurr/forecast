@@ -45,6 +45,14 @@ f32 SinFIdx(f32 fidx);
 }
 }
 
+static inline f32 GetPointerX(s32 chan) {
+    return gPointerX[chan][0];
+}
+
+static inline f32 GetPointerY(s32 chan) {
+    return gPointerY[chan][0];
+}
+
 static void* AllocWPAD(u32 size);
 static BOOL FreeWPAD(void* block);
 static void PowerCallback(void);
@@ -285,7 +293,7 @@ void SystemCalc(void) {
             if (rate > 1.0f) {
                 rate = 1.0f;
             }
-            gCursorX[i] = rate * gPointerX[i][0] + (1.0f - rate) * gCursorX[i];
+            gCursorX[i] = rate * GetPointerX(i) + (1.0f - rate) * gCursorX[i];
 
             dy = gPointerY[i][0] - gCursorY[i];
             rate = 0.002f * __fabsf(dy);
@@ -295,7 +303,7 @@ void SystemCalc(void) {
             if (rate > 1.0f) {
                 rate = 1.0f;
             }
-            gCursorY[i] = rate * gPointerY[i][0] + (1.0f - rate) * gCursorY[i];
+            gCursorY[i] = rate * GetPointerY(i) + (1.0f - rate) * gCursorY[i];
         }
 
         {
