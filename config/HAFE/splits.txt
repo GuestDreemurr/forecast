@@ -50,6 +50,10 @@ System.cpp:
 	.sbss       start:0x80330AD0 end:0x80330B78
 	.sdata2     start:0x80331F00 end:0x80331F78
 
+PointerHistory.cpp:
+	.text       start:0x8003A4A8 end:0x8003A7DC
+	.sdata2     start:0x80332018 end:0x80332020
+
 SceneBase.cpp:
 	.text       start:0x8003B2C8 end:0x8003F628
 	.ctors      start:0x8017928C end:0x80179290
