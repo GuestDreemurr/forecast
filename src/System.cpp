@@ -193,7 +193,7 @@ void SystemInit(void) {
     gCursor->Reset();
 
     gScene = SCENE_NONE;
-    if (gCursor->unk60) {
+    if (gCursor->mEffectReady) {
         ChangeScene(SCENE_WEATHER);
     } else {
         ChangeScene(SCENE_FATAL);

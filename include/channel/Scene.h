@@ -14,11 +14,17 @@ public:
     void Draw();
     void Set(s32 chan, s32 type);
 
-    u8 unk0[0x20];  // at 0x0
-    s32 mType[4];   // at 0x20, cursor style per controller (set via SetCursor)
-    u8 unk30[0x30]; // at 0x30
-    u8 unk60;       // at 0x60
-    u8 unk61[0x3];  // at 0x61
+    void* mEffectHeap;       // at 0x0, 128KB MEM2 block for the effect system
+    void* mEffectMemory;     // at 0x4, effect memory manager (0x4C bytes)
+    void* mEffectData;       // at 0x8, nw4r_defcursor_all01.breff
+    void* mEffectTexData;    // at 0xC, nw4r_defcursor_all01.breft
+    s32 unk10[4];            // at 0x10
+    s32 mType[4];            // at 0x20, cursor style per controller (set via SetCursor)
+    s32 unk30[4];            // at 0x30
+    s32 unk40[4];            // at 0x40
+    s32 unk50[4];            // at 0x50
+    u8 mEffectReady;         // at 0x60, both effect files loaded
+    u8 unk61[0x3];           // at 0x61
 };
 
 // 'WTH2': the main forecast scene
