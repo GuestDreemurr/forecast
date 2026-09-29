@@ -1210,6 +1210,8 @@ config.libs = [
                 Object(NonMatching, "System.cpp"),
                 Object(Matching, "PointerHistory.cpp"),
                 Object(Matching, "Fade.cpp"),
+                Object(Matching, "WorkerThread.cpp"),
+                Object(Matching, "LoopSound.cpp"),
                 Object(NonMatching, "SceneBase.cpp"),
             ],
     },
