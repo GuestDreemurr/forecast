@@ -255,6 +255,7 @@ cflags_rvl = [
 
 # Channel (game code) flags
 cflags_channel = [
+    "-i include/nw4r_compat",
     *cflags_base,
     "-inline noauto",
     "-fp_contract off",

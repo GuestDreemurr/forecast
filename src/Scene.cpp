@@ -1,6 +1,9 @@
 #include <channel/System.h>
 #include <channel/Scene.h>
 #include <channel/LayoutObj.h>
+#include <channel/Color.h>
+
+#include <channel/SimpleModel.h>
 
 #include <revolution/GX.h>
 #include <revolution/SC.h>
@@ -13,6 +16,12 @@ extern "C" MEMAllocator* lbl_803311C8;
 extern "C" u8 lbl_8019C6C0[];
 // Cursor textures
 extern "C" TPLPalette* lbl_80330C00;
+// Scratch matrix for SimpleModel::CalcMtx
+extern "C" nw4r::math::MTX34 lbl_801F6B28;
+
+// Not yet decompiled (weather)
+extern "C" void fn_80036918(nw4r::math::MTX34* mtx, f32 x, f32 y, f32 z);
+extern "C" void fn_800367F4(nw4r::math::MTX34* mtx, f32 x, f32 y, f32 z);
 
 namespace nw4r {
 namespace ef {
@@ -105,16 +114,6 @@ static const s32 sCursorStyle[] = {0, 0, 1, 2, 2, -1};
 // Starting spin counter per controller
 static const s32 sSpinStart[WPAD_MAX_CONTROLLERS] = {0, 4, 2, 6};
 
-static const char* sShadowEffects[] = {
-    "def_cursor_normal_sd",
-    "def_cursor_hold_sd",
-    "def_cursor_open_sd",
-};
-static const char* sCursorEffects[][WPAD_MAX_CONTROLLERS] = {
-    {"def_cursor_normal_1p", "def_cursor_normal_2p", "def_cursor_normal_3p", "def_cursor_normal_4p"},
-    {"def_cursor_hold_1p", "def_cursor_hold_2p", "def_cursor_hold_3p", "def_cursor_hold_4p"},
-    {"def_cursor_open_1p", "def_cursor_open_2p", "def_cursor_open_3p", "def_cursor_open_4p"},
-};
 
 static inline BOOL IsPointerActive(s32 chan) {
     BOOL active = FALSE;
@@ -222,6 +221,17 @@ void Cursor::Reset() {
         mType[i] = 0;
     }
 }
+
+static const char* sShadowEffects[] = {
+    "def_cursor_normal_sd",
+    "def_cursor_hold_sd",
+    "def_cursor_open_sd",
+};
+static const char* sCursorEffects[][WPAD_MAX_CONTROLLERS] = {
+    {"def_cursor_normal_1p", "def_cursor_normal_2p", "def_cursor_normal_3p", "def_cursor_normal_4p"},
+    {"def_cursor_hold_1p", "def_cursor_hold_2p", "def_cursor_hold_3p", "def_cursor_hold_4p"},
+    {"def_cursor_open_1p", "def_cursor_open_2p", "def_cursor_open_3p", "def_cursor_open_4p"},
+};
 
 void Cursor::Calc() {
     Mtx mtx;
@@ -459,3 +469,35 @@ void FatalScene::Calc() {
 void FatalScene::Draw() {
     mLayout->Draw();
 }
+
+SimpleModel::SimpleModel(void* resData) : mTrans(0.0f, 0.0f, 0.0f), mRot(0.0f, 0.0f, 0.0f), mScale(21.0f, 21.0f, 21.0f) {
+    nw4r::g3d::ResFile file(resData);
+    u32 size;
+
+    file.Init();
+    file.Bind();
+    mResMdl = file.GetResMdl(0);
+    mScnMdl = nw4r::g3d::ScnMdlSimple::Construct(&gMEM2Allocator32, &size, mResMdl, 1);
+}
+
+SimpleModel::~SimpleModel() {
+    mScnMdl->Destroy();
+}
+
+extern "C" void fn_8002D000(SimpleModel* model) {}
+
+void SimpleModel::UpdateMtx() {
+    mMtx = CalcMtx(mRot);
+    mScnMdl->SetMtx(nw4r::g3d::ScnObj::MTX_LOCAL, &mMtx);
+}
+
+nw4r::math::MTX34 SimpleModel::CalcMtx(const nw4r::math::VEC3& rot) {
+    nw4r::math::MTX34RotXYZFIdx(&lbl_801F6B28, 0.0f, 0.7111111f * rot.y, 0.0f);
+    f32 z = rot.z;
+    f32 x = rot.x;
+    fn_80036918(&lbl_801F6B28, x, 0.0f, z);
+    fn_800367F4(&lbl_801F6B28, mTrans.x, mTrans.y, mTrans.z);
+    return lbl_801F6B28;
+}
+
+extern "C" void fn_8002D1A0(SimpleModel* model) {}
