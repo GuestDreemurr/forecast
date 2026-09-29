@@ -1206,6 +1206,7 @@ config.libs = [
                 Object(Matching, "DrawUtil.cpp"),
                 Object(NonMatching, "GlobeDots.cpp"),
                 Object(NonMatching, "System.cpp"),
+                Object(NonMatching, "SceneBase.cpp"),
             ],
     },
 ]
