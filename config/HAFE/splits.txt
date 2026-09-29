@@ -13,14 +13,23 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+Region.cpp:
+	.text       start:0x8002C0CC end:0x8002C164
+	.data       start:0x8019B760 end:0x8019B790
+
 Scene.cpp:
-	.text       start:0x8002C0CC end:0x8002D1D4
-	.ctors      start:0x80179278 end:0x8017927C
+	.text       start:0x8002C164 end:0x8002CEE0
 	.rodata     start:0x8017B4A0 end:0x8017B4C8
-	.data       start:0x8019B760 end:0x8019B978
+	.data       start:0x8019B790 end:0x8019B968
+	.sdata2     start:0x80331E10 end:0x80331E60
+
+SimpleModel.cpp:
+	.text       start:0x8002CEE0 end:0x8002D1D4
+	.ctors      start:0x80179278 end:0x8017927C
+	.data       start:0x8019B968 end:0x8019B978
 	.bss        start:0x801D7270 end:0x801D7280
 	.sbss       start:0x80330AC0 end:0x80330AC8
-	.sdata2     start:0x80331E10 end:0x80331E70
+	.sdata2     start:0x80331E60 end:0x80331E70
 
 HomeButton.cpp:
 	.text       start:0x8002D1D4 end:0x8002E3C8

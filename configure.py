@@ -1200,7 +1200,9 @@ config.libs = [
             "cflags": cflags_channel,
             "progress_category": "channel",
             "objects": [
-                Object(NonMatching, "Scene.cpp"),
+                Object(Matching, "Region.cpp"),
+                Object(Matching, "Scene.cpp"),
+                Object(NonMatching, "SimpleModel.cpp"),
                 Object(NonMatching, "HomeButton.cpp"),
                 Object(Matching, "main.cpp"),
                 Object(Matching, "DrawUtil.cpp"),
