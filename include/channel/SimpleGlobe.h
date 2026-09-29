@@ -19,6 +19,7 @@ struct GlobeView {
 class SimpleGlobe {
 public:
     SimpleGlobe();
+    ~SimpleGlobe();
 
     void Calc();
 

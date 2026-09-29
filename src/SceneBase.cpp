@@ -7,6 +7,7 @@
 #include <channel/PointerHistory.h>
 #include <channel/SimpleGlobe.h>
 #include <channel/SimpleModel.h>
+#include <channel/Sound.h>
 #include <channel/WorkerThread.h>
 #include <channel/System.h>
 
@@ -87,9 +88,118 @@ s32 gAnimCounter1;
 s32 gAnimCounter2;
 u8 gFatalRequested;
 SimpleModel* gEarthModel;
+void* gTimeFontBuf;
+void* gFutiFontBuf;
+nw4r::ut::ResFont* gFutiFont;
+void* gSceneMem1;
+void* gSceneMem2;
+
+static inline void FreeSysFontsInline() {
+    if (gSysFont2 != NULL) {
+        gSysFont2->Destroy();
+        delete gSysFont2;
+        gSysFont2 = NULL;
+    }
+
+    if (gSysFontBuf2 != NULL) {
+        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf2);
+        gSysFontBuf2 = NULL;
+    }
+
+    if (gSysFont != NULL) {
+        gSysFont->Destroy();
+        delete gSysFont;
+        gSysFont = NULL;
+    }
+
+    if (gSysFontBuf != NULL) {
+        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf);
+        gSysFontBuf = NULL;
+    }
+}
 
 void RequestFatal() {
     gFatalRequested = TRUE;
+}
+
+SceneBase::~SceneBase() {
+    Exit(FALSE, 0);
+
+    if (gEarthModel != NULL) {
+        delete gEarthModel;
+        gEarthModel = NULL;
+    }
+
+    if (gEarthModelData != NULL) {
+        MEMFreeToExpHeap(gSceneHeap2, gEarthModelData);
+        gEarthModelData = NULL;
+    }
+
+    if (gEarthThread != NULL) {
+        delete gEarthThread;
+        gEarthThread = NULL;
+    }
+
+    if (gSound != NULL) {
+        delete gSound;
+        gSound = NULL;
+    }
+
+    if (gSimpleGlobe != NULL) {
+        delete gSimpleGlobe;
+        gSimpleGlobe = NULL;
+    }
+
+    if (gFade2 != NULL) {
+        delete gFade2;
+        gFade2 = NULL;
+    }
+
+    if (gFade != NULL) {
+        delete gFade;
+        gFade = NULL;
+    }
+
+    if (gCommonTpl != NULL) {
+        MEM1Free(gCommonTpl);
+        gCommonTpl = NULL;
+    }
+
+    if (gFutiFont != NULL) {
+        delete gFutiFont;
+        gFutiFont = NULL;
+    }
+
+    if (gFutiFontBuf != NULL) {
+        MEM2Free(gFutiFontBuf);
+        gFutiFontBuf = NULL;
+    }
+
+    if (gTimeFont != NULL) {
+        delete gTimeFont;
+        gTimeFont = NULL;
+    }
+
+    if (gTimeFontBuf != NULL) {
+        MEM1Free(gTimeFontBuf);
+        gTimeFontBuf = NULL;
+    }
+
+    FreeSysFontsInline();
+
+    if (gEarthChunkBuf != NULL) {
+        MEMFreeToExpHeap(gSceneHeap2, gEarthChunkBuf);
+        gEarthChunkBuf = NULL;
+    }
+
+    if (gHomeButton != NULL) {
+        delete gHomeButton;
+    }
+
+    MEMDestroyExpHeap(gSceneHeap2);
+    MEMDestroyExpHeap(gSceneHeap1);
+    MEM2Free(gSceneMem2);
+    MEM1Free(gSceneMem1);
 }
 
 void SceneBase::Exit(BOOL shutdownNet, s32 event) {
@@ -132,27 +242,7 @@ BOOL LoadSysFont() {
 }
 
 void FreeSysFonts() {
-    if (gSysFont2 != NULL) {
-        gSysFont2->Destroy();
-        delete gSysFont2;
-        gSysFont2 = NULL;
-    }
-
-    if (gSysFontBuf2 != NULL) {
-        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf2);
-        gSysFontBuf2 = NULL;
-    }
-
-    if (gSysFont != NULL) {
-        gSysFont->Destroy();
-        delete gSysFont;
-        gSysFont = NULL;
-    }
-
-    if (gSysFontBuf != NULL) {
-        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf);
-        gSysFontBuf = NULL;
-    }
+    FreeSysFontsInline();
 }
 
 inline void SceneBase::UpdatePointerOverMenu() const {

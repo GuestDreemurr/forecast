@@ -3,6 +3,7 @@
 #include <types.h>
 #include <revolution/GX.h>
 #include <revolution/MTX.h>
+#include <nw4r/ut/ut_TextWriterBase.h>
 
 class HomeButton;
 class SimpleModel;
@@ -70,7 +71,7 @@ public:
         }
     }
 
-    u8 unk4[0x64 - 0x4];  // at 0x4, nw4r::ut::TextWriterBase<wchar_t>
+    nw4r::ut::TextWriterBase<wchar_t> mTextWriter; // at 0x4
     DrawFunc mDrawFunc;   // at 0x64, per-language clock
     StateFunc mState;     // at 0x70
     f32 mClockX;          // at 0x7C

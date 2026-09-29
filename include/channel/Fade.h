@@ -7,6 +7,9 @@
 // Full-screen gradient fade (d_scene's m_pFade / m_pFade2)
 class Fade {
 public:
+    Fade(GXColor color);
+    ~Fade();
+
     void Draw();
     void Calc();
     void FadeIn(s32 frames);
