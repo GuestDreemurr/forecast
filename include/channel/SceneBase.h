@@ -11,6 +11,7 @@ struct Vec2;
 // member function called with mStatePhase = -1 on exit and counting up from 0 while active.
 class SceneBase {
 public:
+    typedef void (SceneBase::*DrawFunc)();
     typedef BOOL (SceneBase::*StateFunc)();
 
     SceneBase(bool arg);
@@ -32,17 +33,29 @@ public:
     virtual void unk44();                    // at 0x44
     virtual void unk48();                    // at 0x48
 
+    void DrawTimeJP();
+    void DrawTimeUS();
+    void DrawTimeEN();
+    void DrawTimeDE();
+    void DrawTimeFR();
+    void DrawTimeES();
+    void DrawTimeIT();
+    void DrawTimeNL();
     void UpdateMenuFade();
     BOOL StateFatal();
 
     u8 unk4[0x64 - 0x4];  // at 0x4, nw4r::ut::TextWriterBase<wchar_t>
-    StateFunc mDrawFunc;  // at 0x64
+    DrawFunc mDrawFunc;   // at 0x64, per-language clock
     StateFunc mState;     // at 0x70
-    f32 unk7C[3];         // at 0x7C
+    f32 mClockX;          // at 0x7C
+    f32 mClockY;          // at 0x80
+    f32 unk84;            // at 0x84
     f32 mMenuBarY;        // at 0x88, pointer above this counts as over the menu bar
-    f32 unk8C[3];         // at 0x8C
+    f32 unk8C;            // at 0x8C
+    f32 unk90;            // at 0x90
+    f32 mAmPmOffsetY;     // at 0x94
     s32 mStatePhase;      // at 0x98
-    s32 mMenuShadeAlpha;  // at 0x9C
+    s32 mClockAlpha;      // at 0x9C
     s32 unkA0;            // at 0xA0
     u8 unkA4;             // at 0xA4
     s32 unkA8;            // at 0xA8

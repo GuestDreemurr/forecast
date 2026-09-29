@@ -17,6 +17,12 @@
 #include <revolution/OS.h>
 
 extern "C" void ShutdownDownloader(s32 event);
+wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
+void WrapHour(s32* pHour);
+
+extern OSCalendarTime sCalendarTime;
+extern wchar_t sTextBuf[0x100];
+extern nw4r::ut::ResFont* gTimeFont;
 
 extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
 
@@ -158,14 +164,198 @@ void SceneBase::unk3C() {
     SetCursor(-1, 1);
 }
 
+void SceneBase::DrawTimeJP() {
+    if (mClockAlpha != 0) {
+        wchar_t* p = FormatNumber(sCalendarTime.hour % 12, sTextBuf, 2, FALSE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
+void SceneBase::DrawTimeUS() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour % 12;
+        if (hour == 0) {
+            hour = 12;
+        }
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, FALSE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+        f32 width = writer.CalcStringWidth(sTextBuf);
+        writer.SetScale(0.75f);
+        writer.SetCursor(mClockX + width, mClockY + mAmPmOffsetY);
+        if (sCalendarTime.hour < 12) {
+            writer.Print(L" a.m.");
+        } else {
+            writer.Print(L" p.m.");
+        }
+    }
+}
+
+void SceneBase::DrawTimeEN() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour;
+        WrapHour(&hour);
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, TRUE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
+void SceneBase::DrawTimeDE() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour;
+        WrapHour(&hour);
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, TRUE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
+void SceneBase::DrawTimeFR() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour;
+        WrapHour(&hour);
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, TRUE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
+void SceneBase::DrawTimeES() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour;
+        WrapHour(&hour);
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, TRUE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
+void SceneBase::DrawTimeIT() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour;
+        WrapHour(&hour);
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, TRUE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
+void SceneBase::DrawTimeNL() {
+    if (mClockAlpha != 0) {
+        s32 hour = sCalendarTime.hour;
+        WrapHour(&hour);
+        wchar_t* p = FormatNumber(hour, sTextBuf, 2, TRUE);
+        *p = L':';
+        FormatNumber(sCalendarTime.min, p + 1, 2, TRUE);
+
+        nw4r::ut::WideTextWriter writer;
+        SetDefaultGXState();
+        SetOrthoProjection();
+        writer.SetFont(*gTimeFont);
+        writer.SetDrawFlag(0);
+        writer.SetupGX();
+        writer.SetTextColor(nw4r::ut::Color(255, 255, 255, mClockAlpha));
+        writer.SetScale(1.0f);
+        writer.SetCharSpace(0.0f);
+        writer.SetCursor(mClockX, mClockY);
+        writer.Print(sTextBuf);
+    }
+}
+
 void SceneBase::unk40() {}
 
 void SceneBase::UpdateMenuFade() {
     if (gPointerOverMenu || gMenuVisible) {
-        if (mMenuShadeAlpha != 0) {
-            mMenuShadeAlpha -= 20;
-            if (mMenuShadeAlpha < 0) {
-                mMenuShadeAlpha = 0;
+        if (mClockAlpha != 0) {
+            mClockAlpha -= 20;
+            if (mClockAlpha < 0) {
+                mClockAlpha = 0;
             }
         }
 
@@ -174,10 +364,10 @@ void SceneBase::UpdateMenuFade() {
             gMenuBrightness = 1.0f;
         }
     } else {
-        if (mMenuShadeAlpha != 255) {
-            mMenuShadeAlpha += 20;
-            if (mMenuShadeAlpha > 255) {
-                mMenuShadeAlpha = 255;
+        if (mClockAlpha != 255) {
+            mClockAlpha += 20;
+            if (mClockAlpha > 255) {
+                mClockAlpha = 255;
             }
         }
 
