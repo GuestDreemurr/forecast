@@ -50,7 +50,8 @@ static inline void TransformVert(Mtx mtx, const Vec& base, f32 x, f32 y, Vec* ou
 }
 
 GlobeDots::GlobeDots() {
-    for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
+    const Vec* base = sBaseVerts;
+    for (u16 i = 0; i < GLOBE_DOT_COUNT; i++) {
         Mtx rotX;
         Mtx rotY;
         Mtx mtx;
@@ -64,9 +65,9 @@ GlobeDots::GlobeDots() {
         PSMTXRotTrig(rotY, nw4r::math::SinIdx(lat), nw4r::math::CosIdx(lat), 'y');
         PSMTXConcat(rotY, rotX, mtx);
 
-        TransformVert(mtx, sBaseVerts[0], -size, -size, &mVerts[i * 3 + 0]);
-        TransformVert(mtx, sBaseVerts[1], far, -size, &mVerts[i * 3 + 1]);
-        TransformVert(mtx, sBaseVerts[2], -size, far, &mVerts[i * 3 + 2]);
+        TransformVert(mtx, base[0], -size, -size, &mVerts[i * 3 + 0]);
+        TransformVert(mtx, base[1], far, -size, &mVerts[i * 3 + 1]);
+        TransformVert(mtx, base[2], -size, far, &mVerts[i * 3 + 2]);
     }
 }
 
