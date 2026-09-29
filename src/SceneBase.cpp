@@ -2,6 +2,7 @@
 #include <channel/SceneBase.h>
 #include <channel/Fade.h>
 #include <channel/HomeButton.h>
+#include <channel/LayoutButton.h>
 #include <channel/PointerHistory.h>
 #include <channel/SimpleGlobe.h>
 #include <channel/SimpleModel.h>
@@ -9,6 +10,7 @@
 #include <channel/System.h>
 
 #include <revolution/VI.h>
+#include <cstring>
 #include <nw4r/math.h>
 #include <nw4r/ut.h>
 #include <nw4r/g3d/g3d_scnroot.h>
@@ -23,6 +25,16 @@ void WrapHour(s32* pHour);
 
 extern OSCalendarTime sCalendarTime;
 extern PointerHistory gPointerHistory;
+extern LayoutButton* sHoveredButtons[WPAD_MAX_CONTROLLERS];
+
+struct DragScroll {
+    void Update();
+
+    u8 unk0[0x34]; // at 0x0
+};
+extern DragScroll gDragScroll;
+
+void PlaySE(s32 id);
 extern wchar_t sTextBuf[0x100];
 extern nw4r::ut::ResFont* gTimeFont;
 
@@ -629,9 +641,128 @@ BOOL FreeEarthModel() {
     return TRUE;
 }
 
+void UpdateButtons(ButtonGroup* group, s32 hoverSound) {
+    f32 width = GetScreenWidth();
+    f32 halfWidth43 = 0.5f * 608.0f;
+    f32 scale = 608.0f / width;
+    f32 halfWidth = 0.5f * width;
+    f32 halfHeight = 0.5f * gRenderMode.efbHeight;
+
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        BOOL valid = FALSE;
+        if (gPointerValid[i][0] && gKPADLatest[i] >= 0) {
+            valid = TRUE;
+        }
+
+        if (valid) {
+            f32 x;
+            if (gWidescreen) {
+                x = scale * (gPointerX[i][0] - halfWidth);
+            } else {
+                x = gPointerX[i][0] - halfWidth43;
+            }
+            f32 y = halfHeight - gPointerY[i][0];
+
+            if (x < -halfWidth43) {
+                x = -halfWidth43;
+            } else if (x > halfWidth43) {
+                x = halfWidth43;
+            }
+
+            if (y < -halfHeight) {
+                y = -halfHeight;
+            } else if (y > halfHeight) {
+                y = halfHeight;
+            }
+
+            LayoutButton* button = group->HitTest(x, y);
+            if (sHoveredButtons[i] != button) {
+                if (sHoveredButtons[i] != NULL) {
+                    sHoveredButtons[i]->Release();
+                    sHoveredButtons[i]->mHeld = FALSE;
+                }
+
+                sHoveredButtons[i] = button;
+                if (button != NULL && !button->IsInactive()) {
+                    PlaySE(hoverSound);
+                    StartRumble(i, 3, 20);
+                }
+            }
+
+            if (sHoveredButtons[i] != NULL) {
+                if (gRelease[i] & WPAD_BUTTON_A) {
+                    sHoveredButtons[i]->Release();
+                    sHoveredButtons[i]->mHeld = FALSE;
+                }
+                sHoveredButtons[i]->Hover();
+            }
+        }
+    }
+}
+
+void ClearHoveredButtons() {
+    sHoveredButtons[0] = NULL;
+    sHoveredButtons[1] = NULL;
+    sHoveredButtons[2] = NULL;
+    sHoveredButtons[3] = NULL;
+}
+
+s32 CheckButtonHeld(const char* name, u16 buttons) {
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        BOOL valid = FALSE;
+        if (gPointerValid[i][0] && gKPADLatest[i] >= 0) {
+            valid = TRUE;
+        }
+
+        if (valid) {
+            LayoutButton* button = sHoveredButtons[i];
+            if (button != NULL && !button->mLocked && button->IsName(name)) {
+                u32 pressed;
+                if (button->mHeld) {
+                    pressed = buttons & gRepeatSlowButtons[i];
+                } else {
+                    pressed = buttons & gTrig[i];
+                }
+
+                if (pressed) {
+                    sHoveredButtons[i]->mHeld = TRUE;
+                    sHoveredButtons[i]->Press(FALSE);
+                    return i;
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
+s32 CheckButtonPressed(const char* name, u16 buttons) {
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        BOOL valid = FALSE;
+        if (gPointerValid[i][0] && gKPADLatest[i] >= 0) {
+            valid = TRUE;
+        }
+
+        if (valid) {
+            LayoutButton* button = sHoveredButtons[i];
+            if (button != NULL && (buttons & gTrig[i]) && !button->mLocked &&
+                button->IsName(name)) {
+                sHoveredButtons[i]->Press(FALSE);
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
 void ToDegrees(u16 lon, u16 lat, Vec2* out) {
     out->y = (f32)lat * (360.0f / 65536.0f);
     out->x = (f32)(s16)lon * (360.0f / 65536.0f);
+}
+
+void UpdateDragScroll() {
+    gDragScroll.Update();
 }
 
 u32 GetLanguageTexture() {
