@@ -1209,6 +1209,7 @@ config.libs = [
                 Object(NonMatching, "GlobeDots.cpp"),
                 Object(NonMatching, "System.cpp"),
                 Object(Matching, "PointerHistory.cpp"),
+                Object(Matching, "Fade.cpp"),
                 Object(NonMatching, "SceneBase.cpp"),
             ],
     },
