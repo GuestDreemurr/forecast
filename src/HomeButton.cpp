@@ -17,7 +17,6 @@
 #define HOME_BUTTON_WORK_BUFFER_SIZE 0x80000
 
 // Not yet decompiled (channel)
-extern "C" void SetFadeState(Fade* fade, s32 state);
 
 // Not yet decompiled (libraries)
 extern "C" void HBMCreate(HomeButtonInfo* info);
@@ -333,7 +332,7 @@ s32 HomeButton::Calc() {
                 mResult = HOME_BUTTON_RESULT_3;
             }
 
-            SetFadeState(gFade, 15);
+            gFade->FadeIn(15);
             VISetBlack(FALSE);
             VIFlush();
             mOpenManual = FALSE;

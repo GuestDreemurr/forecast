@@ -30,8 +30,8 @@ public:
     virtual void unk38();                    // at 0x38
     virtual void unk3C();                    // at 0x3C
     virtual void unk40();                    // at 0x40
-    virtual void unk44();                    // at 0x44
-    virtual void unk48();                    // at 0x48
+    virtual BOOL unk44();                    // at 0x44
+    virtual BOOL unk48();                    // at 0x48
 
     void DrawTimeJP();
     void DrawTimeUS();
@@ -42,7 +42,24 @@ public:
     void DrawTimeIT();
     void DrawTimeNL();
     void UpdateMenuFade();
+    BOOL StateMain();
+    BOOL StateReset();
+    BOOL StateReturnToMenu();
     BOOL StateFatal();
+
+    void ChangeState(StateFunc state) {
+        if (mState) {
+            mStatePhase = -1;
+            (this->*mState)();
+        }
+
+        mStatePhase = 0;
+        mState = state;
+
+        if (mState) {
+            (this->*mState)();
+        }
+    }
 
     u8 unk4[0x64 - 0x4];  // at 0x4, nw4r::ut::TextWriterBase<wchar_t>
     DrawFunc mDrawFunc;   // at 0x64, per-language clock
@@ -64,6 +81,7 @@ public:
 extern HomeButton* gHomeButton;
 extern SimpleModel* gEarthModel;
 extern u8 gFatalRequested;
+extern u8 gReturnToMenuRequested;
 extern s32 gGlobeAlpha;
 class Sound;
 extern Sound* gSound;

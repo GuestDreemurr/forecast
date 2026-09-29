@@ -2,6 +2,7 @@
 #include <channel/SceneBase.h>
 #include <channel/Fade.h>
 #include <channel/HomeButton.h>
+#include <channel/PointerHistory.h>
 #include <channel/SimpleGlobe.h>
 #include <channel/SimpleModel.h>
 #include <channel/WorkerThread.h>
@@ -21,6 +22,7 @@ wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void WrapHour(s32* pHour);
 
 extern OSCalendarTime sCalendarTime;
+extern PointerHistory gPointerHistory;
 extern wchar_t sTextBuf[0x100];
 extern nw4r::ut::ResFont* gTimeFont;
 
@@ -378,9 +380,117 @@ void SceneBase::UpdateMenuFade() {
     }
 }
 
+BOOL SceneBase::StateMain() {
+    switch (mStatePhase) {
+    case 0:
+        mStatePhase++;
+        break;
+    case -1:
+        break;
+    default:
+        if (gReturnToMenuRequested) {
+            ChangeState(&SceneBase::StateReturnToMenu);
+            return TRUE;
+        }
+
+        gHomeButton->unkE = gEarthModel != NULL || !gEarthLoading;
+        gHomeButton->unkF = gEarthLoading;
+
+        switch (gHomeButton->Calc()) {
+        case 1:
+            ChangeState(&SceneBase::StateReturnToMenu);
+            return TRUE;
+        case 2:
+            ChangeState(&SceneBase::StateReset);
+            break;
+        case 3:
+            gFatalRequested = TRUE;
+            break;
+        case 0:
+            if (gHomeButton->IsOpen()) {
+                unk28();
+            } else {
+                gPointerHistory.Update();
+                unk24();
+            }
+            break;
+        }
+        break;
+    }
+
+    return TRUE;
+}
+
 void SceneBase::unk28() {}
 
 void SceneBase::unk24() {}
+
+BOOL SceneBase::StateReset() {
+    switch (mStatePhase) {
+    case -1:
+        break;
+    case 0:
+        Exit(TRUE, 4);
+        Restart();
+        break;
+    case 1:
+        if (unk48()) {
+            gFade->FadeOut(30);
+            if (gReturnToMenuRequested) {
+                ChangeState(&SceneBase::StateReturnToMenu);
+            } else {
+                mStatePhase = 2;
+            }
+        }
+        break;
+    case 2:
+        if (gFade->mFading == 0) {
+            mStatePhase = 3;
+        }
+        break;
+    case 3:
+        Exit(TRUE, 4);
+        Restart();
+        break;
+    }
+
+    return TRUE;
+}
+
+BOOL SceneBase::StateReturnToMenu() {
+    switch (mStatePhase) {
+    case -1:
+        break;
+    case 0:
+        if (unk44()) {
+            gFade->FadeOut(30);
+            mStatePhase = 2;
+        } else {
+            mStatePhase = 1;
+        }
+        break;
+    case 1:
+        if (unk48()) {
+            gFade->FadeOut(30);
+            mStatePhase = 2;
+        }
+        break;
+    case 2:
+    default:
+        if (gFade->mFading == 0) {
+            if (!gEarthLoading) {
+                Exit(TRUE, 5);
+                ReturnToMenu();
+            } else if (gEarthModel != NULL) {
+                Exit(TRUE, 5);
+                ReturnToMenu();
+            }
+        }
+        break;
+    }
+
+    return TRUE;
+}
 
 BOOL SceneBase::StateFatal() {
     switch (mStatePhase) {
