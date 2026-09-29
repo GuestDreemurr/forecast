@@ -136,7 +136,7 @@ void GlobeDots::Draw() {
 
     GXBegin(GX_TRIANGLES, GX_VTXFMT0, GLOBE_DOT_COUNT * 3);
     for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
-        u8 colorIdx = lbl_801866B0[i];
+        u8 colorIdx = lbl_801866B0[(u32)i];
 
         GXPosition1x16(i * 3 + 0);
         GXColor1x8(colorIdx);
