@@ -769,10 +769,11 @@ BOOL FreeEarthModel() {
 
 void UpdateButtons(ButtonGroup* group, s32 hoverSound) {
     f32 width = GetScreenWidth();
-    f32 halfWidth43 = 0.5f * 608.0f;
-    f32 scale = 608.0f / width;
+    f32 width43 = 608.0f;
     f32 halfWidth = 0.5f * width;
-    f32 halfHeight = 0.5f * gRenderMode.efbHeight;
+    f32 halfWidth43 = 0.5f * width43;
+    f32 scale = width43 / width;
+    f32 halfHeight = 0.5f * (s32)gRenderMode.efbHeight;
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         BOOL valid = FALSE;
@@ -833,7 +834,7 @@ void ClearHoveredButtons() {
     sHoveredButtons[3] = NULL;
 }
 
-s32 CheckButtonHeld(const char* name, u16 buttons) {
+s32 CheckButtonHeld(const char* name, u32 buttons) {
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         BOOL valid = FALSE;
         if (gPointerValid[i][0] && gKPADLatest[i] >= 0) {
@@ -845,9 +846,9 @@ s32 CheckButtonHeld(const char* name, u16 buttons) {
             if (button != NULL && !button->mLocked && button->IsName(name)) {
                 u32 pressed;
                 if (button->mHeld) {
-                    pressed = buttons & gRepeatSlowButtons[i];
+                    pressed = (u16)buttons & gRepeatSlowButtons[i];
                 } else {
-                    pressed = buttons & gTrig[i];
+                    pressed = (u16)buttons & gTrig[i];
                 }
 
                 if (pressed) {
@@ -862,7 +863,7 @@ s32 CheckButtonHeld(const char* name, u16 buttons) {
     return -1;
 }
 
-s32 CheckButtonPressed(const char* name, u16 buttons) {
+s32 CheckButtonPressed(const char* name, u32 buttons) {
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         BOOL valid = FALSE;
         if (gPointerValid[i][0] && gKPADLatest[i] >= 0) {
@@ -871,7 +872,7 @@ s32 CheckButtonPressed(const char* name, u16 buttons) {
 
         if (valid) {
             LayoutButton* button = sHoveredButtons[i];
-            if (button != NULL && (buttons & gTrig[i]) && !button->mLocked &&
+            if (button != NULL && ((u16)buttons & gTrig[i]) && !button->mLocked &&
                 button->IsName(name)) {
                 sHoveredButtons[i]->Press(FALSE);
                 return i;
@@ -883,8 +884,9 @@ s32 CheckButtonPressed(const char* name, u16 buttons) {
 }
 
 void ToDegrees(u16 lon, u16 lat, Vec2* out) {
-    out->y = (f32)lat * (360.0f / 65536.0f);
-    out->x = (f32)(s16)lon * (360.0f / 65536.0f);
+    f32 scale = 360.0f / 65536.0f;
+    out->y = (f32)lat * scale;
+    out->x = (f32)(s16)lon * scale;
 }
 
 static const wchar_t sDateGlyphs[] = {
