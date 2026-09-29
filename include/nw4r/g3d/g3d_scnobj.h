@@ -132,14 +132,7 @@ public:
     void EnableScnObjCallbackTiming(Timing timing);
     void EnableScnObjCallbackExecOp(ExecOp op);
 
-    bool SetBoundingVolume(ScnObjBoundingVolumeType type,
-                           const math::AABB* pAABB);
-    bool GetBoundingVolume(ScnObjBoundingVolumeType type,
-                           math::AABB* pAABB) const;
 
-    bool SetBoundingVolume(const math::AABB* pAABB) {
-        return SetBoundingVolume(BOUNDINGVOLUME_AABB_LOCAL, pAABB);
-    }
 
 protected:
     enum ScnObjFlag {
@@ -195,18 +188,17 @@ protected:
 
 protected:
     math::MTX34 mMtxArray[MTX_TYPE_MAX];  // at 0xC
-    math::AABB mAABB[BOUNDINGVOLUME_MAX]; // at 0x9C
 
 private:
-    u32 mScnObjFlags;               // at 0xCC
-    u8 mPriorityDrawOpa;            // at 0xD0
-    u8 mPriorityDrawXlu;            // at 0xD1
-    u8 PADDING_0xD2;                // at 0xD2
-    u8 PADDING_0xD3;                // at 0xD3
-    IScnObjCallback* mpFuncObjExec; // at 0xD4
-    u8 mCallbackTiming;             // at 0xD8
-    u8 mCallbackDeleteOption;       // at 0xD9
-    u16 mCallbackExecOpMask;        // at 0xDA
+    u32 mScnObjFlags;               // at 0x9C
+    u8 mPriorityDrawOpa;            // at 0xA0
+    u8 mPriorityDrawXlu;            // at 0xA1
+    u8 PADDING_0xD2;                // at 0xA2
+    u8 PADDING_0xD3;                // at 0xA3
+    IScnObjCallback* mpFuncObjExec; // at 0xA4
+    u8 mCallbackTiming;             // at 0xA8
+    u8 mCallbackDeleteOption;       // at 0xA9
+    u16 mCallbackExecOpMask;        // at 0xAA
 
     NW4R_G3D_RTTI_DECL_DERIVED(ScnObj, G3dObj);
 };
@@ -373,7 +365,7 @@ protected:
     void DefG3dProcScnLeaf(u32 task, u32 param, void* pInfo);
 
 private:
-    math::VEC3 mScale; // at 0xDC
+    math::VEC3 mScale; // at 0xAC
 
     NW4R_G3D_RTTI_DECL_DERIVED(ScnLeaf, ScnObj);
 };
@@ -442,9 +434,9 @@ private:
     void ScnGroup_G3DPROC_CALC_VIEW(u32 param, const math::MTX34* pCamera);
 
 private:
-    ScnObj** mpScnObjArray; // at 0xDC
-    u32 mSizeScnObj;        // at 0xE0
-    u32 mNumScnObj;         // at 0xE4
+    ScnObj** mpScnObjArray; // at 0xAC
+    u32 mSizeScnObj;        // at 0xB0
+    u32 mNumScnObj;         // at 0xB4
 
     NW4R_G3D_RTTI_DECL_DERIVED(ScnGroup, ScnObj);
 };

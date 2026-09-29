@@ -850,17 +850,6 @@ ScnMdlSimple::ScnMdlSimple(MEMAllocator* pAllocator, ResMdl mdl,
                             numView *
                                 align32(numViewMtx * sizeof(math::MTX34)));
     }
-
-    if (mdl.GetResMdlInfo().ref().is_valid_volume) {
-        const math::_VEC3& rMin = mdl.GetResMdlInfo().ref().volume_min;
-        const math::_VEC3& rMax = mdl.GetResMdlInfo().ref().volume_max;
-
-        math::AABB box;
-        box.min = static_cast<const math::VEC3&>(rMin);
-        box.max = static_cast<const math::VEC3&>(rMax);
-
-        SetBoundingVolume(&box);
-    }
 }
 
 ScnMdlSimple::~ScnMdlSimple() {
