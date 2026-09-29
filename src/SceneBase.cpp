@@ -33,7 +33,6 @@ struct GlyphTexture {
     f32 width;   // at 0x4
     f32 height;  // at 0x8
 };
-extern TPLPalette* gCommonTpl;
 
 struct DragScroll {
     DragScroll();
@@ -46,29 +45,26 @@ struct DragScroll {
 };
 
 void PlaySE(s32 id);
-extern nw4r::ut::ResFont* gTimeFont;
 
 extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
 
-extern MEMiHeapHead* gSceneHeap1;
-extern MEMiHeapHead* gSceneHeap2;
-extern u8 gEarthLoading;
-extern const char* sEarthPath;
-extern u32 gEarthFileSize;
-extern u32 gEarthUncompSize;
-extern u32 gEarthChunkSize;
-extern void* gEarthData;
-extern void* gEarthChunkBuf;
-extern WorkerThread* gEarthThread;
-extern void* gEarthModelData;
-extern void* gSysFontBuf;
-extern void* gSysFontBuf2;
-extern nw4r::ut::ArchiveFont* gSysFont2;
-extern nw4r::ut::ArchiveFont* gSysFont;
 void UpdateSound();
 void CalcSound();
 extern "C" void HBMStartBlackOut(void);
 
+static const u32 sGlyphTextureIds[89] = {
+    63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 89, 92, 90, 94, 95, 93, 73, 91, 74, 75, 76, 77, 78,
+    79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 62, 17, 25,
+    61, 57, 55, 59, 60, 58, 54, 56, 36, 34, 38, 39, 37, 33, 35, 29, 27, 31, 32, 30, 26, 28, 50,
+    48, 52, 53, 51, 47, 49, 43, 41, 45, 46, 44, 40, 42, 21, 19, 23, 24, 22, 18, 20,
+};
+
+static const u32 sLanguageTextures[] = {100, 102, 98, 102, 101, 99, 97};
+
+f32 gMenuBrightness = 1.0f;
+s32 gGlobeAlpha = 255;
+u8 gMenuVisible = TRUE;
+static const char* sEarthPath = "/earth.brres.LZ";
 static const char* sManualArchives[] = {"html-jp.arc", "html-us.arc", "html-eu.arc"};
 static const char* sManualPageJP[] = {"arc:/html/index/index_Frameset.html", NULL};
 static const char* sManualPagesUS[] = {
@@ -84,14 +80,6 @@ static const char* sManualPagesEU[] = {
     "arc:/html/startup_hol.html",
 };
 
-static const u32 sGlyphTextureIds[89] = {
-    63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 89, 92, 90, 94, 95, 93, 73, 91, 74, 75, 76, 77, 78,
-    79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 62, 17, 25,
-    61, 57, 55, 59, 60, 58, 54, 56, 36, 34, 38, 39, 37, 33, 35, 29, 27, 31, 32, 30, 26, 28, 50,
-    48, 52, 53, 51, 47, 49, 43, 41, 45, 46, 44, 40, 42, 21, 19, 23, 24, 22, 18, 20,
-};
-
-static const u32 sLanguageTextures[] = {100, 102, 98, 102, 101, 99, 97};
 
 PointerHistory gPointerHistory;
 OSCalendarTime sCalendarTime;
@@ -103,20 +91,44 @@ wchar_t sTextBuf[0x100];
 char sNameBuf[0x100];
 MEMAllocator gSceneAllocator1;
 MEMAllocator gSceneAllocator2;
-Color gHighlightColor(140, 180, 180, 255);
 
 HomeButton* gHomeButton;
+f32 gUnkSceneFloat;
 u32 gSceneFrameCount;
 u32 gBlinkState;
 s32 gAnimCounter1;
 s32 gAnimCounter2;
 u8 gFatalRequested;
-SimpleModel* gEarthModel;
-void* gTimeFontBuf;
-void* gFutiFontBuf;
+u8 gReturnToMenuRequested;
+u8 gPointerOverMenu;
+static u8 gEarthLoading;
+Fade* gFade;
+Fade* gFade2;
+static void* gSysFontBuf;
+static void* gTimeFontBuf;
+static void* gSysFontBuf2;
+static void* gFutiFontBuf;
+static nw4r::ut::ArchiveFont* gSysFont2;
 nw4r::ut::ResFont* gFutiFont;
-void* gSceneMem1;
-void* gSceneMem2;
+nw4r::ut::ArchiveFont* gSysFont;
+nw4r::ut::ResFont* gTimeFont;
+Sound* gSound;
+static void* gEarthModelData;
+SimpleGlobe* gSimpleGlobe;
+SimpleModel* gEarthModel;
+static u32 gEarthFileSize;
+static u32 gEarthUncompSize;
+static u32 gEarthChunkSize;
+TPLPalette* gCommonTpl;
+static void* gSceneMem1;
+static void* gSceneMem2;
+static MEMiHeapHead* gSceneHeap1;
+static MEMiHeapHead* gSceneHeap2;
+static WorkerThread* gEarthThread;
+static void* gEarthData;
+static void* gEarthChunkBuf;
+Color gHighlightColor(140, 180, 180, 255);
+
 
 static inline void ClearHoveredButtonsInline() {
     sHoveredButtons[0] = NULL;
@@ -1081,8 +1093,8 @@ BOOL FreeEarthModel() {
 
 void UpdateButtons(ButtonGroup* group, s32 hoverSound) {
     f32 width = GetScreenWidth();
-    f32 width43 = 608.0f;
     f32 halfWidth = 0.5f * width;
+    f32 width43 = 608.0f;
     f32 halfWidth43 = 0.5f * width43;
     f32 scale = width43 / width;
     f32 halfHeight = 0.5f * (s32)gRenderMode.efbHeight;

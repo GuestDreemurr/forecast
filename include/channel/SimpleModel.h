@@ -1,7 +1,13 @@
 #ifndef CHANNEL_SIMPLEMODEL_H
 #define CHANNEL_SIMPLEMODEL_H
 #include <types.h>
-#include <nw4r/g3d.h>
+#include <nw4r/g3d/res/g3d_resmdl.h>
+
+namespace nw4r {
+namespace g3d {
+class ScnMdlSimple;
+}
+}
 #include <nw4r/math.h>
 
 // A single-model nw4r::g3d scene object (used for the globe, earth.brres)

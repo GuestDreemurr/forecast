@@ -3,6 +3,7 @@
 #include <channel/LayoutObj.h>
 #include <channel/ColorWhite.h>
 
+#include <nw4r/g3d.h>
 #include <channel/SimpleModel.h>
 
 #include <nw4r/ef.h>
