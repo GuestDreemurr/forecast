@@ -17,6 +17,7 @@
 #include <nw4r/ut.h>
 #include <nw4r/g3d/g3d_scnroot.h>
 #include <nw4r/g3d/g3d_init.h>
+#include <nw4r/lyt/lyt_layout.h>
 #include <revolution/CNT.h>
 #include <revolution/CX.h>
 #include <revolution/MEM.h>
@@ -38,6 +39,7 @@ struct DragScroll {
     DragScroll();
     ~DragScroll() {}
 
+    void Reset();
     void Update();
 
     u8 unk0[0x34]; // at 0x0
@@ -67,6 +69,28 @@ void UpdateSound();
 void CalcSound();
 extern "C" void HBMStartBlackOut(void);
 
+static const char* sManualArchives[] = {"html-jp.arc", "html-us.arc", "html-eu.arc"};
+static const char* sManualPageJP[] = {"arc:/html/index/index_Frameset.html", NULL};
+static const char* sManualPagesUS[] = {
+    NULL, "arc:/html/startup.html", NULL, "arc:/html/startup_fra.html", "arc:/html/startup_esp.html", NULL, NULL,
+};
+static const char* sManualPagesEU[] = {
+    NULL,
+    "arc:/html/startup.html",
+    "arc:/html/startup_noe.html",
+    "arc:/html/startup_fra.html",
+    "arc:/html/startup_esp.html",
+    "arc:/html/startup_ita.html",
+    "arc:/html/startup_hol.html",
+};
+
+static const u32 sGlyphTextureIds[89] = {
+    63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 89, 92, 90, 94, 95, 93, 73, 91, 74, 75, 76, 77, 78,
+    79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 62, 17, 25,
+    61, 57, 55, 59, 60, 58, 54, 56, 36, 34, 38, 39, 37, 33, 35, 29, 27, 31, 32, 30, 26, 28, 50,
+    48, 52, 53, 51, 47, 49, 43, 41, 45, 46, 44, 40, 42, 21, 19, 23, 24, 22, 18, 20,
+};
+
 static const u32 sLanguageTextures[] = {100, 102, 98, 102, 101, 99, 97};
 
 PointerHistory gPointerHistory;
@@ -93,6 +117,204 @@ void* gFutiFontBuf;
 nw4r::ut::ResFont* gFutiFont;
 void* gSceneMem1;
 void* gSceneMem2;
+
+static inline void ClearHoveredButtonsInline() {
+    sHoveredButtons[0] = NULL;
+    sHoveredButtons[1] = NULL;
+    sHoveredButtons[2] = NULL;
+    sHoveredButtons[3] = NULL;
+}
+
+static inline GXColor MakeColor(u8 r, u8 g, u8 b, u8 a) {
+    GXColor color;
+    color.r = r;
+    color.g = g;
+    color.b = b;
+    color.a = a;
+    return color;
+}
+
+SceneBase::SceneBase(bool arg)
+    : mDrawFunc(NULL), mState(NULL), mClockX(0.0f), mClockY(0.0f), unk84(0.0f), mMenuBarY(0.0f), unk8C(0.0f),
+      unk90(0.0f), mAmPmOffsetY(0.0f), mStatePhase(0), mClockAlpha(0), unkA0(0), unkA4(arg), unkA8(0) {
+    gFatalRequested = FALSE;
+    gEarthModelData = NULL;
+    gEarthLoading = FALSE;
+
+    OSTicksToCalendarTime(OSGetTime(), &sCalendarTime);
+
+    const GXColor clearColor = {0, 0, 0, 255};
+    GXSetCopyClear(clearColor, 0xFFFFFF);
+
+    gSceneMem1 = MEM1Alloc(0x700000, 0);
+    gSceneMem2 = MEM2Alloc(0x1B00000, 0);
+    gSceneHeap1 = MEMCreateExpHeapEx(gSceneMem1, 0x700000, 0);
+    gSceneHeap2 = MEMCreateExpHeapEx(gSceneMem2, 0x1B00000, 0);
+    MEMInitAllocatorForExpHeap(&gSceneAllocator1, gSceneHeap1, 32);
+    MEMInitAllocatorForExpHeap(&gSceneAllocator2, gSceneHeap2, 32);
+
+    gDragScroll.Reset();
+    gPointerHistory.Reset();
+
+    gSceneFrameCount = 0;
+    gFade = NULL;
+    gFade2 = NULL;
+    gSysFontBuf2 = NULL;
+    gSysFont2 = NULL;
+    gReturnToMenuRequested = FALSE;
+    ClearHoveredButtonsInline();
+    nw4r::lyt::Layout::SetAllocator(&gMEM1Allocator);
+
+    const char* page;
+    switch (gRegion) {
+    case 0:
+        page = sManualPageJP[0];
+        break;
+    case 1:
+        page = sManualPagesUS[gLanguage];
+        break;
+    case 2:
+        page = sManualPagesEU[gLanguage];
+        break;
+    }
+
+    gHomeButton = new HomeButton(8, sManualArchives[gRegion], page, &gSceneAllocator1, &gSceneAllocator2,
+                                 &gMEM1Allocator);
+    if (gHomeButton == NULL || !gHomeButton->mIsReady) {
+        OSReport("%s[%d]\n", "d_scene.cpp", 388);
+        gFatalRequested = TRUE;
+        goto end;
+    }
+
+    gHomeButton->Init();
+    gHomeButton->unkE = FALSE;
+    gHomeButton->unkF = FALSE;
+
+    if (gLanguage == 0) {
+        gTimeFontBuf = LoadCompressedContentFile(gUnk80330B64, "font_weather_time.brfnt.LZ", 32, NULL, gMEM1Heap);
+    } else {
+        gTimeFontBuf = LoadCompressedContentFile(gUnk80330B64, "font_weather_timeWW.brfnt.LZ", 32, NULL, gMEM1Heap);
+    }
+
+    if (gTimeFontBuf == NULL) {
+        OSReport("%s[%d]\n", "d_scene.cpp", 413);
+        gFatalRequested = TRUE;
+        goto end;
+    }
+
+    gTimeFont = new nw4r::ut::ResFont;
+    if (gTimeFont == NULL) {
+        OSPanic("d_scene.cpp", 421, "m_pTimeFont\n");
+    }
+
+    if (!gTimeFont->SetResource(gTimeFontBuf)) {
+        OSPanic("d_scene.cpp", 425, "nw4r::ut::ResFont::SetResource() failed.\n");
+    }
+
+    if (LoadSysFont()) {
+        OSReport("%s[%d]\n", "d_scene.cpp", 430);
+        gFatalRequested = TRUE;
+        goto end;
+    }
+
+    gFutiFontBuf = LoadCompressedContentFile(gUnk80330B64, "/font_weather_city.brfnt.LZ", 32, NULL, gMEM2Heap);
+    if (gFutiFontBuf == NULL) {
+        OSReport("%s[%d]\n", "d_scene.cpp", 439);
+        gFatalRequested = TRUE;
+        goto end;
+    }
+
+    gFutiFont = new nw4r::ut::ResFont;
+    if (gFutiFont == NULL) {
+        OSPanic("d_scene.cpp", 448, "m_pFutiFont\n");
+    }
+
+    if (!gFutiFont->SetResource(gFutiFontBuf)) {
+        OSPanic("d_scene.cpp", 454, "m_pFutiFont->SetResource() failed.\n");
+    }
+
+    gFutiFont->SetAlternateChar(0xE06B);
+
+    gCommonTpl = (TPLPalette*)LoadCompressedContentFile(gUnk80330B64, "TPLCommon.tpl.LZ", 32, NULL, gMEM1Heap);
+    if (gCommonTpl == NULL) {
+        OSReport("%s[%d]\n", "d_scene.cpp", 462);
+        gFatalRequested = TRUE;
+        goto end;
+    }
+
+    TPLBind(gCommonTpl);
+
+    gFade = new Fade(nw4r::ut::Color(0, 0, 0, 255));
+    if (gFade == NULL) {
+        OSPanic("d_scene.cpp", 473, "m_pFade\n");
+    }
+
+    gFade2 = new Fade(nw4r::ut::Color(0, 0, 0, 160));
+    if (gFade2 == NULL) {
+        OSPanic("d_scene.cpp", 481, "m_pFade2\n");
+    }
+
+    gSimpleGlobe = new SimpleGlobe;
+    if (gSimpleGlobe == NULL) {
+        OSPanic("d_scene.cpp", 488, "m_pSimpleGlobe\n");
+    }
+
+    mTextWriter.SetFont(*gFutiFont);
+    mTextWriter.SetCharSpace(0.0f);
+
+    GlyphTexture* tex = sGlyphTextures;
+    for (int i = 0; i < 89; i++, tex++) {
+        tex->texture = sGlyphTextureIds[i];
+        tex->width = GetTexWidth(gCommonTpl, tex->texture);
+        tex->height = GetTexHeight(gCommonTpl, tex->texture);
+    }
+
+    if (gLanguage == 0) {
+        mClockX = gWidescreen ? 36 : 28;
+        mClockY = gWidescreen ? 19 : 34;
+        unk84 = 165.0f + mClockX;
+        mMenuBarY = 41.0f + mClockY;
+    } else {
+        mClockX = gWidescreen ? 36 : 28;
+        mClockY = gWidescreen ? 19 : 34;
+        unk84 = 165.0f + mClockX;
+        mMenuBarY = 36.0f + mClockY;
+
+        f32 height = gTimeFont->GetHeight();
+        mAmPmOffsetY = height - 0.75f * height;
+    }
+
+    switch (gLanguage) {
+    case 0:
+        mDrawFunc = &SceneBase::DrawTimeJP;
+        break;
+    case 1:
+        if (gRegion == 1) {
+            mDrawFunc = &SceneBase::DrawTimeUS;
+        } else {
+            mDrawFunc = &SceneBase::DrawTimeEN;
+        }
+        break;
+    case 2:
+        mDrawFunc = &SceneBase::DrawTimeDE;
+        break;
+    case 3:
+        mDrawFunc = &SceneBase::DrawTimeFR;
+        break;
+    case 4:
+        mDrawFunc = &SceneBase::DrawTimeES;
+        break;
+    case 5:
+        mDrawFunc = &SceneBase::DrawTimeIT;
+        break;
+    case 6:
+        mDrawFunc = &SceneBase::DrawTimeNL;
+        break;
+    }
+
+    ChangeState(&SceneBase::StateMain);
+end:;
+}
 
 static inline void FreeSysFontsInline() {
     if (gSysFont2 != NULL) {
@@ -918,10 +1140,7 @@ void UpdateButtons(ButtonGroup* group, s32 hoverSound) {
 }
 
 void ClearHoveredButtons() {
-    sHoveredButtons[0] = NULL;
-    sHoveredButtons[1] = NULL;
-    sHoveredButtons[2] = NULL;
-    sHoveredButtons[3] = NULL;
+    ClearHoveredButtonsInline();
 }
 
 s32 CheckButtonHeld(const char* name, u32 buttons) {

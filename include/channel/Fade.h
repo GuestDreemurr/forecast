@@ -3,11 +3,12 @@
 #include <types.h>
 #include <revolution/GX.h>
 #include <revolution/MTX.h>
+#include <nw4r/ut/ut_Color.h>
 
 // Full-screen gradient fade (d_scene's m_pFade / m_pFade2)
 class Fade {
 public:
-    Fade(GXColor color);
+    Fade(nw4r::ut::Color color);
     ~Fade();
 
     void Draw();
@@ -20,6 +21,7 @@ public:
     Vec mQuad[4];       // at 0x14
     u8 unk44[0x50 - 0x44]; // at 0x44, state function
     s32 mFading;        // at 0x50, 1 = fading in, 2 = fading out
+    u8 unk54[0x64 - 0x54]; // at 0x54
 };
 
 #endif
