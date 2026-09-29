@@ -1204,6 +1204,7 @@ config.libs = [
                 Object(NonMatching, "HomeButton.cpp"),
                 Object(Matching, "main.cpp"),
                 Object(Matching, "DrawUtil.cpp"),
+                Object(NonMatching, "GlobeDots.cpp"),
                 Object(NonMatching, "System.cpp"),
             ],
     },
