@@ -18,8 +18,6 @@
 
 // Not yet decompiled (channel)
 extern "C" void SetFadeState(Fade* fade, s32 state);
-extern "C" void LoadEarthModel(void);
-extern "C" void FreeEarthModel(void);
 
 // Not yet decompiled (libraries)
 extern "C" void HBMCreate(HomeButtonInfo* info);

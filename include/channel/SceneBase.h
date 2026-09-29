@@ -64,6 +64,8 @@ void RequestFatal();
 u32 GetLanguageTexture();
 BOOL LoadSysFont();
 void FreeSysFonts();
+BOOL LoadEarthModel();
+BOOL FreeEarthModel();
 void ToDegrees(u16 lon, u16 lat, Vec2* out);
 
 #endif

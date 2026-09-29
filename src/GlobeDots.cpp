@@ -1,4 +1,5 @@
 #include <channel/GlobeDots.h>
+#include <channel/SimpleGlobe.h>
 #include <channel/System.h>
 
 #include <nw4r/g3d/g3d_camera.h>
@@ -11,20 +12,6 @@ struct DotPos {
     u16 lat; // at 0x2
 };
 
-// Globe view state (d_weather_around)
-struct GlobeView {
-    u8 unk0[0x4];              // at 0x0
-    nw4r::g3d::Camera mCamera; // at 0x4
-};
-
-// d_scene's m_pSimpleGlobe (size 0xD0)
-class SimpleGlobe {
-public:
-    u8 unk0[0x4];     // at 0x0
-    GlobeView* mView; // at 0x4
-};
-
-extern "C" SimpleGlobe* gSimpleGlobe;
 extern "C" TPLPalette* gCommonTpl;
 
 extern "C" const DotPos gGlobeDotPositions[GLOBE_DOT_COUNT];

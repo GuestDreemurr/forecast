@@ -2,17 +2,35 @@
 #include <channel/SceneBase.h>
 #include <channel/Fade.h>
 #include <channel/HomeButton.h>
+#include <channel/SimpleGlobe.h>
+#include <channel/SimpleModel.h>
+#include <channel/WorkerThread.h>
 #include <channel/System.h>
 
 #include <revolution/VI.h>
 #include <nw4r/math.h>
 #include <nw4r/ut.h>
+#include <nw4r/g3d/g3d_scnroot.h>
+#include <revolution/CNT.h>
+#include <revolution/CX.h>
 #include <revolution/MEM.h>
 #include <revolution/OS.h>
 
 extern "C" void ShutdownDownloader(s32 event);
 
+extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
+
 extern MEMiHeapHead* gSceneHeap1;
+extern MEMiHeapHead* gSceneHeap2;
+extern u8 gEarthLoading;
+extern const char* sEarthPath;
+extern u32 gEarthFileSize;
+extern u32 gEarthUncompSize;
+extern u32 gEarthChunkSize;
+extern void* gEarthData;
+extern void* gEarthChunkBuf;
+extern WorkerThread* gEarthThread;
+extern void* gEarthModelData;
 extern MEMAllocator gSceneAllocator2;
 extern void* gSysFontBuf;
 extern void* gSysFontBuf2;
@@ -187,6 +205,125 @@ BOOL SceneBase::StateFatal() {
     default:
         gNextScene = SCENE_FATAL;
         break;
+    }
+
+    return TRUE;
+}
+
+static void* EarthLoadThread(void* arg);
+
+BOOL LoadEarthModel() {
+    CNTFileInfo file;
+    u8 header[32] ATTRIBUTE_ALIGN(32);
+    s32 result;
+
+    gEarthLoading = TRUE;
+
+    result = contentOpenNAND(&gContentHandles[6], sEarthPath, &file);
+    switch (result) {
+    case 0:
+        gEarthFileSize = (contentGetLengthNAND(&file) + 31) & ~31;
+        result = contentReadNAND(&file, header, sizeof(header), 0);
+        contentCloseNAND(&file);
+        if (result == 0) {
+            OSReport("Error!! (%s) CNTRead() failed. %d\n", sEarthPath, result);
+            return FALSE;
+        }
+
+        gEarthUncompSize = CXGetUncompressedSize(header);
+        break;
+    default:
+        OSReport("Error!! (%s) CNTOpen() failed. %d\n", sEarthPath, result);
+        return FALSE;
+    }
+
+    gEarthChunkSize = 0x10000;
+    gEarthData = MEMAllocFromExpHeapEx(gSceneHeap2, gEarthUncompSize, -32);
+    gEarthChunkBuf = MEMAllocFromExpHeapEx(gSceneHeap2, gEarthChunkSize, -32);
+
+    if (gEarthThread == NULL) {
+        gEarthThread = new WorkerThread(EarthLoadThread);
+        if (gEarthThread == NULL) {
+            OSPanic("d_scene.cpp", 1699, "\x83\x81\x83\x82\x83\x8A\x82\xAA\x82\xC8\x82\xA2\x81\x49\x81\x49\n");
+            return FALSE;
+        }
+    } else {
+        gEarthThread->Restart(EarthLoadThread);
+    }
+
+    return TRUE;
+}
+
+static void* EarthLoadThread(void* arg) {
+    CNTFileInfo file;
+    CXUncompContextLZ ctx;
+    s32 result;
+
+    result = contentOpenNAND(&gContentHandles[6], sEarthPath, &file);
+    if (result == 0) {
+        CXInitUncompContextLZ(&ctx, gEarthData);
+
+        for (u32 offset = 0; offset < gEarthFileSize; offset += gEarthChunkSize) {
+            u32 size = gEarthFileSize - offset;
+            if (size > gEarthChunkSize) {
+                size = gEarthChunkSize;
+            }
+
+            result = contentReadNAND(&file, gEarthChunkBuf, size, offset);
+            if (result == 0) {
+                contentCloseNAND(&file);
+                OSReport("Error!! (%s) CNTRead() failed. %d\n", sEarthPath, result);
+                gFatalRequested = TRUE;
+                return NULL;
+            }
+
+            CXReadUncompLZ(&ctx, gEarthChunkBuf, size);
+        }
+
+        contentCloseNAND(&file);
+
+        BOOL notFinished = ctx.destCount > 0 || ctx.headerSize > 0;
+        if (notFinished) {
+            OSReport("CXIsFinisiedUncompLZ() is false.");
+            gFatalRequested = TRUE;
+            return NULL;
+        }
+    } else {
+        OSReport("Error!! (%s) CNTOpen() failed. %d\n", sEarthPath, result);
+        gFatalRequested = TRUE;
+        return NULL;
+    }
+
+    gEarthModelData = gEarthData;
+    gEarthData = NULL;
+    return NULL;
+}
+
+BOOL FreeEarthModel() {
+    if (gEarthLoading) {
+        if (gEarthModel != NULL) {
+            if (gEarthModel != NULL) {
+                if (gSimpleGlobe != NULL) {
+                    if (gSimpleGlobe->mScnRoot != NULL) {
+                        gSimpleGlobe->mScnRoot->Clear();
+                    }
+                    gSimpleGlobe->Calc();
+                }
+
+                delete gEarthModel;
+                gEarthModel = NULL;
+            }
+
+            if (gEarthModelData != NULL) {
+                MEMFreeToExpHeap(gSceneHeap2, gEarthModelData);
+                gEarthModelData = NULL;
+            }
+
+            gEarthLoading = FALSE;
+            return TRUE;
+        }
+
+        return FALSE;
     }
 
     return TRUE;
