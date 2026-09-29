@@ -783,13 +783,44 @@ static inline int GetDateGlyph(wchar_t c) {
     return -1;
 }
 
-static inline void DrawGlyph(int index, const Vec2& at, f32 scaleX, f32 scaleY, GXColor color) {
-    GXSetTevColor(GX_TEVREG0, color);
+static const wchar_t sNumGlyphs[33] = {
+    L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9', L':', L'(', L')', L'-', L'+',
+};
+
+static inline int GetNumGlyph(wchar_t c) {
+    for (int i = 0; i < (int)(sizeof(sNumGlyphs) / sizeof(sNumGlyphs[0])); i++) {
+        if (c == sNumGlyphs[i]) {
+            return i + 18;
+        }
+    }
+    return -1;
+}
+
+static const wchar_t sTempGlyphs[47] = {
+    L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9', L'-', L'C', L'F', 0xFF9F,
+};
+
+static inline int GetTempGlyph(wchar_t c) {
+    for (int i = 0; i < (int)(sizeof(sTempGlyphs) / sizeof(sTempGlyphs[0])); i++) {
+        if (c == sTempGlyphs[i]) {
+            return i + 33;
+        }
+    }
+    return -1;
+}
+
+static inline BOOL IsNearZero(f32 x) {
+    return x < 0.0008f && x > -0.0008f;
+}
+
+static inline void DrawGlyph(int index, const Vec2& at, f32 scaleX, f32 scaleY) {
     f32 halfW = 0.5f * sGlyphTextures[index].width;
     f32 halfH = 0.5f * sGlyphTextures[index].height;
+    f32 offX = halfW * scaleX;
+    f32 offY = halfH * scaleY;
     Vec pos;
-    pos.x = at.x - halfW * scaleX;
-    pos.y = at.y - halfH * scaleY;
+    pos.x = at.x - offX;
+    pos.y = at.y - offY;
     pos.z = 0.0f;
     DrawTextureAt(gCommonTpl, sGlyphTextures[index].texture, scaleX, scaleY, &pos);
 }
@@ -848,8 +879,192 @@ void DrawDate(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const
                 shadow.x += advance;
             }
 
-            DrawGlyph(index, shadow, scaleX, scaleY, *shadowColor);
-            DrawGlyph(index, main, scaleX, scaleY, *color);
+            GXSetTevColor(GX_TEVREG0, *shadowColor);
+            DrawGlyph(index, shadow, scaleX, scaleY);
+            GXSetTevColor(GX_TEVREG0, *color);
+            DrawGlyph(index, main, scaleX, scaleY);
+
+            prevWidth = sGlyphTextures[index].width;
+        }
+    }
+}
+
+f32 CalcNumWidth(const wchar_t* str, f32 spacing) {
+    u32 len = wcslen(str);
+    f32 width = 0.0f;
+
+    for (u32 i = 0; i < len; i++, str++) {
+        int glyph = GetNumGlyph(*str);
+        if (glyph >= 0) {
+            width += sGlyphTextures[glyph].width;
+        }
+    }
+
+    if (!IsNearZero(spacing)) {
+        width += spacing * (len - 1);
+    }
+
+    return width;
+}
+
+void DrawNumCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, f32 spacing, const GXColor* color,
+                     const GXColor* color2) {
+    u32 len = wcslen(str);
+    f32 width = 0.0f;
+    const wchar_t* p = str;
+
+    for (u32 i = 0; i < len; i++, p++) {
+        int glyph = GetNumGlyph(*p);
+        if (glyph >= 0) {
+            width += sGlyphTextures[glyph].width;
+        }
+    }
+
+    if (!IsNearZero(spacing)) {
+        width += spacing * (len - 1);
+    }
+
+    f32 halfWidth = 0.5f * width;
+    int first = GetNumGlyph(*str);
+    Vec2 start;
+    start.x = pos->x - scaleX * (halfWidth - 0.5f * sGlyphTextures[first].width);
+    start.y = pos->y;
+    DrawNum(str, &start, scaleX, scaleY, spacing, color, color2);
+}
+
+void DrawNum(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, f32 spacing, const GXColor* color,
+             const GXColor* color2) {
+    Vec2 cur = *pos;
+    u32 len = wcslen(str);
+
+    if (IsNearZero(spacing)) {
+        spacing = 0.0f;
+    }
+
+    GXSetTevColor(GX_TEVREG0, *color);
+    GXSetTevColor(GX_TEVREG1, *color2);
+
+    f32 prevWidth;
+
+    for (u32 i = 0; i < len; i++, str++) {
+        int index = GetNumGlyph(*str);
+        if (index >= 0) {
+            if (i != 0) {
+                cur.x += scaleX * (spacing + 0.5f * (prevWidth + sGlyphTextures[index].width));
+            }
+
+            DrawGlyph(index, cur, scaleX, scaleY);
+            prevWidth = sGlyphTextures[index].width;
+        }
+    }
+}
+
+void DrawNumRightAligned(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+                         const GXColor* color2) {
+    Vec2 cur = *pos;
+    u32 len = wcslen(str);
+    f32 narrowSpacing = -3.0f * scaleX;
+    f32 wideSpacing = -6.0f * scaleX;
+    f32 parenOffset = 2.0f * scaleX;
+
+    GXSetTevColor(GX_TEVREG0, *color);
+    GXSetTevColor(GX_TEVREG1, *color2);
+
+    const wchar_t* p = str + (len - 1);
+    f32 prevWidth;
+    f32 spacing;
+
+    for (u32 i = 0; i < len; i++, p--) {
+        int index = GetNumGlyph(*p);
+        if (index >= 0) {
+            if (i != 0) {
+                cur.x -= spacing + 0.5f * (prevWidth + sGlyphTextures[index].width) * scaleX;
+                if (*p == L'(') {
+                    cur.x += parenOffset;
+                }
+            }
+
+            DrawGlyph(index, cur, scaleX, scaleY);
+            prevWidth = sGlyphTextures[index].width;
+
+            switch (*p) {
+            case L')':
+                spacing = wideSpacing;
+                break;
+            default:
+                spacing = narrowSpacing;
+                break;
+            }
+        }
+    }
+}
+
+f32 CalcTempWidth(const wchar_t* str) {
+    u32 len = wcslen(str);
+    f32 width = 0.0f;
+
+    for (u32 i = 0; i < len; i++, str++) {
+        int glyph = GetTempGlyph(*str);
+        if (glyph >= 0) {
+            width += sGlyphTextures[glyph].width;
+        }
+    }
+
+    return width;
+}
+
+f32 GetTempGlyphHeight(const wchar_t* str) {
+    int glyph = GetTempGlyph(*str);
+    if (glyph >= 0) {
+        return sGlyphTextures[glyph].height;
+    }
+    return 0.0f;
+}
+
+void DrawTempCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+                      const GXColor* shadowColor) {
+    u32 len = wcslen(str);
+    f32 width = 0.0f;
+    const wchar_t* p = str;
+
+    for (u32 i = 0; i < len; i++, p++) {
+        int glyph = GetTempGlyph(*p);
+        if (glyph >= 0) {
+            width += sGlyphTextures[glyph].width;
+        }
+    }
+
+    f32 halfWidth = 0.5f * width;
+    int first = GetTempGlyph(*str);
+    Vec2 start;
+    start.x = pos->x - scaleX * (halfWidth - 0.5f * sGlyphTextures[first].width);
+    start.y = pos->y;
+    DrawTemp(str, &start, scaleX, scaleY, color, shadowColor);
+}
+
+void DrawTemp(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+              const GXColor* shadowColor) {
+    Vec2 main = *pos;
+    Vec2 shadow;
+    shadow.y = 2.0f + pos->y;
+    shadow.x = 2.0f + pos->x;
+
+    u32 len = wcslen(str);
+    f32 prevWidth;
+
+    for (u32 i = 0; i < len; i++, str++) {
+        int index = GetTempGlyph(*str);
+        if (index >= 0) {
+            if (i != 0) {
+                f32 advance = scaleX * (0.5f * prevWidth + 0.5f * sGlyphTextures[index].width);
+                main.x += advance;
+                shadow.x += advance;
+            }
+
+            GXSetTevColor(GX_TEVREG0, *shadowColor);
+            DrawGlyph(index, shadow, scaleX, scaleY);
+            GXSetTevColor(GX_TEVREG0, *color);
+            DrawGlyph(index, main, scaleX, scaleY);
 
             prevWidth = sGlyphTextures[index].width;
         }

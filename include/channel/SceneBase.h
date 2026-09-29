@@ -104,5 +104,18 @@ void DrawDateCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scale
                       const GXColor* shadowColor);
 void DrawDate(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
               const GXColor* shadowColor);
+f32 CalcNumWidth(const wchar_t* str, f32 spacing);
+void DrawNumCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, f32 spacing, const GXColor* color,
+                     const GXColor* color2);
+void DrawNum(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, f32 spacing, const GXColor* color,
+             const GXColor* color2);
+void DrawNumRightAligned(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+                         const GXColor* color2);
+f32 CalcTempWidth(const wchar_t* str);
+f32 GetTempGlyphHeight(const wchar_t* str);
+void DrawTempCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+                      const GXColor* shadowColor);
+void DrawTemp(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+              const GXColor* shadowColor);
 
 #endif
