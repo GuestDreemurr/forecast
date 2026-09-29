@@ -323,22 +323,14 @@ void Cursor::Set(s32 chan, s32 type) {
     SetOrthoProjection();
     GXSetCurrentMtx(GX_PNMTX1);
 
-    f32 shadowY = gPointerY[chan][0];
-    f32 shadowX = gPointerX[chan][0];
-    shadowPos.x = shadowX + 3.0f;
-    shadowPos.y = shadowY + 3.0f;
-    shadowPos.z = 0.0f;
+    SetVec(&shadowPos, GetPointerX(chan) + 3.0f, GetPointerY(chan) + 3.0f, 0.0f);
     MakeTransformMtx(&scale, &rotation, &shadowPos, mtx);
     GXLoadPosMtxImm(mtx, GX_PNMTX1);
     GXColor shadowColor = {0, 0, 0, 255};
     GXSetTevColor(GX_TEVREG0, shadowColor);
     DrawTextureAt(lbl_80330C00, 2, 1.0f, 1.0f, &offset);
 
-    f32 cursorY = gPointerY[chan][0];
-    f32 cursorX = gPointerX[chan][0];
-    pos.x = cursorX;
-    pos.y = cursorY;
-    pos.z = 0.0f;
+    SetVec(&pos, GetPointerX(chan), GetPointerY(chan), 0.0f);
     MakeTransformMtx(&scale, &rotation, &pos, mtx);
     GXLoadPosMtxImm(mtx, GX_PNMTX1);
     GXColor color = {255, 255, 255, 255};

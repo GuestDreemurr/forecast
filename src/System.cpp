@@ -41,14 +41,6 @@ f32 SinFIdx(f32 fidx);
 }
 }
 
-static inline f32 GetPointerX(s32 chan) {
-    return gPointerX[chan][0];
-}
-
-static inline f32 GetPointerY(s32 chan) {
-    return gPointerY[chan][0];
-}
-
 static inline f32 CalcCursorRate(f32 diff) {
     f32 rate = __fabsf(diff);
     rate = 0.002f * rate;
@@ -105,11 +97,11 @@ void SystemInit(void) {
 
         gCursorX[i] = GetScreenWidth() / 2;
         gCursorY[i] = 228.0f;
+        gKPADLatest[i] = -1;
+        gHold[i] = 0;
         gRepeatSlow[i] = FALSE;
         gRepeatFast[i] = FALSE;
         gPointerZoomBase[i] = FALSE;
-        gKPADLatest[i] = -1;
-        gHold[i] = 0;
         gTrig[i] = 0;
         gRelease[i] = 0;
         gHorizon[i].x = 0.0f;

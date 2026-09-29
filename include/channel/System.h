@@ -164,4 +164,18 @@ static inline s32 GetScreenHeight(void) {
     return SCREEN_HEIGHT;
 }
 
+static inline f32 GetPointerX(s32 chan) {
+    return gPointerX[chan][0];
+}
+
+static inline f32 GetPointerY(s32 chan) {
+    return gPointerY[chan][0];
+}
+
+static inline void SetVec(Vec* v, f32 x, f32 y, f32 z) {
+    v->x = x;
+    v->y = y;
+    v->z = z;
+}
+
 #endif
