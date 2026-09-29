@@ -27,21 +27,15 @@ void ParticleParameter::Initialize(ParticleParameterDesc* pDesc,
     }
 
     mSize = pDesc->size;
+
+    if (pDesc->sizeRandom != 0) {
+        s16 rnd = pManager->mManagerEM->mRandom.Rand();
+        mSize.x += mSize.x * (rnd * pDesc->sizeRandom) / 3276800.0f;
+        mSize.y += mSize.y * (rnd * pDesc->sizeRandom) / 3276800.0f;
+    }
+
     mScale = pDesc->scale;
     mRotate = pDesc->rotate;
-
-    for (i = 0; i < AXIS_MAX; i++) {
-        f32 rad = pDesc->rotateOffset[i];
-
-        if (pDesc->rotateOffsetRandom[i] > 0) {
-            // clang-format off
-            rad += pDesc->rotateOffsetRandom[i] *
-                   (rad * (2.0f * pManager->mManagerEM->mRandom.RandFloat() - 1.0f)) / 100.0f;
-            // clang-format on
-        }
-
-        mRotateOffset[i] = ConvertF32RadToU8(rad);
-    }
 
     for (i = 0; i < TEX_LAYER_MAX; i++) {
         mTexture[i] = pDesc->mTexture[i];
@@ -177,25 +171,6 @@ bool Particle::Initialize(u16 life, math::VEC3 pos, math::VEC3 vel,
                     // clang-format on
                 }
             }
-        }
-
-        if (pSetting->flag & EmitterInheritSetting::FLAG_INHERIT_ROT) {
-            f32 rad;
-
-            rad = pReferencePtcl->mParameter.mRotate.x;
-            rad += NW4R_MATH_FIDX_TO_RAD(
-                pReferencePtcl->mParameter.mRotateOffset[AXIS_X]);
-            mParameter.mRotateOffset[AXIS_X] = ConvertF32RadToU8(rad);
-
-            rad = pReferencePtcl->mParameter.mRotate.y;
-            rad += NW4R_MATH_FIDX_TO_RAD(
-                pReferencePtcl->mParameter.mRotateOffset[AXIS_Y]);
-            mParameter.mRotateOffset[AXIS_Y] = ConvertF32RadToU8(rad);
-
-            rad = pReferencePtcl->mParameter.mRotate.z;
-            rad += NW4R_MATH_FIDX_TO_RAD(
-                pReferencePtcl->mParameter.mRotateOffset[AXIS_Z]);
-            mParameter.mRotateOffset[AXIS_Z] = ConvertF32RadToU8(rad);
         }
     }
 

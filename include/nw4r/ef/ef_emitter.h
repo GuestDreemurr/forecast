@@ -52,7 +52,6 @@ public:
     u16 mEmitInterval;              // at 0x10
     u16 mEmitEmitDiv;               // at 0x12
     f32 mEmitIntervalRandom;        // at 0x14
-    f32 mEmitCount;                 // at 0x18
     u16 mEmitSpan;                  // at 0x1C
     f32 mLODNear;                   // at 0x20
     f32 mLODFar;                    // at 0x24
@@ -101,6 +100,7 @@ protected:
 
 public:
     math::MTX34 mMtx; // at 0x108
+    f32 mEmitCount; // TODO: not in this nw4r version's EmitterParameter; real location unknown
 
 public:
     Emitter();

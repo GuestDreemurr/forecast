@@ -144,7 +144,7 @@ bool Emitter::InitializeDatas(EmitterResource* pResource, Effect* pEffect) {
     mParameter.mEmitInterval = pDesc->emitEmitInterval;
     mParameter.mEmitEmitDiv = pDesc->emitEmitDiv;
     mParameter.mEmitIntervalRandom = pDesc->emitEmitIntarvalRandom / 100.0f;
-    mParameter.mEmitCount = 0.0f;
+    mEmitCount = 0.0f;
 
     mIsFirstEmission = true;
 
@@ -583,7 +583,7 @@ void Emitter::Emission(ParticleManager* pManager, const math::MTX34* pSpace) {
     }
 
     if (mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_17) {
-        mParameter.mEmitCount = mParameter.mEmitEmitDiv;
+        mEmitCount = mParameter.mEmitEmitDiv;
     } else {
         f32 count;
         if (mParameter.mEmitRandom == 0.0f) {
@@ -611,23 +611,23 @@ void Emitter::Emission(ParticleManager* pManager, const math::MTX34* pSpace) {
                      (1.0f - mParameter.mLODMinEmit) * ratio;
         }
 
-        mParameter.mEmitCount += count;
+        mEmitCount += count;
 
         if (mIsFirstEmission && mParameter.mEmitRatio != 0.0f &&
-            mParameter.mEmitCount < 1.0f) {
+            mEmitCount < 1.0f) {
 
-            mParameter.mEmitCount = 1.0f;
+            mEmitCount = 1.0f;
         }
     }
 
-    if (mParameter.mEmitCount >= 1.0f) {
+    if (mEmitCount >= 1.0f) {
         (void)Resource::GetInstance(); // unused
 
         EmitterDesc* pDesc = mResource->GetEmitterDesc();
 
         if (mForm != NULL) {
             if (mManagerEF->mCallBack.mPrevEmission != NULL) {
-                int count = static_cast<int>(mParameter.mEmitCount);
+                int count = static_cast<int>(mEmitCount);
                 u32 flags = mParameter.mEmitFlags;
 
                 f32 params[NUM_PARAMS];
@@ -647,13 +647,13 @@ void Emitter::Emission(ParticleManager* pManager, const math::MTX34* pSpace) {
                                 lifeRnd, &newSpace);
             } else {
                 mForm->Emission(
-                    this, pManager, static_cast<int>(mParameter.mEmitCount),
+                    this, pManager, static_cast<int>(mEmitCount),
                     mParameter.mEmitFlags, mParameter.mParams, pDesc->ptclLife,
                     pDesc->ptclLifeRandom / 100.0f, pSpace);
             }
         }
 
-        mParameter.mEmitCount -= static_cast<int>(mParameter.mEmitCount);
+        mEmitCount -= static_cast<int>(mEmitCount);
     }
 
     if (mIsFirstEmission) {

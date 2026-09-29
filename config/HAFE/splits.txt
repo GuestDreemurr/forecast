@@ -18,6 +18,8 @@ Scene.cpp:
 	.ctors      start:0x80179278 end:0x8017927C
 	.rodata     start:0x8017B4A0 end:0x8017B4C8
 	.data       start:0x8019B760 end:0x8019B978
+	.bss        start:0x801D7270 end:0x801D7280
+	.sbss       start:0x80330AC0 end:0x80330AC8
 	.sdata2     start:0x80331E10 end:0x80331E70
 
 HomeButton.cpp:
@@ -208,7 +210,7 @@ nw4r/ef/ef_particlemanager.cpp:
 	.sdata2     start:0x80332558 end:0x80332590
 
 nw4r/ef/ef_resource.cpp:
-	.text       start:0x800927E4 end:0x8009305C
+	.text       start:0x80092674 end:0x8009305C
 	.ctors      start:0x801792AC end:0x801792B0
 	.bss        start:0x80290B10 end:0x80290FE0
 
@@ -671,7 +673,7 @@ nw4r/snd/snd_WaveSound.cpp:
 	.text       start:0x800CE408 end:0x800CE6FC
 	.ctors      start:0x801792D4 end:0x801792D8
 	.data       start:0x801B76B8 end:0x801B7790
-	.sbss       start:0x80331180 end:0x803311A4
+	.sbss       start:0x80331180 end:0x80331188
 
 nw4r/snd/snd_WaveSoundHandle.cpp:
 	.text       start:0x800CE6FC end:0x800CE734
@@ -700,22 +702,25 @@ nw4r/ut/ut_CharStrmReader.cpp:
 nw4r/ut/ut_IOStream.cpp:
 	.text       start:0x800D0758 end:0x800D0780
 	.ctors      start:0x801792DC end:0x801792E0
+	.sbss       start:0x80331188 end:0x80331190
 
 nw4r/ut/ut_FileStream.cpp:
 	.text       start:0x800D0780 end:0x800D0894
 	.ctors      start:0x801792E0 end:0x801792E4
+	.sbss       start:0x80331190 end:0x80331198
 
 nw4r/ut/ut_DvdFileStream.cpp:
 	.text       start:0x800D0894 end:0x800D0E64
 	.ctors      start:0x801792E4 end:0x801792E8
 	.data       start:0x801B7790 end:0x801B77F8
+	.sbss       start:0x80331198 end:0x803311A0
 
 nw4r/ut/ut_DvdLockedFileStream.cpp:
 	.text       start:0x800D0E64 end:0x800D1098
 	.ctors      start:0x801792E8 end:0x801792EC
 	.data       start:0x801B77F8 end:0x801B7860
 	.bss        start:0x802CB360 end:0x802CB378
-	.sbss       start:0x803311A4 end:0x803311A8
+	.sbss       start:0x803311A0 end:0x803311A8
 
 nw4r/ut/ut_LockedCache.cpp:
 	.text       start:0x800D1098 end:0x800D1244

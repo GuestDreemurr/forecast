@@ -30,9 +30,8 @@ struct ParticleParameterDesc {
     u8 textureReverse;                              // at 0x76
     u8 mACmpRef0;                                   // at 0x77
     u8 mACmpRef1;                                   // at 0x78
-    u8 rotateOffsetRandom[AXIS_MAX];                // at 0x79
-    f32 rotateOffset[AXIS_MAX];                     // at 0x7C
-    u8 textureNames[1];                             // at 0x88
+    s8 sizeRandom;                                  // at 0x79, percent
+    u8 textureNames[1];                             // at 0x7A
 };
 
 class ParticleParameter {
@@ -50,12 +49,10 @@ public:
     u8 mACmpRef0;                                   // at 0x77
     u8 mACmpRef1;                                   // at 0x78
     s8 mAlphaFlickRnd;                              // at 0x79
-    u8 mRotateOffset[AXIS_MAX];                     // at 0x7A
-    u8 mCollisionStatus;                            // at 0x7D
-    math::VEC3 mVelocity;                           // at 0x80
-    math::VEC3 mPosition;                           // at 0x8C
-    math::VEC3 mPrevPosition;                       // at 0x98
-    f32 mMomentum;                                  // at 0xA4
+    math::VEC3 mVelocity;                           // at 0x7C
+    math::VEC3 mPosition;                           // at 0x88
+    math::VEC3 mPrevPosition;                       // at 0x94
+    f32 mMomentum;                                  // at 0xA0
 
 public:
     void Initialize(ParticleParameterDesc* pDesc, ParticleManager* pManager);
@@ -66,13 +63,13 @@ class Particle : public ReferencedObject {
 
 public:
     ParticleParameter mParameter;      // at 0x20
-    ParticleManager* mParticleManager; // at 0xC8
-    math::VEC3 mPrevAxis;              // at 0xCC
-    EvaluateStatus mEvalStatus;        // at 0xD8
-    u16 mTick;                         // at 0xDC
-    u16 mRandSeed;                     // at 0xDE
-    u16 mLife;                         // at 0xE0
-    u16 mCalcRemain;                   // at 0xE2
+    ParticleManager* mParticleManager; // at 0xC4
+    math::VEC3 mPrevAxis;              // at 0xC8
+    EvaluateStatus mEvalStatus;        // at 0xD4
+    u16 mTick;                         // at 0xD8
+    u16 mRandSeed;                     // at 0xDA
+    u16 mLife;                         // at 0xDC
+    u16 mCalcRemain;                   // at 0xDE
 
 public:
     Particle();
@@ -137,18 +134,6 @@ public:
 
     void Draw_GetRotate(math::VEC3* pRot) {
         *pRot = mParameter.mRotate;
-
-        if (mParameter.mRotateOffset[AXIS_X] > 0) {
-            pRot->x += NW4R_MATH_FIDX_TO_RAD(mParameter.mRotateOffset[AXIS_X]);
-        }
-
-        if (mParameter.mRotateOffset[AXIS_Y] > 0) {
-            pRot->y += NW4R_MATH_FIDX_TO_RAD(mParameter.mRotateOffset[AXIS_Y]);
-        }
-
-        if (mParameter.mRotateOffset[AXIS_Z] > 0) {
-            pRot->z += NW4R_MATH_FIDX_TO_RAD(mParameter.mRotateOffset[AXIS_Z]);
-        }
 
         mParticleManager->Draw_ModifyRotate(this, pRot);
     }

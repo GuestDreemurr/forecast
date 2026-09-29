@@ -9,9 +9,9 @@
 #include <new>
 
 // Not yet decompiled (channel)
-extern "C" void fn_80032610(void);
-extern "C" void fn_800326BC(void);
-extern "C" void fn_8003C120(WeatherScene* scene);
+extern "C" void InitDownloader(void);
+extern "C" void UpdateDownloader(void);
+extern "C" void CalcWeatherScene(WeatherScene* scene);
 
 // Not yet decompiled (libraries)
 extern "C" void CNTInit(void);
@@ -19,7 +19,6 @@ extern "C" void CNTShutdown(void);
 extern "C" void contentInitHandleNAND(u32 content, ContentHandle* handle, MEMAllocator* allocator);
 extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
 extern "C" void VFInit(void);
-extern "C" void fn_800D82C4(void);
 extern "C" void OSRestart(u32 arg0);
 extern "C" u32 VIGetNextField(void);
 extern "C" u32 MEMGetTotalFreeSizeForExpHeap(MEMiHeapHead* heap);
@@ -27,12 +26,15 @@ extern "C" u32 CXGetUncompressedSize(const void* src);
 extern "C" void CXUncompressLZ(const void* src, void* dst);
 extern "C" void CXUncompressHuffman(const void* src, void* dst);
 extern "C" void KPADGetProjectionPos(Vec2* out, const Vec2* pos, const Vec2* rect, f32 ratio);
-extern "C" void fn_80129F48(s32 chan);
+extern "C" void KPADEnableDPD(s32 chan);
 extern "C" void TPLGetGXTexObjFromPalette(TPLPalette* palette, GXTexObj* texObj, u32 id);
 
 namespace nw4r {
 namespace g3d {
 void G3dInit(bool enableLockedCache);
+}
+namespace lyt {
+void LytInit();
 }
 namespace math {
 f32 SinFIdx(f32 fidx);
@@ -97,7 +99,7 @@ void SystemInit(void) {
     KPADInit();
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        fn_80129F48(i);
+        KPADEnableDPD(i);
         KPADSetPosParam(i, 0.05f, 1.0f);
         KPADSetHoriParam(i, 0.03f, 1.0f);
 
@@ -173,7 +175,7 @@ void SystemInit(void) {
 
     VFInit();
     gUnk80330B40 = 0;
-    fn_80032610();
+    InitDownloader();
     CNTInit();
 
     for (u32 i = 4; i < CONTENT_HANDLE_MAX; i++) {
@@ -183,7 +185,7 @@ void SystemInit(void) {
     gUnk80330B64 = 7;
     nw4r::g3d::G3dInit(true);
     PPCMthid4(PPCMfhid4() & ~0x60000000);
-    fn_800D82C4();
+    nw4r::lyt::LytInit();
     gRandSeed = OSGetTime();
 
     gCaptureTexture = MEMAllocFromExpHeapEx(gMEM2Heap, 0xB4000, 32);
@@ -458,7 +460,7 @@ void SystemCalc(void) {
         case SCENE_NONE:
             break;
         case SCENE_WEATHER:
-            fn_8003C120(gWeatherScene);
+            CalcWeatherScene(gWeatherScene);
             break;
         case SCENE_FATAL:
             gFatalScene->Calc();
@@ -476,7 +478,7 @@ void SystemCalc(void) {
         ChangeScene(gNextScene);
     }
 
-    fn_800326BC();
+    UpdateDownloader();
 
     if (gShutdownRequested) {
         VISetBlack(TRUE);

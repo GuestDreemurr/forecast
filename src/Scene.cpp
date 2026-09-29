@@ -1,6 +1,12 @@
 #include <channel/System.h>
 #include <channel/Scene.h>
 #include <channel/LayoutObj.h>
+#include <channel/Color.h>
+
+#include <channel/SimpleModel.h>
+
+#include <nw4r/ef.h>
+#include <nw4r/ut.h>
 
 #include <revolution/GX.h>
 #include <revolution/SC.h>
@@ -13,108 +19,56 @@ extern "C" MEMAllocator* lbl_803311C8;
 extern "C" u8 lbl_8019C6C0[];
 // Cursor textures
 extern "C" TPLPalette* lbl_80330C00;
+// Scratch matrix for SimpleModel::CalcMtx
+extern "C" nw4r::math::MTX34 lbl_801F6B28;
 
-namespace nw4r {
-namespace ef {
-class Resource {
+// Not yet decompiled (weather)
+void RotateMtxDeg(nw4r::math::MTX34* mtx, f32 x, f32 y, f32 z);
+void TranslateMtx(nw4r::math::MTX34* mtx, f32 x, f32 y, f32 z);
+
+// nw4r::ef memory manager, configured and compiled by the channel (global namespace, see ef_memorymanagerconfig.h)
+class MemoryManager : public nw4r::ef::MemoryManagerBase {
 public:
-    bool Add(u8* data);
-    bool AddTexture(u8* data);
-    void RelocateCommand();
-};
-}
-}
+    MemoryManager(void* pStartAddr, u32 size, int maxEffect, int maxEmitter, int maxParticleManager,
+                  int maxParticle);
+    virtual ~MemoryManager();
 
-typedef struct {
-    f32 m[3][4];
-} EffectMtx;
+    virtual void GarbageCollection();
 
-// Effect draw settings (built on the stack each frame)
-struct EffectDrawInfo {
-    EffectDrawInfo() {
-        PSMTXIdentity(mViewMtx.m);
-        PSMTXIdentity(mMtx2.m);
-        unk60 = 0;
-        unk64 = 0;
-        unk68 = 1;
-        unk6C = 0;
-        unk70 = 0.0f;
-        unk74 = 1.0f;
-        unk78 = 0.0f;
-        unk7C = 1.0f;
-    }
+    virtual nw4r::ef::Effect* AllocEffect();
+    virtual void FreeEffect(void* pObject);
+    virtual u32 GetNumAllocEffect() const;
+    virtual u32 GetNumActiveEffect() const;
+    virtual u32 GetNumFreeEffect() const;
 
-    EffectMtx mViewMtx; // at 0x0
-    EffectMtx mMtx2;    // at 0x30
-    u8 unk60;           // at 0x60
-    u32 unk64;          // at 0x64
-    u8 unk68;           // at 0x68
-    u32 unk6C;          // at 0x6C
-    f32 unk70;          // at 0x70
-    f32 unk74;          // at 0x74
-    f32 unk78;          // at 0x78
-    f32 unk7C;          // at 0x7C
-    u32 unk80;          // at 0x80
-};
+    virtual nw4r::ef::Emitter* AllocEmitter();
+    virtual void FreeEmitter(void* pObject);
+    virtual u32 GetNumAllocEmitter() const;
+    virtual u32 GetNumActiveEmitter() const;
+    virtual u32 GetNumFreeEmitter() const;
 
-struct EffectSystem {
-    void* mMemoryManager; // at 0x0
-};
+    virtual nw4r::ef::ParticleManager* AllocParticleManager();
+    virtual void FreeParticleManager(void* pObject);
+    virtual u32 GetNumAllocParticleManager() const;
+    virtual u32 GetNumActiveParticleManager() const;
+    virtual u32 GetNumFreeParticleManager() const;
 
-// Not yet decompiled (nw4r::ef)
-extern "C" void* fn_80093A40(void* manager, void* heap, u32 heapSize, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
-extern "C" EffectSystem* fn_800856D0(void);
-extern "C" void fn_800856DC(EffectSystem* system, s32 arg);
-extern "C" nw4r::ef::Resource* fn_80092674(void);
-extern "C" void fn_80085ADC(EffectSystem* system, const EffectDrawInfo* info, s32 arg);
-extern "C" void fn_80085150(void* emitterSet);
-extern "C" void* fn_80085868(EffectSystem* system, const char* name, s32 arg2, s32 arg3);
-extern "C" void fn_80085B54(EffectSystem* system, f32 arg1, f32 arg2, const Vec* arg3, const Mtx arg4);
-extern "C" void fn_80085A4C(EffectSystem* system, s32 arg1, s32 arg2);
-extern "C" u16 fn_80085634(void* emitterSet);
-extern "C" void* fn_8008563C(void* emitterSet, u16 idx);
-extern "C" u16 fn_80087AA8(void* emitter);
-extern "C" void* fn_80087AB0(void* emitter, u16 idx);
-extern "C" void* fn_800CFC20(void* list, void* obj);
+    virtual nw4r::ef::Particle* AllocParticle();
+    virtual void FreeParticle(void* pObject);
+    virtual u32 GetNumAllocParticle() const;
+    virtual u32 GetNumActiveParticle() const;
+    virtual u32 GetNumFreeParticle() const;
 
-struct EmitterTransform {
-    u8 unk0[0x8C];  // at 0x0
-    Vec mTranslate; // at 0x8C
-};
-extern "C" EmitterTransform* fn_8008562C(void* emitterSet);
-extern "C" void fn_800879BC(EmitterTransform* transform);
+    virtual void* AllocHeap(u32 size);
+    virtual void FreeHeap(void* pPtr);
 
-namespace nw4r {
-namespace math {
-f32 Atan2FIdx(f32 y, f32 x);
-f32 CosFIdx(f32 fidx);
-}
-}
-
-struct Particle {
-    u8 unk0[0xC];          // at 0x0
-    s32 mState;            // at 0xC
-    u8 unk10[0x10];        // at 0x10
-    GXColor mColor[2][2];  // at 0x20
-    u8 unk30[0x18];        // at 0x30
-    f32 mRotation;         // at 0x48
+    u8 unk4[0x4C - 0x4]; // at 0x4
 };
 
 // Cursor type -> effect style (normal, hold, open); type 5 draws a plain texture instead
 static const s32 sCursorStyle[] = {0, 0, 1, 2, 2, -1};
 // Starting spin counter per controller
 static const s32 sSpinStart[WPAD_MAX_CONTROLLERS] = {0, 4, 2, 6};
-
-static const char* sShadowEffects[] = {
-    "def_cursor_normal_sd",
-    "def_cursor_hold_sd",
-    "def_cursor_open_sd",
-};
-static const char* sCursorEffects[][WPAD_MAX_CONTROLLERS] = {
-    {"def_cursor_normal_1p", "def_cursor_normal_2p", "def_cursor_normal_3p", "def_cursor_normal_4p"},
-    {"def_cursor_hold_1p", "def_cursor_hold_2p", "def_cursor_hold_3p", "def_cursor_hold_4p"},
-    {"def_cursor_open_1p", "def_cursor_open_2p", "def_cursor_open_3p", "def_cursor_open_4p"},
-};
 
 static inline BOOL IsPointerActive(s32 chan) {
     BOOL active = FALSE;
@@ -128,16 +82,16 @@ static inline f32 Atan2Rad(f32 y, f32 x) {
     return 0.024543693f * nw4r::math::Atan2FIdx(y, x);
 }
 
-static inline void* CreateEffect(const char* name) {
-    return fn_80085868(fn_800856D0(), name, 0, 0);
+static inline nw4r::ef::Effect* CreateEffect(const char* name) {
+    return nw4r::ef::EffectSystem::GetInstance()->CreateEffect(name, 0, 0);
 }
 
-static inline void SetEmitterTranslate(void* emitterSet, const Vec& pos) {
-    EmitterTransform* transform = fn_8008562C(emitterSet);
-    transform->mTranslate.x = pos.x;
-    transform->mTranslate.y = pos.y;
-    transform->mTranslate.z = pos.z;
-    fn_800879BC(transform);
+static inline void SetEffectTranslate(nw4r::ef::Effect* effect, const nw4r::math::VEC3& pos) {
+    nw4r::ef::Emitter* emitter = effect->GetRootEmitter();
+    emitter->mParameter.mTranslate.x = pos.x;
+    emitter->mParameter.mTranslate.y = pos.y;
+    emitter->mParameter.mTranslate.z = pos.z;
+    emitter->SetMtxDirty();
 }
 
 // Region group from the console's product area: 0 = Japan/Taiwan, 2 = PAL, 1 = everything else
@@ -174,29 +128,17 @@ u8 GetLanguage(void) {
 }
 
 Cursor::Cursor() {
-    void* memory;
-    EffectSystem* system;
     nw4r::ef::Resource* resource;
     u32 texSize;
 
     mEffectReady = FALSE;
     mEffectHeap = MEM2Alloc(0x20000, 32);
-
-    memory = operator new(0x4C);
-    if (memory != NULL) {
-        memory = fn_80093A40(memory, mEffectHeap, 0x20000, 32, 64, 64, 64);
-    }
-    mEffectMemory = memory;
-
-    system = fn_800856D0();
-    system->mMemoryManager = memory;
-    if (memory != NULL) {
-        fn_800856DC(system, 1);
-    }
+    mEffectMemory = new MemoryManager(mEffectHeap, 0x20000, 32, 64, 64, 64);
+    nw4r::ef::EffectSystem::GetInstance()->SetMemoryManager(mEffectMemory, 1);
 
     mEffectData = NULL;
     mEffectTexData = NULL;
-    resource = fn_80092674();
+    resource = nw4r::ef::Resource::GetInstance();
     mEffectData = LoadCompressedContentFile(gUnk80330B64, "nw4r_defcursor_all01.breff.LZ", 32, NULL, gMEM2Heap);
     mEffectTexData = LoadCompressedContentFile(gUnk80330B64, "nw4r_defcursor_all01.breft.LZ", 32, &texSize, gMEM2Heap);
 
@@ -210,9 +152,9 @@ Cursor::Cursor() {
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         mType[i] = 0;
-        mCursorEmitter[i] = NULL;
-        mSpinEmitter[i] = NULL;
-        mShadowEmitter[i] = NULL;
+        mCursorEffect[i] = NULL;
+        mSpinEffect[i] = NULL;
+        mShadowEffect[i] = NULL;
         mSpinCounter[i] = 0;
     }
 }
@@ -223,27 +165,38 @@ void Cursor::Reset() {
     }
 }
 
+static const char* sShadowEffects[] = {
+    "def_cursor_normal_sd",
+    "def_cursor_hold_sd",
+    "def_cursor_open_sd",
+};
+static const char* sCursorEffects[][WPAD_MAX_CONTROLLERS] = {
+    {"def_cursor_normal_1p", "def_cursor_normal_2p", "def_cursor_normal_3p", "def_cursor_normal_4p"},
+    {"def_cursor_hold_1p", "def_cursor_hold_2p", "def_cursor_hold_3p", "def_cursor_hold_4p"},
+    {"def_cursor_open_1p", "def_cursor_open_2p", "def_cursor_open_3p", "def_cursor_open_4p"},
+};
+
 void Cursor::Calc() {
-    Mtx mtx;
-    Vec zero;
+    nw4r::math::MTX34 mtx;
+    nw4r::math::VEC3 zero;
     f32 rotation[WPAD_MAX_CONTROLLERS];
-    Vec shadowPos;
-    Vec spinPos;
-    Vec cursorPos;
-    EffectSystem* system = fn_800856D0();
+    nw4r::math::VEC3 shadowPos;
+    nw4r::math::VEC3 spinPos;
+    nw4r::math::VEC3 cursorPos;
+    nw4r::ef::EffectSystem* system = nw4r::ef::EffectSystem::GetInstance();
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        if (mCursorEmitter[i] != NULL) {
-            fn_80085150(mCursorEmitter[i]);
-            mCursorEmitter[i] = NULL;
+        if (mCursorEffect[i] != NULL) {
+            mCursorEffect[i]->RetireEmitterAll();
+            mCursorEffect[i] = NULL;
         }
-        if (mSpinEmitter[i] != NULL) {
-            fn_80085150(mSpinEmitter[i]);
-            mSpinEmitter[i] = NULL;
+        if (mSpinEffect[i] != NULL) {
+            mSpinEffect[i]->RetireEmitterAll();
+            mSpinEffect[i] = NULL;
         }
-        if (mShadowEmitter[i] != NULL) {
-            fn_80085150(mShadowEmitter[i]);
-            mShadowEmitter[i] = NULL;
+        if (mShadowEffect[i] != NULL) {
+            mShadowEffect[i]->RetireEmitterAll();
+            mShadowEffect[i] = NULL;
         }
     }
 
@@ -264,32 +217,32 @@ void Cursor::Calc() {
                 mSpinCounter[chan] = sSpinStart[chan];
             }
 
-            mShadowEmitter[chan] = CreateEffect(sShadowEffects[sCursorStyle[mType[chan]]]);
-            if (mShadowEmitter[chan] != NULL) {
+            mShadowEffect[chan] = CreateEffect(sShadowEffects[sCursorStyle[mType[chan]]]);
+            if (mShadowEffect[chan] != NULL) {
                 f32 pointerY = gPointerY[chan][0];
                 f32 pointerX = gPointerX[chan][0];
                 shadowPos.y = ((456.0f - pointerY) - 3.0f) - offsetY;
                 shadowPos.x = offsetX + (3.0f + pointerX);
                 shadowPos.z = 0.0f;
-                SetEmitterTranslate(mShadowEmitter[chan], shadowPos);
+                SetEffectTranslate(mShadowEffect[chan], shadowPos);
             }
 
             if (mType[chan] == 4) {
-                mSpinEmitter[chan] = CreateEffect(sCursorEffects[2][chan]);
-                if (mSpinEmitter[chan] != NULL) {
+                mSpinEffect[chan] = CreateEffect(sCursorEffects[2][chan]);
+                if (mSpinEffect[chan] != NULL) {
                     spinPos.x = gPointerX[chan][0] - offsetX;
                     spinPos.y = offsetY + (456.0f - gPointerY[chan][0]);
                     spinPos.z = 0.0f;
-                    SetEmitterTranslate(mSpinEmitter[chan], spinPos);
+                    SetEffectTranslate(mSpinEffect[chan], spinPos);
                 }
             }
 
-            mCursorEmitter[chan] = CreateEffect(sCursorEffects[sCursorStyle[mType[chan]]][chan]);
-            if (mCursorEmitter[chan] != NULL) {
+            mCursorEffect[chan] = CreateEffect(sCursorEffects[sCursorStyle[mType[chan]]][chan]);
+            if (mCursorEffect[chan] != NULL) {
                 cursorPos.x = offsetX + gPointerX[chan][0];
                 cursorPos.y = (456.0f - gPointerY[chan][0]) - offsetY;
                 cursorPos.z = 0.0f;
-                SetEmitterTranslate(mCursorEmitter[chan], cursorPos);
+                SetEffectTranslate(mCursorEffect[chan], cursorPos);
             }
         }
         mType[chan] = 0;
@@ -299,25 +252,25 @@ void Cursor::Calc() {
     zero.y = 0.0f;
     zero.z = 0.0f;
     PSMTXIdentity(mtx);
-    fn_80085B54(system, -100.0f, 100.0f, &zero, mtx);
-    fn_80085A4C(system, 0, 0);
+    system->SetProcessCamera(-100.0f, 100.0f, zero, mtx);
+    system->Calc(0, false);
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        if (mCursorEmitter[i] != NULL) {
-            UpdateParticles(mCursorEmitter[i], rotation[i], 1.0f);
+        if (mCursorEffect[i] != NULL) {
+            UpdateParticles(mCursorEffect[i], rotation[i], 1.0f);
         }
-        if (mSpinEmitter[i] != NULL) {
-            UpdateParticles(mSpinEmitter[i], rotation[i], 0.85f);
+        if (mSpinEffect[i] != NULL) {
+            UpdateParticles(mSpinEffect[i], rotation[i], 0.85f);
         }
-        if (mShadowEmitter[i] != NULL) {
-            UpdateParticles(mShadowEmitter[i], rotation[i], 1.0f);
+        if (mShadowEffect[i] != NULL) {
+            UpdateParticles(mShadowEffect[i], rotation[i], 1.0f);
         }
     }
 }
 
 void Cursor::Draw() {
-    EffectDrawInfo info;
-    EffectMtx view;
+    nw4r::ef::DrawInfo info;
+    nw4r::math::MTX34 view;
     Mtx44 proj;
     f32 width = GetScreenWidth();
 
@@ -326,9 +279,9 @@ void Cursor::Draw() {
     GXSetProjection(proj, GX_ORTHOGRAPHIC);
     SetDefaultGXState();
 
-    PSMTXIdentity(view.m);
-    info.mViewMtx = view;
-    fn_80085ADC(fn_800856D0(), &info, 0);
+    PSMTXIdentity(view);
+    info.SetViewMtx(view);
+    nw4r::ef::EffectSystem::GetInstance()->Draw(info, 0);
 }
 
 void Cursor::Set(s32 chan, s32 type) {
@@ -394,22 +347,24 @@ void Cursor::Set(s32 chan, s32 type) {
 }
 
 // Sets rotation on all live particles of an effect and scales their colors
-void Cursor::UpdateParticles(void* emitterSet, f32 rotation, f32 brightness) {
-    for (u16 i = 0; i < fn_80085634(emitterSet); i++) {
-        void* emitter = fn_8008563C(emitterSet, i);
+void Cursor::UpdateParticles(nw4r::ef::Effect* effect, f32 rotation, f32 brightness) {
+    for (u16 i = 0; i < effect->GetNumEmitter(); i++) {
+        nw4r::ef::Emitter* emitter = effect->GetEmitter(i);
 
-        for (u16 j = 0; j < fn_80087AA8(emitter); j++) {
-            void* list = (u8*)fn_80087AB0(emitter, j) + 0x38;
-            Particle* particle = NULL;
+        for (u16 j = 0; j < emitter->GetNumParticleManager(); j++) {
+            nw4r::ef::ParticleManager* manager = emitter->GetParticleManager(j);
+            nw4r::ut::List* list = &manager->GetParticleList()->mActiveList;
+            nw4r::ef::Particle* particle = NULL;
 
-            while ((particle = (Particle*)fn_800CFC20(list, particle)) != NULL) {
-                if (particle->mState != 1 && particle->mState != 2) {
+            while ((particle = static_cast<nw4r::ef::Particle*>(nw4r::ut::List_GetNext(list, particle))) != NULL) {
+                if (particle->GetLifeStatus() != nw4r::ef::ReferencedObject::NW4R_EF_LS_ACTIVE &&
+                    particle->GetLifeStatus() != nw4r::ef::ReferencedObject::NW4R_EF_LS_WAIT) {
                     continue;
                 }
 
-                particle->mRotation = rotation;
+                particle->mParameter.mRotate.z = rotation;
 
-                GXColor* color = particle->mColor[0];
+                GXColor* color = particle->mParameter.mColor[0];
                 for (int k = 0; k < 2; k++) {
                     color[0].r = color[0].r * brightness;
                     color[0].g = color[0].g * brightness;
@@ -459,3 +414,37 @@ void FatalScene::Calc() {
 void FatalScene::Draw() {
     mLayout->Draw();
 }
+
+SimpleModel::SimpleModel(void* resData) : mTrans(0.0f, 0.0f, 0.0f), mRot(0.0f, 0.0f, 0.0f), mScale(21.0f, 21.0f, 21.0f) {
+    nw4r::g3d::ResFile file(resData);
+    u32 size;
+
+    file.Init();
+    file.Bind();
+    mResMdl = file.GetResMdl(0);
+    mScnMdl = nw4r::g3d::ScnMdlSimple::Construct(&gMEM2Allocator32, &size, mResMdl, 1);
+}
+
+SimpleModel::~SimpleModel() {
+    mScnMdl->Destroy();
+}
+
+// Empty in this build
+void SimpleModel::Calc() {}
+
+void SimpleModel::UpdateMtx() {
+    mMtx = CalcMtx(mRot);
+    mScnMdl->SetMtx(nw4r::g3d::ScnObj::MTX_LOCAL, &mMtx);
+}
+
+nw4r::math::MTX34 SimpleModel::CalcMtx(const nw4r::math::VEC3& rot) {
+    nw4r::math::MTX34RotXYZFIdx(&lbl_801F6B28, 0.0f, 0.7111111f * rot.y, 0.0f);
+    f32 z = rot.z;
+    f32 x = rot.x;
+    RotateMtxDeg(&lbl_801F6B28, x, 0.0f, z);
+    TranslateMtx(&lbl_801F6B28, mTrans.x, mTrans.y, mTrans.z);
+    return lbl_801F6B28;
+}
+
+// Empty in this build
+void SimpleModel::Draw() {}

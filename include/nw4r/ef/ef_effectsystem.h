@@ -57,6 +57,9 @@ public:
     void Calc(u32 groupID, bool onlyBillboard);
     void Draw(const DrawInfo& rInfo, u32 groupID);
 
+    void SetProcessCamera(f32 near, f32 far, const math::VEC3& rPos,
+                          const math::MTX34& rMtx);
+
     MemoryManagerBase* GetMemoryManager() const {
         return mMemoryManager;
     }
