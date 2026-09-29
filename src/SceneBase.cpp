@@ -202,13 +202,16 @@ SceneBase::SceneBase(bool arg)
     gHomeButton->unkE = FALSE;
     gHomeButton->unkF = FALSE;
 
+    void* timeFont;
     if (gLanguage == 0) {
-        gTimeFontBuf = LoadCompressedContentFile(gUnk80330B64, "font_weather_time.brfnt.LZ", 32, NULL, gMEM1Heap);
+        timeFont = gTimeFontBuf =
+            LoadCompressedContentFile(gUnk80330B64, "font_weather_time.brfnt.LZ", 32, NULL, gMEM1Heap);
     } else {
-        gTimeFontBuf = LoadCompressedContentFile(gUnk80330B64, "font_weather_timeWW.brfnt.LZ", 32, NULL, gMEM1Heap);
+        timeFont = gTimeFontBuf =
+            LoadCompressedContentFile(gUnk80330B64, "font_weather_timeWW.brfnt.LZ", 32, NULL, gMEM1Heap);
     }
 
-    if (gTimeFontBuf == NULL) {
+    if (timeFont == NULL) {
         OSReport("%s[%d]\n", "d_scene.cpp", 413);
         gFatalRequested = TRUE;
         goto end;
@@ -1022,7 +1025,8 @@ static void* EarthLoadThread(void* arg) {
     s32 result;
 
     result = contentOpenNAND(&gContentHandles[6], sEarthPath, &file);
-    if (result == 0) {
+    switch (result) {
+    case 0: {
         CXInitUncompContextLZ(&ctx, gEarthData);
 
         for (u32 offset = 0; offset < gEarthFileSize; offset += gEarthChunkSize) {
@@ -1050,7 +1054,9 @@ static void* EarthLoadThread(void* arg) {
             gFatalRequested = TRUE;
             return NULL;
         }
-    } else {
+        break;
+    }
+    default:
         OSReport("Error!! (%s) CNTOpen() failed. %d\n", sEarthPath, result);
         gFatalRequested = TRUE;
         return NULL;
