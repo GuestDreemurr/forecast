@@ -25,6 +25,14 @@ void WrapHour(s32* pHour);
 
 extern OSCalendarTime sCalendarTime;
 extern PointerHistory gPointerHistory;
+
+struct GlyphTexture {
+    u32 texture; // at 0x0
+    f32 width;   // at 0x4
+    f32 height;  // at 0x8
+};
+extern GlyphTexture sGlyphTextures[89];
+extern TPLPalette* gCommonTpl;
 extern LayoutButton* sHoveredButtons[WPAD_MAX_CONTROLLERS];
 
 struct DragScroll {
@@ -759,6 +767,93 @@ s32 CheckButtonPressed(const char* name, u16 buttons) {
 void ToDegrees(u16 lon, u16 lat, Vec2* out) {
     out->y = (f32)lat * (360.0f / 65536.0f);
     out->x = (f32)(s16)lon * (360.0f / 65536.0f);
+}
+
+static const wchar_t sDateGlyphs[] = {
+    L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9', L'-',
+    0x65E5, 0x6708, 0x706B, 0x6C34, 0x6728, 0x91D1, 0x571F,
+};
+
+static inline int GetDateGlyph(wchar_t c) {
+    for (int i = 0; i < (int)(sizeof(sDateGlyphs) / sizeof(sDateGlyphs[0])); i++) {
+        if (c == sDateGlyphs[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static inline void DrawGlyph(int index, const Vec2& at, f32 scaleX, f32 scaleY, GXColor color) {
+    GXSetTevColor(GX_TEVREG0, color);
+    f32 halfW = 0.5f * sGlyphTextures[index].width;
+    f32 halfH = 0.5f * sGlyphTextures[index].height;
+    Vec pos;
+    pos.x = at.x - halfW * scaleX;
+    pos.y = at.y - halfH * scaleY;
+    pos.z = 0.0f;
+    DrawTextureAt(gCommonTpl, sGlyphTextures[index].texture, scaleX, scaleY, &pos);
+}
+
+f32 CalcDateWidth(const wchar_t* str) {
+    u32 len = wcslen(str);
+    f32 width = 0.0f;
+
+    for (u32 i = 0; i < len; i++, str++) {
+        int glyph = GetDateGlyph(*str);
+        if (glyph >= 0) {
+            width += sGlyphTextures[glyph].width;
+        }
+    }
+
+    return width;
+}
+
+void DrawDateCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+                      const GXColor* shadowColor) {
+    u32 len = wcslen(str);
+    f32 width = 0.0f;
+    const wchar_t* p = str;
+
+    for (u32 i = 0; i < len; i++, p++) {
+        int glyph = GetDateGlyph(*p);
+        if (glyph >= 0) {
+            width += sGlyphTextures[glyph].width;
+        }
+    }
+
+    f32 halfWidth = 0.5f * width;
+    int first = GetDateGlyph(*str);
+    Vec2 start;
+    start.x = pos->x - scaleX * (halfWidth - 0.5f * sGlyphTextures[first].width);
+    start.y = pos->y;
+    DrawDate(str, &start, scaleX, scaleY, color, shadowColor);
+}
+
+void DrawDate(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+              const GXColor* shadowColor) {
+    Vec2 main = *pos;
+    Vec2 shadow;
+    shadow.y = 2.0f + pos->y;
+    shadow.x = 2.0f + pos->x;
+
+    u32 len = wcslen(str);
+    f32 prevWidth;
+
+    for (u32 i = 0; i < len; i++, str++) {
+        int index = GetDateGlyph(*str);
+        if (index >= 0) {
+            if (i != 0) {
+                f32 advance = scaleX * (-1.0f + (0.5f * prevWidth + 0.5f * sGlyphTextures[index].width));
+                main.x += advance;
+                shadow.x += advance;
+            }
+
+            DrawGlyph(index, shadow, scaleX, scaleY, *shadowColor);
+            DrawGlyph(index, main, scaleX, scaleY, *color);
+
+            prevWidth = sGlyphTextures[index].width;
+        }
+    }
 }
 
 void UpdateDragScroll() {

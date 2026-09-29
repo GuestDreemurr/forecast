@@ -1,11 +1,12 @@
 #ifndef CHANNEL_SCENE_BASE_H
 #define CHANNEL_SCENE_BASE_H
 #include <types.h>
+#include <revolution/GX.h>
+#include <revolution/MTX.h>
 
 class HomeButton;
 class SimpleModel;
 class Fade;
-struct Vec2;
 
 // Base class of the channel's scenes (d_scene.cpp). Runs a small state machine: each state is a
 // member function called with mStatePhase = -1 on exit and counting up from 0 while active.
@@ -98,5 +99,10 @@ void FreeSysFonts();
 BOOL LoadEarthModel();
 BOOL FreeEarthModel();
 void ToDegrees(u16 lon, u16 lat, Vec2* out);
+f32 CalcDateWidth(const wchar_t* str);
+void DrawDateCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+                      const GXColor* shadowColor);
+void DrawDate(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
+              const GXColor* shadowColor);
 
 #endif
