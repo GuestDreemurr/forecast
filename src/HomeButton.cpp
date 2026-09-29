@@ -15,11 +15,11 @@
 #define HOME_BUTTON_WORK_BUFFER_SIZE 0x80000
 
 // Not yet decompiled (channel)
-extern "C" void fn_8003ABAC(void* arg0, s32 arg1);
-extern "C" s32 fn_8003BF08(void);
-extern "C" void fn_8003C054(void);
-extern "C" void fn_8003D6D0(void);
-extern "C" void fn_8003D9E0(void);
+extern "C" void ChangeSceneState(void* arg0, s32 arg1);
+extern "C" s32 LoadSysFont(void);
+extern "C" void FreeSysFonts(void);
+extern "C" void LoadEarthModel(void);
+extern "C" void FreeEarthModel(void);
 
 // Not yet decompiled (libraries)
 extern "C" void HBMCreate(HomeButtonInfo* info);
@@ -32,21 +32,21 @@ extern "C" void HBMSetAdjustFlag(u8 widescreen);
 extern "C" void HBMCreateSound(void* soundData, void* soundBuffer, u32 soundBufferSize);
 extern "C" void HBMDeleteSound(void);
 extern "C" void HBMUpdateSound(void);
-extern "C" void fn_80083A80(MEMAllocator* allocator1, MEMAllocator* allocator2);
-extern "C" s32 fn_80083AD8(void);
-extern "C" void fn_80083ADC(void);
-extern "C" void fn_80083B3C(GXRenderModeObj* rmode1, GXRenderModeObj* rmode2, s32 arg2);
-extern "C" s32 fn_80083B44(s32 width, s32 height);
-extern "C" void fn_80083B48(s32 arg0);
-extern "C" void fn_80083B4C(void);
-extern "C" s32 fn_80083B50(u32 size);
-extern "C" void fn_80083C44(void);
-extern "C" void fn_80083C9C(void* data);
-extern "C" const char* fn_80083CA0(void (*callback)(u8, GXRenderModeObj*), const char* page,
+extern "C" void ManualInit(MEMAllocator* allocator1, MEMAllocator* allocator2);
+extern "C" s32 ManualOpen(void);
+extern "C" void ManualClose(void);
+extern "C" void ManualSetRenderMode(GXRenderModeObj* rmode1, GXRenderModeObj* rmode2, s32 arg2);
+extern "C" s32 ManualCreateScreen(s32 width, s32 height);
+extern "C" void ManualSetMargin(s32 arg0);
+extern "C" void ManualDestroyScreen(void);
+extern "C" s32 ManualAllocHeap(u32 size);
+extern "C" void ManualFreeHeap(void);
+extern "C" void ManualSetArchive(void* data);
+extern "C" const char* ManualRun(void (*callback)(u8, GXRenderModeObj*), const char* page,
                                    s32 chan);
-extern "C" void fn_80083CA4(const char* page);
-extern "C" void fn_80083CAC(s32 arg0);
-extern "C" void fn_80083D04(HomeButtonInfo* info);
+extern "C" void ManualSetStartPage(const char* page);
+extern "C" void ManualRequestExit(s32 arg0);
+extern "C" void ManualSetHBMInfo(HomeButtonInfo* info);
 extern "C" u32 MEMGetTotalFreeSizeForExpHeap(MEMiHeapHead* heap);
 
 extern void* lbl_80330BBC;
@@ -171,8 +171,8 @@ HomeButton::HomeButton(u32 manualContent, const char* manualPath, const char* ma
 
             mAllocator1 = allocator1;
             mAllocator2 = allocator2;
-            fn_80083A80(allocator1, allocator2);
-            fn_80083D04(mInfo);
+            ManualInit(allocator1, allocator2);
+            ManualSetHBMInfo(mInfo);
             HBMCreate(mInfo);
             HBMCreateSound(mSoundData, mSoundBuffer, HOME_BUTTON_SOUND_BUFFER_SIZE);
             HBMSetAdjustFlag(gWidescreen);
@@ -319,24 +319,24 @@ s32 HomeButton::Calc() {
     }
 
     if (mOpenManual && unkE) {
-        fn_8003C054();
+        FreeSysFonts();
 
         if (unkF) {
-            fn_8003D9E0();
+            FreeEarthModel();
         }
 
         if (!OpenManual()) {
             mResult = HOME_BUTTON_RESULT_3;
         } else {
             if (unkF) {
-                fn_8003D6D0();
+                LoadEarthModel();
             }
 
-            if (fn_8003BF08()) {
+            if (LoadSysFont()) {
                 mResult = HOME_BUTTON_RESULT_3;
             }
 
-            fn_8003ABAC(lbl_80330BBC, 15);
+            ChangeSceneState(lbl_80330BBC, 15);
             VISetBlack(FALSE);
             VIFlush();
             mOpenManual = FALSE;
@@ -411,41 +411,41 @@ BOOL HomeButton::OpenManual() {
             }
         }
 
-        success = fn_80083AD8() == 0;
+        success = ManualOpen() == 0;
         if (success) {
-            fn_80083C9C(manual);
+            ManualSetArchive(manual);
             CheckHeaps();
-            fn_80083B3C(&gRenderMode, &gRenderMode, 0);
+            ManualSetRenderMode(&gRenderMode, &gRenderMode, 0);
 
-            success = fn_80083B44(gWidescreen ? 808 : 608, 456) != 0;
+            success = ManualCreateScreen(gWidescreen ? 808 : 608, 456) != 0;
             if (success) {
-                fn_80083B48(12);
+                ManualSetMargin(12);
                 CheckHeaps();
 
-                success = fn_80083B50(0x1400000 - size) != 0;
+                success = ManualAllocHeap(0x1400000 - size) != 0;
                 if (success) {
                     CheckHeaps();
-                    fn_80083CA4(mManualPage);
+                    ManualSetStartPage(mManualPage);
 
                     if (!mResetRequested) {
                         const char* page;
 
                         mInManual = TRUE;
-                        page = fn_80083CA0(DrawManualFade, mManualPageBuf, chan);
+                        page = ManualRun(DrawManualFade, mManualPageBuf, chan);
                         mInManual = FALSE;
                         strncpy(mManualPageBuf, page, sizeof(mManualPageBuf) - 1);
                     }
 
                     CheckHeaps();
-                    fn_80083C44();
+                    ManualFreeHeap();
                 }
 
                 CheckHeaps();
-                fn_80083B4C();
+                ManualDestroyScreen();
             }
 
             CheckHeaps();
-            fn_80083ADC();
+            ManualClose();
         }
 
         CheckHeaps();
@@ -505,7 +505,7 @@ static void DrawManualFade(u8 alpha, GXRenderModeObj* rmode) {
 
 void HomeButton::OnReset() {
     if (mInManual) {
-        fn_80083CAC(0);
+        ManualRequestExit(0);
     }
 
     mResetRequested = TRUE;

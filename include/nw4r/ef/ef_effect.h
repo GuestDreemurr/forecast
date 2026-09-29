@@ -85,6 +85,7 @@ public:
     u32 RetireEmitterAll();
     u32 RetireParticleAll();
 
+    Emitter* GetRootEmitter();
     u16 GetNumEmitter() const;
     Emitter* GetEmitter(u16 idx);
 

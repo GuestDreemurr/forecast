@@ -10,7 +10,9 @@ public:
     SimpleModel(void* resData);
     virtual ~SimpleModel();
 
+    void Calc();
     void UpdateMtx();
+    void Draw();
     nw4r::math::MTX34 CalcMtx(const nw4r::math::VEC3& rot);
 
     u32 unk4;                          // at 0x4
