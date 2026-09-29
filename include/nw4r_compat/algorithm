@@ -1,0 +1,22 @@
+// nw4r_compat: std:: wrappers over the repo's MSL headers so the nw4r sources build.
+// Only on the include path of the NW4R library in configure.py. Not matching-accurate
+// (std::sort in particular is a placeholder, not MSL's implementation).
+#ifndef NW4R_COMPAT_ALGORITHM
+#define NW4R_COMPAT_ALGORITHM
+namespace std {
+template <typename T> inline const T& min(const T& a, const T& b) { return b < a ? b : a; }
+template <typename T> inline const T& max(const T& a, const T& b) { return a < b ? b : a; }
+template <typename T> inline void swap(T& a, T& b) { T t = a; a = b; b = t; }
+template <typename It, typename T> inline It find(It first, It last, const T& v) {
+    for (; first != last; ++first) if (*first == v) break;
+    return first;
+}
+template <typename It> inline long distance(It first, It last) { return last - first; }
+template <typename It, typename Cmp> void sort(It first, It last, Cmp cmp) {
+    for (It i = first; i != last; ++i) for (It j = i + 1; j != last; ++j) if (cmp(*j, *i)) swap(*i, *j);
+}
+template <typename It> void sort(It first, It last) {
+    for (It i = first; i != last; ++i) for (It j = i + 1; j != last; ++j) if (*j < *i) swap(*i, *j);
+}
+}
+#endif

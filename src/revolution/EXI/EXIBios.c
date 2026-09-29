@@ -4,13 +4,8 @@
 
 #include <cstring>
 
-#if defined(VERSION_RSPE01_00)
 const char* __EXIVersion =
-    "<< RVL_SDK - EXI \trelease build: Sep  7 2006 07:16:20 (0x4200_60422) >>";
-#elif defined(VERSION_RSPE01_01)
-const char* __EXIVersion =
-    "<< RVL_SDK - EXI \trelease build: Nov 30 2006 03:26:56 (0x4199_60831) >>";
-#endif
+    "<< RVL_SDK - EXI \trelease build: Jun  6 2007 02:56:20 (0x4199_60831) >>";
 
 static EXIData Ecb[EXI_MAX_CHAN];
 static u32 IDSerialPort1;

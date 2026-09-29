@@ -1,0 +1,7 @@
+// nw4r_compat: std:: wrappers over the repo's MSL headers so the nw4r sources build.
+// Only on the include path of the NW4R library in configure.py. Not matching-accurate.
+#ifndef NW4R_COMPAT_CSTDARG
+#define NW4R_COMPAT_CSTDARG
+#include "../MSL_C/include/cstdarg"
+namespace std { using ::va_list; }
+#endif

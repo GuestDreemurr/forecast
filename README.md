@@ -75,6 +75,12 @@ Building
   ninja
   ```
 
+AI Usage
+========
+You are entirely responsible for whatever AI-generated code you submit, You should treat it as if you wrote it yourself.
+
+tldr; no slop and you'll be fine
+
 Diffing
 =======
 
@@ -88,6 +94,6 @@ Select an object from the left sidebar to begin diffing. Changes to the project 
 
 Credits
 =======
-[ogws](https://github.com/doldecomp/ogws): RVL_SDK, MSL
+[ogws](https://github.com/doldecomp/ogws): RVL_SDK, MSL, nw4r
 
 [Petari](https://github.com/SMGCommunity/Petari): MetroTRK

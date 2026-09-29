@@ -1,0 +1,14 @@
+// nw4r_compat: std:: wrappers over the repo's MSL headers so the nw4r sources build.
+// Only on the include path of the NW4R library in configure.py. Not matching-accurate.
+#ifndef NW4R_COMPAT_CSTRING
+#define NW4R_COMPAT_CSTRING
+#include "../MSL_C/include/cstring"
+#include "../MSL_C/include/mem.h"
+#include "../MSL_C/include/stdint.h"
+extern "C" int stricmp(const char*, const char*);
+namespace std {
+inline char* strncat(char* d, const char* s, size_t n) { return ::strncat(d, (char*)s, n); }
+using ::memset; using ::memcpy; using ::memcmp; using ::memmove; using ::strncpy; using ::strlen; using ::strcmp;
+using ::strncmp; using ::stricmp; using ::strcpy; using ::strcat; using ::strchr; using ::uintptr_t;
+}
+#endif

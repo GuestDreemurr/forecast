@@ -176,6 +176,664 @@ revolution/NWC24/NWC24Ipc.c:
 	.text       start:0x8006DC10 end:0x8006DD84
 	.sbss       start:0x80330D40 end:0x80330D48
 
+nw4r/ef/ef_draworder.cpp:
+	.text       start:0x80084C10 end:0x80084D10
+
+nw4r/ef/ef_effect.cpp:
+	.text       start:0x80084D10 end:0x80085654
+	.ctors      start:0x801792A0 end:0x801792A4
+	.data       start:0x801B6970 end:0x801B6998
+	.sbss       start:0x803310A0 end:0x803310A8
+
+nw4r/ef/ef_effectsystem.cpp:
+	.text       start:0x80085654 end:0x80085C34
+	.ctors      start:0x801792A4 end:0x801792A8
+	.bss        start:0x8028BA78 end:0x80290AE0
+
+nw4r/ef/ef_emitter.cpp:
+	.text       start:0x80085C34 end:0x80087AB0
+	.data       start:0x801B6998 end:0x801B69A8
+	.sdata2     start:0x803324C0 end:0x80332528
+
+nw4r/ef/ef_particle.cpp:
+	.text       start:0x8008FA14 end:0x800904E4
+	.data       start:0x801B69A8 end:0x801B69B8
+	.sdata2     start:0x80332528 end:0x80332558
+
+nw4r/ef/ef_particlemanager.cpp:
+	.text       start:0x800904E4 end:0x80092674
+	.ctors      start:0x801792A8 end:0x801792AC
+	.data       start:0x801B69B8 end:0x801B6B40
+	.bss        start:0x80290AE0 end:0x80290B10
+	.sdata2     start:0x80332558 end:0x80332590
+
+nw4r/ef/ef_resource.cpp:
+	.text       start:0x800927E4 end:0x8009305C
+	.ctors      start:0x801792AC end:0x801792B0
+	.bss        start:0x80290B10 end:0x80290FE0
+
+nw4r/ef/ef_util.cpp:
+	.text       start:0x8009305C end:0x80093A40
+	.sdata2     start:0x80332590 end:0x803325A8
+
+nw4r/ef/ef_emitterform.cpp:
+	.text       start:0x80094974 end:0x80094F64
+	.sdata2     start:0x803325A8 end:0x803325E0
+
+nw4r/ef/ef_creationqueue.cpp:
+	.text       start:0x80094F64 end:0x80095258
+	.data       start:0x801B6B40 end:0x801B6B60
+
+nw4r/ef/emform/ef_emform.cpp:
+	.text       start:0x80095258 end:0x80095310
+	.ctors      start:0x801792B0 end:0x801792B4
+	.data       start:0x801B6B60 end:0x801B6C00
+	.sbss       start:0x803310A8 end:0x803310D0
+
+nw4r/ef/emform/ef_point.cpp:
+	.text       start:0x80095310 end:0x80095864
+	.sdata2     start:0x803325E0 end:0x80332620
+
+nw4r/ef/emform/ef_line.cpp:
+	.text       start:0x80095864 end:0x80095E7C
+	.sdata2     start:0x80332620 end:0x80332660
+
+nw4r/ef/emform/ef_disc.cpp:
+	.text       start:0x80095E7C end:0x800965BC
+	.sdata2     start:0x80332660 end:0x803326B0
+
+nw4r/ef/emform/ef_sphere.cpp:
+	.text       start:0x800965BC end:0x8009709C
+	.sdata2     start:0x803326B0 end:0x803326F8
+
+nw4r/ef/emform/ef_cylinder.cpp:
+	.text       start:0x8009709C end:0x80097A68
+	.sdata2     start:0x803326F8 end:0x80332740
+
+nw4r/ef/emform/ef_torus.cpp:
+	.text       start:0x80097A68 end:0x80098370
+	.sdata2     start:0x80332740 end:0x80332798
+
+nw4r/ef/emform/ef_cube.cpp:
+	.text       start:0x80098370 end:0x8009A0CC
+	.sdata2     start:0x80332798 end:0x803327D8
+
+nw4r/ef/drawstrategy/ef_drawstrategyimpl.cpp:
+	.text       start:0x8009A40C end:0x8009BFF4
+	.ctors      start:0x801792B4 end:0x801792B8
+	.data       start:0x801B6C00 end:0x801B6C18
+	.bss        start:0x80290FE0 end:0x80291020
+	.sdata2     start:0x803327D8 end:0x80332808
+
+nw4r/ef/drawstrategy/ef_drawbillboardstrategy.cpp:
+	.text       start:0x8009BFF4 end:0x8009D8F4
+	.data       start:0x801B6C18 end:0x801B6C58
+	.sdata      start:0x80330420 end:0x80330440
+	.sdata2     start:0x80332808 end:0x80332830
+
+nw4r/ef/drawstrategy/ef_drawfreestrategy.cpp:
+	.text       start:0x8009D930 end:0x8009E64C
+	.rodata     start:0x80195570 end:0x80195630
+	.data       start:0x801B6C58 end:0x801B6C70
+	.sdata      start:0x80330440 end:0x80330468
+	.sdata2     start:0x80332830 end:0x80332868
+
+nw4r/ef/drawstrategy/ef_drawlinestrategy.cpp:
+	.text       start:0x8009ECE8 end:0x8009F1C4
+	.data       start:0x801B6C70 end:0x801B6C88
+	.sdata      start:0x80330468 end:0x80330470
+	.sdata2     start:0x80332868 end:0x80332878
+
+nw4r/ef/drawstrategy/ef_drawpointstrategy.cpp:
+	.text       start:0x8009F1C4 end:0x8009F4B8
+	.data       start:0x801B6C88 end:0x801B6CE0
+	.sdata      start:0x80330470 end:0x80330478
+	.sdata2     start:0x80332878 end:0x803328A8
+
+nw4r/g3d/res/g3d_rescommon.cpp:
+	.text       start:0x800A0C0C end:0x800A0CB0
+
+nw4r/g3d/res/g3d_resdict.cpp:
+	.text       start:0x800A0CB0 end:0x800A0F40
+
+nw4r/g3d/res/g3d_resfile.cpp:
+	.text       start:0x800A0F40 end:0x800A15B8
+	.data       start:0x801B6CE0 end:0x801B6E40
+
+nw4r/g3d/res/g3d_resmdl.cpp:
+	.text       start:0x800A15B8 end:0x800A1EE8
+
+nw4r/g3d/res/g3d_resshp.cpp:
+	.text       start:0x800A1EE8 end:0x800A23B0
+
+nw4r/g3d/res/g3d_restev.cpp:
+	.text       start:0x800A23B0 end:0x800A2408
+	.rodata     start:0x80195630 end:0x801956E8
+
+nw4r/g3d/res/g3d_resmat.cpp:
+	.text       start:0x800A2408 end:0x800A32F0
+	.sdata2     start:0x803328A8 end:0x803328D0
+
+nw4r/g3d/res/g3d_resvtx.cpp:
+	.text       start:0x800A32F0 end:0x800A34F8
+
+nw4r/g3d/res/g3d_restex.cpp:
+	.text       start:0x800A34F8 end:0x800A3694
+
+nw4r/g3d/res/g3d_resnode.cpp:
+	.text       start:0x800A3694 end:0x800A392C
+	.sdata2     start:0x803328D0 end:0x803328D8
+
+nw4r/g3d/res/g3d_resanmtexpat.cpp:
+	.text       start:0x800A392C end:0x800A3A9C
+
+nw4r/g3d/g3d_anmvis.cpp:
+	.text       start:0x800A3A9C end:0x800A3B58
+
+nw4r/g3d/g3d_anmclr.cpp:
+	.text       start:0x800A3B58 end:0x800A40C4
+
+nw4r/g3d/g3d_anmtexpat.cpp:
+	.text       start:0x800A40C4 end:0x800A42D4
+
+nw4r/g3d/g3d_anmtexsrt.cpp:
+	.text       start:0x800A42D4 end:0x800A4508
+	.sdata2     start:0x803328D8 end:0x803328E8
+
+nw4r/g3d/g3d_anmscn.cpp:
+	.text       start:0x800A4508 end:0x800A4858
+
+nw4r/g3d/g3d_obj.cpp:
+	.text       start:0x800A4858 end:0x800A4974
+	.data       start:0x801B6E40 end:0x801B6E60
+
+nw4r/g3d/g3d_anmobj.cpp:
+	.text       start:0x800A4974 end:0x800A498C
+
+nw4r/g3d/platform/g3d_gpu.cpp:
+	.text       start:0x800A498C end:0x800A4E9C
+	.sdata2     start:0x803328E8 end:0x80332900
+
+nw4r/g3d/platform/g3d_cpu.cpp:
+	.text       start:0x800A4E9C end:0x800A5040
+	.sdata2     start:0x80332900 end:0x80332908
+
+nw4r/g3d/g3d_state.cpp:
+	.text       start:0x800A5040 end:0x800A887C
+	.ctors      start:0x801792B8 end:0x801792BC
+	.rodata     start:0x801956E8 end:0x80195718
+	.data       start:0x801B6E60 end:0x801B6E78
+	.bss        start:0x80291020 end:0x80296600
+	.sdata      start:0x80330478 end:0x80330480
+	.sbss       start:0x803310D0 end:0x803310F0
+	.sdata2     start:0x80332908 end:0x80332930
+
+nw4r/g3d/g3d_draw1mat1shp.cpp:
+	.text       start:0x800A88E4 end:0x800A8EAC
+
+nw4r/g3d/g3d_calcview.cpp:
+	.text       start:0x800A8EAC end:0x800AAD34
+	.rodata     start:0x80195718 end:0x80195738
+	.sdata2     start:0x80332930 end:0x80332938
+
+nw4r/g3d/g3d_dcc.cpp:
+	.text       start:0x800AAD34 end:0x800AADBC
+
+nw4r/g3d/g3d_workmem.cpp:
+	.text       start:0x800AADBC end:0x800AADFC
+	.bss        start:0x80296600 end:0x802AE600
+
+nw4r/g3d/g3d_calcworld.cpp:
+	.text       start:0x800AADFC end:0x800AB66C
+	.data       start:0x801B6E78 end:0x801B6E88
+	.sdata      start:0x80330480 end:0x80330490
+	.sdata2     start:0x80332938 end:0x80332950
+
+nw4r/g3d/g3d_draw.cpp:
+	.text       start:0x800ABB88 end:0x800AC6D4
+
+nw4r/g3d/g3d_camera.cpp:
+	.text       start:0x800AD4AC end:0x800AE21C
+	.sdata2     start:0x80332950 end:0x80332980
+
+nw4r/g3d/g3d_basic.cpp:
+	.text       start:0x800AE21C end:0x800AE384
+	.sdata2     start:0x80332980 end:0x80332988
+
+nw4r/g3d/g3d_maya.cpp:
+	.text       start:0x800AE384 end:0x800AF040
+	.rodata     start:0x80195738 end:0x80195770
+	.sdata2     start:0x80332988 end:0x803329A0
+
+nw4r/g3d/g3d_xsi.cpp:
+	.text       start:0x800AF040 end:0x800AFBFC
+	.rodata     start:0x80195770 end:0x801957A8
+	.sdata2     start:0x803329A0 end:0x803329B0
+
+nw4r/g3d/g3d_3dsmax.cpp:
+	.text       start:0x800AFCF0 end:0x800B06AC
+	.rodata     start:0x801957A8 end:0x80195810
+	.sdata2     start:0x803329B0 end:0x803329C8
+
+nw4r/g3d/g3d_scnobj.cpp:
+	.text       start:0x800B0710 end:0x800B1B38
+	.data       start:0x801B6E88 end:0x801B6F48
+	.sdata2     start:0x803329C8 end:0x803329D0
+
+nw4r/g3d/g3d_scnroot.cpp:
+	.text       start:0x800B1B38 end:0x800B3298
+	.rodata     start:0x80195810 end:0x80195820
+	.data       start:0x801B6F48 end:0x801B6FB0
+	.sdata      start:0x80330490 end:0x803304A0
+	.sdata2     start:0x803329D0 end:0x803329D8
+
+nw4r/g3d/g3d_scnmdlsmpl.cpp:
+	.text       start:0x800B3298 end:0x800B4C5C
+	.rodata     start:0x80195820 end:0x80195838
+	.data       start:0x801B6FB0 end:0x801B7020
+	.sdata      start:0x803304A0 end:0x803304B8
+	.sdata2     start:0x803329D8 end:0x803329E0
+
+nw4r/g3d/g3d_calcmaterial.cpp:
+	.text       start:0x800B4C5C end:0x800B506C
+
+nw4r/g3d/g3d_init.cpp:
+	.text       start:0x800B506C end:0x800B5154
+
+nw4r/g3d/g3d_fog.cpp:
+	.text       start:0x800B5154 end:0x800B52C8
+	.sdata2     start:0x803329E0 end:0x803329E8
+
+nw4r/g3d/g3d_light.cpp:
+	.text       start:0x800B52C8 end:0x800B5C74
+	.sdata2     start:0x803329E8 end:0x80332A18
+
+nw4r/snd/snd_AxManager.cpp:
+	.text       start:0x800B5C74 end:0x800B70F8
+	.bss        start:0x802AE600 end:0x802AE800
+	.sbss       start:0x803310F0 end:0x803310F8
+	.sdata2     start:0x80332A18 end:0x80332A30
+
+nw4r/snd/snd_AxVoice.cpp:
+	.text       start:0x800B7110 end:0x800B8A4C
+	.sdata2     start:0x80332A30 end:0x80332A50
+
+nw4r/snd/snd_AxVoiceManager.cpp:
+	.text       start:0x800B8D30 end:0x800B8F24
+	.bss        start:0x802AE800 end:0x802AE810
+	.sbss       start:0x803310F8 end:0x80331100
+
+nw4r/snd/snd_AxfxImpl.cpp:
+	.text       start:0x800B8F24 end:0x800B9094
+	.sbss       start:0x80331100 end:0x80331110
+
+nw4r/snd/snd_Bank.cpp:
+	.text       start:0x800B9094 end:0x800B92B8
+	.sdata2     start:0x80332A50 end:0x80332A70
+
+nw4r/snd/snd_BankFile.cpp:
+	.text       start:0x800B92B8 end:0x800B96C0
+	.sdata2     start:0x80332A70 end:0x80332A78
+
+nw4r/snd/snd_BasicPlayer.cpp:
+	.text       start:0x800B96C0 end:0x800B9808
+	.data       start:0x801B7020 end:0x801B7048
+	.sdata2     start:0x80332A78 end:0x80332A80
+
+nw4r/snd/snd_BasicSound.cpp:
+	.text       start:0x800B9808 end:0x800BA890
+	.ctors      start:0x801792BC end:0x801792C0
+	.data       start:0x801B7048 end:0x801B70B0
+	.sdata2     start:0x80332A80 end:0x80332A90
+
+nw4r/snd/snd_Channel.cpp:
+	.text       start:0x800BA890 end:0x800BB618
+	.bss        start:0x802AE810 end:0x802AE840
+	.sbss       start:0x80331110 end:0x80331118
+	.sdata2     start:0x80332A90 end:0x80332AB8
+
+nw4r/snd/snd_DisposeCallbackManager.cpp:
+	.text       start:0x800BB618 end:0x800BBA20
+	.bss        start:0x802AE840 end:0x802AE858
+	.sbss       start:0x80331118 end:0x80331120
+
+nw4r/snd/snd_DvdSoundArchive.cpp:
+	.text       start:0x800BBA20 end:0x800BC060
+	.data       start:0x801B70B0 end:0x801B7138
+	.sbss       start:0x80331120 end:0x80331128
+	.sbss2      start:0x80333780 end:0x80333790
+
+nw4r/snd/snd_EnvGenerator.cpp:
+	.text       start:0x800BC0B8 end:0x800BC3F0
+	.rodata     start:0x80195838 end:0x80195B38
+	.sdata2     start:0x80332AB8 end:0x80332AE8
+
+nw4r/snd/snd_ExternalSoundPlayer.cpp:
+	.text       start:0x800BC3F0 end:0x800BC4D0
+
+nw4r/snd/snd_FrameHeap.cpp:
+	.text       start:0x800BC4D0 end:0x800BCAA4
+
+nw4r/snd/snd_FxReverbHi.cpp:
+	.text       start:0x800BCAA4 end:0x800BCC6C
+	.rodata     start:0x80195B38 end:0x80195B50
+	.data       start:0x801B7138 end:0x801B7158
+
+nw4r/snd/snd_FxReverbHiDpl2.cpp:
+	.text       start:0x800BCC6C end:0x800BCE8C
+	.sdata2     start:0x80332AE8 end:0x80332AF8
+
+nw4r/snd/snd_InstancePool.cpp:
+	.text       start:0x800BCE8C end:0x800BD0F4
+
+nw4r/snd/snd_Lfo.cpp:
+	.text       start:0x800BD0F4 end:0x800BD2E4
+	.rodata     start:0x80195B50 end:0x80195B78
+	.sdata2     start:0x80332AF8 end:0x80332B28
+
+nw4r/snd/snd_MemorySoundArchive.cpp:
+	.text       start:0x800BD2FC end:0x800BD730
+	.data       start:0x801B7158 end:0x801B71D8
+
+nw4r/snd/snd_MmlParser.cpp:
+	.text       start:0x800BD794 end:0x800BE640
+	.data       start:0x801B71D8 end:0x801B7408
+	.sdata      start:0x803304B8 end:0x803304C8
+	.sbss       start:0x80331128 end:0x80331130
+	.sdata2     start:0x80332B28 end:0x80332B48
+
+nw4r/snd/snd_MmlSeqTrack.cpp:
+	.text       start:0x800BE640 end:0x800BE700
+	.data       start:0x801B7408 end:0x801B7430
+
+nw4r/snd/snd_MmlSeqTrackAllocator.cpp:
+	.text       start:0x800BE700 end:0x800BE824
+
+nw4r/snd/snd_NandSoundArchive.cpp:
+	.text       start:0x800BE824 end:0x800BE870
+
+nw4r/snd/snd_RemoteSpeaker.cpp:
+	.text       start:0x800BE870 end:0x800BF084
+
+nw4r/snd/snd_RemoteSpeakerManager.cpp:
+	.text       start:0x800BF084 end:0x800BF2C0
+	.bss        start:0x802AE858 end:0x802AEB30
+	.sbss       start:0x80331130 end:0x80331140
+
+nw4r/snd/snd_SeqFile.cpp:
+	.text       start:0x800BF2C0 end:0x800BF33C
+
+nw4r/snd/snd_SeqPlayer.cpp:
+	.text       start:0x800BF4C4 end:0x800C00FC
+	.ctors      start:0x801792C0 end:0x801792C4
+	.data       start:0x801B7430 end:0x801B7488
+	.bss        start:0x802AEB30 end:0x802AEB80
+	.sdata2     start:0x80332B48 end:0x80332B58
+
+nw4r/snd/snd_SeqSound.cpp:
+	.text       start:0x800C00FC end:0x800C0560
+	.ctors      start:0x801792C4 end:0x801792C8
+	.data       start:0x801B7488 end:0x801B74F0
+
+nw4r/snd/snd_SeqSoundHandle.cpp:
+	.text       start:0x800C0560 end:0x800C06A0
+
+nw4r/snd/snd_SeqTrack.cpp:
+	.text       start:0x800C06A0 end:0x800C1684
+	.rodata     start:0x80195B78 end:0x80195BA0
+	.data       start:0x801B74F0 end:0x801B7500
+	.sdata2     start:0x80332B58 end:0x80332B88
+
+nw4r/snd/snd_SoundArchive.cpp:
+	.text       start:0x800C1684 end:0x800C1C6C
+	.data       start:0x801B7500 end:0x801B7520
+
+nw4r/snd/snd_SoundArchiveFile.cpp:
+	.text       start:0x800C1C6C end:0x800C2A1C
+	.sbss       start:0x80331140 end:0x80331148
+
+nw4r/snd/snd_SoundArchiveLoader.cpp:
+	.text       start:0x800C2A1C end:0x800C306C
+
+nw4r/snd/snd_SoundArchivePlayer.cpp:
+	.text       start:0x800C3374 end:0x800C5CE4
+	.data       start:0x801B7520 end:0x801B75F0
+	.bss        start:0x802AEB80 end:0x802C4B28
+	.sbss       start:0x80331148 end:0x80331150
+	.sdata2     start:0x80332B88 end:0x80332BA0
+
+nw4r/snd/snd_SoundHandle.cpp:
+	.text       start:0x800C5CE4 end:0x800C5D80
+
+nw4r/snd/snd_SoundHeap.cpp:
+	.text       start:0x800C5D80 end:0x800C5F0C
+	.data       start:0x801B75F0 end:0x801B7638
+
+nw4r/snd/snd_SoundPlayer.cpp:
+	.text       start:0x800C5F90 end:0x800C6E78
+
+nw4r/snd/snd_SoundStartable.cpp:
+	.text       start:0x800C7084 end:0x800C70F0
+
+nw4r/snd/snd_SoundSystem.cpp:
+	.text       start:0x800C7138 end:0x800C72C0
+	.sbss       start:0x80331150 end:0x80331158
+
+nw4r/snd/snd_SoundThread.cpp:
+	.text       start:0x800C7340 end:0x800C76CC
+	.bss        start:0x802C4B28 end:0x802C4EE0
+	.sbss       start:0x80331158 end:0x80331160
+
+nw4r/snd/snd_StrmChannel.cpp:
+	.text       start:0x800C76CC end:0x800C78EC
+
+nw4r/snd/snd_StrmFile.cpp:
+	.text       start:0x800C78EC end:0x800C7D14
+
+nw4r/snd/snd_StrmPlayer.cpp:
+	.text       start:0x800C7E20 end:0x800C996C
+	.ctors      start:0x801792C8 end:0x801792CC
+	.bss        start:0x802C4EE0 end:0x802CB308
+	.sdata2     start:0x80332BA0 end:0x80332BA8
+
+nw4r/snd/snd_StrmSound.cpp:
+	.text       start:0x800C996C end:0x800C9C80
+	.ctors      start:0x801792CC end:0x801792D0
+	.data       start:0x801B7638 end:0x801B76A0
+	.sbss       start:0x80331160 end:0x80331178
+
+nw4r/snd/snd_StrmSoundHandle.cpp:
+	.text       start:0x800C9C80 end:0x800C9CB8
+
+nw4r/snd/snd_TaskManager.cpp:
+	.text       start:0x800C9DD0 end:0x800C9F30
+
+nw4r/snd/snd_Voice.cpp:
+	.text       start:0x800CA340 end:0x800CD0DC
+	.data       start:0x801B76A0 end:0x801B76B8
+	.sdata2     start:0x80332BA8 end:0x80332BE0
+
+nw4r/snd/snd_VoiceManager.cpp:
+	.text       start:0x800CD0DC end:0x800CD77C
+	.bss        start:0x802CB308 end:0x802CB348
+	.sbss       start:0x80331178 end:0x80331180
+
+nw4r/snd/snd_Util.cpp:
+	.text       start:0x800CD77C end:0x800CDAE0
+	.rodata     start:0x80195BA0 end:0x801972E8
+	.sdata      start:0x803304C8 end:0x803304D0
+	.sdata2     start:0x80332BE0 end:0x80332C30
+
+nw4r/snd/snd_WaveFile.cpp:
+	.text       start:0x800CDAE0 end:0x800CDD10
+
+nw4r/snd/snd_WaveSound.cpp:
+	.text       start:0x800CE408 end:0x800CE6FC
+	.ctors      start:0x801792D4 end:0x801792D8
+	.data       start:0x801B76B8 end:0x801B7790
+	.sbss       start:0x80331180 end:0x803311A4
+
+nw4r/snd/snd_WaveSoundHandle.cpp:
+	.text       start:0x800CE6FC end:0x800CE734
+
+nw4r/snd/snd_WsdFile.cpp:
+	.text       start:0x800CE734 end:0x800CEA7C
+	.sdata2     start:0x80332C30 end:0x80332C70
+
+nw4r/snd/snd_WsdPlayer.cpp:
+	.text       start:0x800CF07C end:0x800CF108
+	.ctors      start:0x801792D8 end:0x801792DC
+	.bss        start:0x802CB348 end:0x802CB360
+
+nw4r/ut/ut_list.cpp:
+	.text       start:0x800CFA0C end:0x800CFCA8
+
+nw4r/ut/ut_LinkList.cpp:
+	.text       start:0x800CFCA8 end:0x800CFE14
+
+nw4r/ut/ut_binaryFileFormat.cpp:
+	.text       start:0x800CFE14 end:0x800CFE88
+
+nw4r/ut/ut_CharStrmReader.cpp:
+	.text       start:0x800CFE88 end:0x800CFF98
+
+nw4r/ut/ut_IOStream.cpp:
+	.text       start:0x800D0758 end:0x800D0780
+	.ctors      start:0x801792DC end:0x801792E0
+
+nw4r/ut/ut_FileStream.cpp:
+	.text       start:0x800D0780 end:0x800D0894
+	.ctors      start:0x801792E0 end:0x801792E4
+
+nw4r/ut/ut_DvdFileStream.cpp:
+	.text       start:0x800D0894 end:0x800D0E64
+	.ctors      start:0x801792E4 end:0x801792E8
+	.data       start:0x801B7790 end:0x801B77F8
+
+nw4r/ut/ut_DvdLockedFileStream.cpp:
+	.text       start:0x800D0E64 end:0x800D1098
+	.ctors      start:0x801792E8 end:0x801792EC
+	.data       start:0x801B77F8 end:0x801B7860
+	.bss        start:0x802CB360 end:0x802CB378
+	.sbss       start:0x803311A4 end:0x803311A8
+
+nw4r/ut/ut_LockedCache.cpp:
+	.text       start:0x800D1098 end:0x800D1244
+	.ctors      start:0x801792EC end:0x801792F0
+	.bss        start:0x802CB378 end:0x802CB398
+
+nw4r/ut/ut_Font.cpp:
+	.text       start:0x800D1244 end:0x800D12EC
+	.data       start:0x801B7860 end:0x801B7890
+
+nw4r/ut/ut_ResFontBase.cpp:
+	.text       start:0x800D132C end:0x800D19F0
+	.data       start:0x801B7890 end:0x801B7950
+
+nw4r/ut/ut_ResFont.cpp:
+	.text       start:0x800D19F0 end:0x800D1CF4
+	.data       start:0x801B7950 end:0x801B7A90
+
+nw4r/ut/ut_CharWriter.cpp:
+	.text       start:0x800D3A0C end:0x800D54CC
+	.bss        start:0x802CB398 end:0x802CB3B8
+	.sbss       start:0x803311A8 end:0x803311B0
+	.sdata2     start:0x80332C70 end:0x80332C90
+
+nw4r/ut/ut_TextWriterBase.cpp:
+	.text       start:0x800D555C end:0x800D7A14
+	.ctors      start:0x801792F0 end:0x801792F4
+	.bss        start:0x802CB3B8 end:0x802CB3D0
+	.sdata      start:0x803304D0 end:0x803304D8
+	.sbss       start:0x803311B0 end:0x803311D0
+	.sdata2     start:0x80332C90 end:0x80332CA8
+
+nw4r/math/math_arithmetic.cpp:
+	.text       start:0x800D7A14 end:0x800D7A38
+	.sdata2     start:0x80332CA8 end:0x80332CB0
+
+nw4r/math/math_triangular.cpp:
+	.text       start:0x800D7A90 end:0x800D7D84
+	.data       start:0x801B7A90 end:0x801B8BA8
+	.sdata2     start:0x80332CB0 end:0x80332CD0
+
+nw4r/math/math_types.cpp:
+	.text       start:0x800D7D84 end:0x800D81EC
+	.sdata2     start:0x80332CD0 end:0x80332CE0
+
+nw4r/lyt/lyt_pane.cpp:
+	.text       start:0x800D82F8 end:0x800D91B4
+	.ctors      start:0x801792F4 end:0x801792F8
+	.data       start:0x801B8BA8 end:0x801B8C10
+	.sdata2     start:0x80332CE0 end:0x80332D00
+
+nw4r/lyt/lyt_group.cpp:
+	.text       start:0x800D91B4 end:0x800D94D4
+	.data       start:0x801B8C10 end:0x801B8C20
+
+nw4r/lyt/lyt_layout.cpp:
+	.text       start:0x800D94D4 end:0x800DA144
+	.data       start:0x801B8C20 end:0x801B8C58
+	.sdata2     start:0x80332D00 end:0x80332D08
+
+nw4r/lyt/lyt_picture.cpp:
+	.text       start:0x800DA144 end:0x800DA664
+	.ctors      start:0x801792F8 end:0x801792FC
+	.data       start:0x801B8C58 end:0x801B8CC8
+	.sbss       start:0x803311D0 end:0x803311E0
+	.sdata2     start:0x80332D08 end:0x80332D10
+
+nw4r/lyt/lyt_textBox.cpp:
+	.text       start:0x800DA664 end:0x800DBC1C
+	.ctors      start:0x801792FC end:0x80179300
+	.data       start:0x801B8CC8 end:0x801B8D40
+	.sdata      start:0x803304D8 end:0x803304E0
+	.sdata2     start:0x80332D10 end:0x80332D28
+
+nw4r/lyt/lyt_window.cpp:
+	.text       start:0x800DBC1C end:0x800DE098
+	.ctors      start:0x80179300 end:0x80179304
+	.data       start:0x801B8D40 end:0x801B8DF8
+	.sbss       start:0x803311E0 end:0x803311E8
+	.sdata2     start:0x80332D28 end:0x80332D40
+
+nw4r/lyt/lyt_bounding.cpp:
+	.text       start:0x800DE098 end:0x800DE144
+	.ctors      start:0x80179304 end:0x80179308
+	.data       start:0x801B8DF8 end:0x801B8E60
+	.sbss       start:0x803311E8 end:0x803311F0
+
+nw4r/lyt/lyt_material.cpp:
+	.text       start:0x800DE144 end:0x800E16C4
+	.data       start:0x801B8E60 end:0x801B8EC8
+	.sdata2     start:0x80332D40 end:0x80332D60
+	.sbss2      start:0x80333790 end:0x80333798
+
+nw4r/lyt/lyt_drawInfo.cpp:
+	.text       start:0x800E16C4 end:0x800E1778
+	.data       start:0x801B8EC8 end:0x801B8ED8
+	.sdata2     start:0x80332D60 end:0x80332D68
+
+nw4r/lyt/lyt_animation.cpp:
+	.text       start:0x800E1778 end:0x800E22E8
+	.data       start:0x801B8ED8 end:0x801B8EF8
+	.sdata2     start:0x80332D68 end:0x80332D88
+
+nw4r/lyt/lyt_resourceAccessor.cpp:
+	.text       start:0x800E22E8 end:0x800E2340
+	.data       start:0x801B8EF8 end:0x801B8F10
+
+nw4r/lyt/lyt_arcResourceAccessor.cpp:
+	.text       start:0x800E2340 end:0x800E26C8
+	.data       start:0x801B8F10 end:0x801B8F28
+	.sdata      start:0x803304E0 end:0x803304E8
+
+nw4r/lyt/lyt_common.cpp:
+	.text       start:0x800E26C8 end:0x800E31D4
+	.bss        start:0x802CB3D0 end:0x802CB400
+	.sbss       start:0x803311F0 end:0x803311F8
+	.sdata2     start:0x80332D88 end:0x80332D90
+
 revolution/BASE/PPCArch.c:
 	.text       start:0x800E3310 end:0x800E347C
 	.data       start:0x801B8F28 end:0x801B8F5F

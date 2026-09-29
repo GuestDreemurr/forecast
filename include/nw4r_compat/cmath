@@ -1,0 +1,16 @@
+// nw4r_compat: std:: wrappers over the repo's MSL headers so the nw4r sources build.
+// Only on the include path of the NW4R library in configure.py. Not matching-accurate.
+#ifndef NW4R_COMPAT_CMATH
+#define NW4R_COMPAT_CMATH
+#include "../MSL_C/include/cmath"
+extern "C" double atan(double);
+extern "C" float modff(float, float*);
+namespace std {
+inline float fabs(float x) { return __fabs(x); }
+inline double fabs(double x) { return __fabs(x); }
+inline float fabsf(float x) { return __fabs(x); }
+inline float pow(float x, float y) { return ::pow(x, y); }
+using ::acosf; using ::asinf; using ::atan2f; using ::ceilf; using ::cosf; using ::sinf;
+using ::sqrtf; using ::tanf; using ::floorf; using ::fmodf; using ::ldexpf; using ::atan; using ::pow; using ::modff;
+}
+#endif
