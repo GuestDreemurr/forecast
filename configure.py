@@ -1200,6 +1200,7 @@ config.libs = [
             "cflags": cflags_channel,
             "progress_category": "channel",
             "objects": [
+                Object(NonMatching, "WeatherSetting.cpp"),
                 Object(Matching, "Region.cpp"),
                 Object(Matching, "Scene.cpp"),
                 Object(NonMatching, "SimpleModel.cpp"),

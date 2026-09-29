@@ -2,6 +2,8 @@
 #define CHANNEL_LAYOUT_BUTTON_H
 #include <types.h>
 #include <cstring>
+#include <revolution/GX.h>
+#include <nw4r/math/math_types.h>
 
 namespace nw4r {
 namespace lyt {
@@ -39,6 +41,8 @@ public:
     void Draw();
     BOOL Contains(f32 x, f32 y);
     void SetPaneAlpha(u8 alpha);
+    void SetState(s32 state);
+    void Hide();
 
     void SetParams(s32 a, s32 b, s32 c) {
         unk74 = a;
@@ -48,6 +52,11 @@ public:
 
     void SetSlideOffset(f32 offset) {
         mSlideOffset = offset * (mPane->mTransY > 0.0f ? 1 : -1);
+    }
+
+    void SetLinked(LayoutButton* button) {
+        mLinked = button;
+        unk28 = 0;
     }
 
     void SetAlpha(s32 alpha) {
@@ -66,28 +75,40 @@ public:
         return mDisabled || mLocked || mHidden;
     }
 
-    u8 unk0[0x8];            // at 0x0
-    ButtonPane* mPane;       // at 0x8
-    u8 unkC[0x3C - 0xC];     // at 0xC
-    f32 mLeft;               // at 0x3C
-    f32 mTop;                // at 0x40
-    f32 mRight;              // at 0x44
-    f32 mBottom;             // at 0x48
-    u8 unk4C[0x70 - 0x4C];   // at 0x4C
-    s32 mAlpha;              // at 0x70
-    s32 unk74;               // at 0x74
-    u8 unk78[0x88 - 0x78];   // at 0x78
-    s32 unk88;               // at 0x88
-    s32 unk8C;               // at 0x8C
-    u8 mDisabled;            // at 0x90
-    u8 mHeld;                // at 0x91
-    u8 unk92[0x94 - 0x92];   // at 0x92
-    u8 mHidden;              // at 0x94
-    u8 unk95[0x98 - 0x95];   // at 0x95
-    u8 mLocked;              // at 0x98
-    u8 unk99[0x9C - 0x99];   // at 0x99
-    f32 mSlideOffset;        // at 0x9C
+    u8 unk0[0x8];                  // at 0x0
+    ButtonPane* mPane;             // at 0x8
+    u8 unkC[0x24 - 0xC];           // at 0xC
+    LayoutButton* mLinked;         // at 0x24, the "set" pane shown next to this button
+    s32 unk28;                     // at 0x28
+    u8 unk2C[0x38 - 0x2C];         // at 0x2C
+    GXColor mTextColor;            // at 0x38
+    f32 mLeft;                     // at 0x3C
+    f32 mTop;                      // at 0x40
+    f32 mRight;                    // at 0x44
+    f32 mBottom;                   // at 0x48
+    nw4r::math::VEC3 mOrigTrans;   // at 0x4C
+    Vec mTextPos;                  // at 0x58
+    Vec2 mTextSize;                // at 0x64
+    u8 unk6C[0x70 - 0x6C];         // at 0x6C
+    s32 mAlpha;                    // at 0x70
+    s32 unk74;                     // at 0x74
+    s32 mHoverFrame;               // at 0x78
+    u8 unk7C[0x88 - 0x7C];         // at 0x7C
+    s32 unk88;                     // at 0x88
+    s32 unk8C;                     // at 0x8C
+    u8 mDisabled;                  // at 0x90
+    u8 mHeld;                      // at 0x91
+    u8 mPressed;                   // at 0x92
+    u8 mToggle;                    // at 0x93
+    u8 mHidden;                    // at 0x94
+    u8 unk95[0x98 - 0x95];         // at 0x95
+    u8 mLocked;                    // at 0x98
+    u8 unk99[0x9C - 0x99];         // at 0x99
+    f32 mSlideOffset;              // at 0x9C
 };
+
+// Linear interpolation from a to b as t goes from 0 to n
+s32 Lerp(s32 a, s32 b, s32 t, s32 n);
 
 #define BUTTON_GROUP_MAX_BUTTONS 256
 
