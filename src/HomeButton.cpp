@@ -18,8 +18,6 @@
 
 // Not yet decompiled (channel)
 extern "C" void SetFadeState(Fade* fade, s32 state);
-extern "C" s32 LoadSysFont(void);
-extern "C" void FreeSysFonts(void);
 extern "C" void LoadEarthModel(void);
 extern "C" void FreeEarthModel(void);
 

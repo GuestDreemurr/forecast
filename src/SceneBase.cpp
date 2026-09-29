@@ -6,8 +6,18 @@
 
 #include <revolution/VI.h>
 #include <nw4r/math.h>
+#include <nw4r/ut.h>
+#include <revolution/MEM.h>
+#include <revolution/OS.h>
 
 extern "C" void ShutdownDownloader(s32 event);
+
+extern MEMiHeapHead* gSceneHeap1;
+extern MEMAllocator gSceneAllocator2;
+extern void* gSysFontBuf;
+extern void* gSysFontBuf2;
+extern nw4r::ut::ArchiveFont* gSysFont2;
+extern nw4r::ut::ArchiveFont* gSysFont;
 void UpdateSound();
 
 static const u32 sLanguageTextures[] = {100, 102, 98, 102, 101, 99, 97};
@@ -28,6 +38,58 @@ void SceneBase::Exit(BOOL shutdownNet, s32 event) {
 
     if (shutdownNet) {
         ShutdownDownloader(event);
+    }
+}
+
+BOOL LoadSysFont() {
+    void* file = LoadContentFile(5, "wbf1.brfna", -32, NULL, gSceneHeap1);
+    if (file == NULL) {
+        return TRUE;
+    }
+
+    u32 size = nw4r::ut::ArchiveFont::GetRequireBufferSize(file);
+    gSysFontBuf = MEMAllocFromAllocator(&gSceneAllocator2, size);
+    if (gSysFontBuf == NULL) {
+        MEM1Free(file);
+        OSPanic("d_scene.cpp", 725, "m_pSysFontBuf\n");
+    }
+
+    gSysFont = new nw4r::ut::ArchiveFont;
+    if (gSysFont == NULL) {
+        OSPanic("d_scene.cpp", 732, "m_pSysFont\n");
+    }
+
+    if (!gSysFont->Construct(gSysFontBuf, size, file)) {
+        MEM1Free(file);
+        OSPanic("d_scene.cpp", 737, "nw4r::ut::ArchiveFont::Construct() failed.\n");
+    }
+
+    gSysFont->SetAlternateChar(0xE06B);
+    MEMFreeToExpHeap(gSceneHeap1, file);
+    return FALSE;
+}
+
+void FreeSysFonts() {
+    if (gSysFont2 != NULL) {
+        gSysFont2->Destroy();
+        delete gSysFont2;
+        gSysFont2 = NULL;
+    }
+
+    if (gSysFontBuf2 != NULL) {
+        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf2);
+        gSysFontBuf2 = NULL;
+    }
+
+    if (gSysFont != NULL) {
+        gSysFont->Destroy();
+        delete gSysFont;
+        gSysFont = NULL;
+    }
+
+    if (gSysFontBuf != NULL) {
+        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf);
+        gSysFontBuf = NULL;
     }
 }
 

@@ -62,6 +62,8 @@ extern f32 gMenuBrightness;
 
 void RequestFatal();
 u32 GetLanguageTexture();
+BOOL LoadSysFont();
+void FreeSysFonts();
 void ToDegrees(u16 lon, u16 lat, Vec2* out);
 
 #endif
