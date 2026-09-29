@@ -37,6 +37,11 @@ DrawUtil.cpp:
 	.sbss       start:0x80330AC8 end:0x80330AD0
 	.sdata2     start:0x80331EB0 end:0x80331EC0
 
+GlobeDots.cpp:
+	.text       start:0x8002EC68 end:0x8002F3D0
+	.rodata     start:0x8017B4C8 end:0x8017B508
+	.sdata2     start:0x80331EC0 end:0x80331F00
+
 System.cpp:
 	.text       start:0x8002F3D0 end:0x80032610
 	.data       start:0x8019BB38 end:0x8019BBA0
