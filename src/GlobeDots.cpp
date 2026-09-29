@@ -17,18 +17,20 @@ struct GlobeView {
     nw4r::g3d::Camera mCamera; // at 0x4
 };
 
-struct GlobeScene {
+// d_scene's m_pSimpleGlobe (size 0xD0)
+class SimpleGlobe {
+public:
     u8 unk0[0x4];     // at 0x0
     GlobeView* mView; // at 0x4
 };
 
-extern "C" GlobeScene* lbl_80330BEC;
-extern "C" TPLPalette* lbl_80330C00;
+extern "C" SimpleGlobe* gSimpleGlobe;
+extern "C" TPLPalette* gCommonTpl;
 
-extern "C" const DotPos lbl_8017B508[GLOBE_DOT_COUNT];
-extern "C" const u8 lbl_80184328[GLOBE_DOT_COUNT];
-extern "C" const u8 lbl_801866B0[GLOBE_DOT_COUNT];
-extern "C" const u8 lbl_80188A38[];
+extern "C" const DotPos gGlobeDotPositions[GLOBE_DOT_COUNT];
+extern "C" const u8 gGlobeDotSizes[GLOBE_DOT_COUNT];
+extern "C" const u8 gGlobeDotColorIndices[GLOBE_DOT_COUNT];
+extern "C" const u8 gGlobeDotColors[];
 
 static const Vec sBaseVerts[3] = {
     {0.0f, 0.0f, -100.0f},
@@ -56,10 +58,10 @@ GlobeDots::GlobeDots() {
         Mtx rotY;
         Mtx mtx;
 
-        f32 size = 0.0045f * lbl_80184328[i];
+        f32 size = 0.0045f * gGlobeDotSizes[i];
         f32 far = 3.0f * size;
-        u16 lon = lbl_8017B508[i].lon;
-        u16 lat = lbl_8017B508[i].lat;
+        u16 lon = gGlobeDotPositions[i].lon;
+        u16 lat = gGlobeDotPositions[i].lat;
 
         PSMTXRotTrig(rotX, nw4r::math::SinIdx(lon), nw4r::math::CosIdx(lon), 'x');
         PSMTXRotTrig(rotY, nw4r::math::SinIdx(lat), nw4r::math::CosIdx(lat), 'y');
@@ -93,7 +95,7 @@ void GlobeDots::UpdateAlpha(f32 speedX, f32 speedY) {
 }
 
 void GlobeDots::Draw() {
-    GlobeView* view = lbl_80330BEC->mView;
+    GlobeView* view = gSimpleGlobe->mView;
     nw4r::math::MTX34 viewMtx;
     nw4r::math::MTX44 projMtx;
     GXTexObj texObj;
@@ -121,11 +123,11 @@ void GlobeDots::Draw() {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGB, GX_RGB8, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
     GXSetArray(GX_VA_POS, mVerts, sizeof(Vec));
-    GXSetArray(GX_VA_CLR0, lbl_80188A38, 3);
+    GXSetArray(GX_VA_CLR0, gGlobeDotColors, 3);
     GXSetArray(GX_VA_TEX0, sTexCoords, sizeof(sTexCoords[0]));
 
     GXSetChanCtrl(GX_COLOR0, GX_FALSE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
-    GetTexObj(lbl_80330C00, 0x60, &texObj);
+    GetTexObj(gCommonTpl, 0x60, &texObj);
     GXLoadTexObj(&texObj, GX_TEXMAP0);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_ONE, GX_CC_TEXC, GX_CC_ZERO);
@@ -137,7 +139,7 @@ void GlobeDots::Draw() {
 
     GXBegin(GX_TRIANGLES, GX_VTXFMT0, GLOBE_DOT_COUNT * 3);
     for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
-        u8 colorIdx = lbl_801866B0[(u32)i];
+        u8 colorIdx = gGlobeDotColorIndices[(u32)i];
 
         GXPosition1x16(i * 3 + 0);
         GXColor1x8(colorIdx);

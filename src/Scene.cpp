@@ -18,7 +18,7 @@ extern "C" MEMAllocator* lbl_803311C8;
 // Error screen layout archive
 extern "C" u8 lbl_8019C6C0[];
 // Cursor textures
-extern "C" TPLPalette* lbl_80330C00;
+extern "C" TPLPalette* gCommonTpl;
 // Scratch matrix for SimpleModel::CalcMtx
 extern "C" nw4r::math::MTX34 lbl_801F6B28;
 
@@ -328,14 +328,14 @@ void Cursor::Set(s32 chan, s32 type) {
     GXLoadPosMtxImm(mtx, GX_PNMTX1);
     GXColor shadowColor = {0, 0, 0, 255};
     GXSetTevColor(GX_TEVREG0, shadowColor);
-    DrawTextureAt(lbl_80330C00, 2, 1.0f, 1.0f, &offset);
+    DrawTextureAt(gCommonTpl, 2, 1.0f, 1.0f, &offset);
 
     SetVec(&pos, GetPointerX(chan), GetPointerY(chan), 0.0f);
     MakeTransformMtx(&scale, &rotation, &pos, mtx);
     GXLoadPosMtxImm(mtx, GX_PNMTX1);
     GXColor color = {255, 255, 255, 255};
     GXSetTevColor(GX_TEVREG0, color);
-    DrawTextureAt(lbl_80330C00, 1, 1.0f, 1.0f, &offset);
+    DrawTextureAt(gCommonTpl, 1, 1.0f, 1.0f, &offset);
 }
 
 // Sets rotation on all live particles of an effect and scales their colors

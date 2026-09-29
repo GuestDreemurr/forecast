@@ -15,7 +15,7 @@
 #define HOME_BUTTON_WORK_BUFFER_SIZE 0x80000
 
 // Not yet decompiled (channel)
-extern "C" void ChangeSceneState(void* arg0, s32 arg1);
+extern "C" void SetFadeState(void* arg0, s32 arg1);
 extern "C" s32 LoadSysFont(void);
 extern "C" void FreeSysFonts(void);
 extern "C" void LoadEarthModel(void);
@@ -49,7 +49,7 @@ extern "C" void ManualRequestExit(s32 arg0);
 extern "C" void ManualSetHBMInfo(HomeButtonInfo* info);
 extern "C" u32 MEMGetTotalFreeSizeForExpHeap(MEMiHeapHead* heap);
 
-extern void* lbl_80330BBC;
+extern void* gFade; // d_scene m_pFade
 
 struct HomeButtonController {
     KPADStatus* status; // at 0x0
@@ -336,7 +336,7 @@ s32 HomeButton::Calc() {
                 mResult = HOME_BUTTON_RESULT_3;
             }
 
-            ChangeSceneState(lbl_80330BBC, 15);
+            SetFadeState(gFade, 15);
             VISetBlack(FALSE);
             VIFlush();
             mOpenManual = FALSE;
