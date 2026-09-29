@@ -34,8 +34,12 @@ public:
     virtual void unk38();                    // at 0x38
     virtual void unk3C();                    // at 0x3C
     virtual void unk40();                    // at 0x40
-    virtual BOOL unk44();                    // at 0x44
-    virtual BOOL unk48();                    // at 0x48
+    virtual BOOL unk44() {                   // at 0x44
+        return TRUE;
+    }
+    virtual BOOL unk48() {                   // at 0x48
+        return TRUE;
+    }
 
     void DrawTimeJP();
     void DrawTimeUS();
@@ -52,6 +56,7 @@ public:
     BOOL StateFatal();
 
     void Calc();
+    void RequestFatal();
 
     inline void UpdatePointerOverMenu() const;
 
@@ -87,7 +92,7 @@ public:
     s32 mClockAlpha;      // at 0x9C
     s32 unkA0;            // at 0xA0
     u8 unkA4;             // at 0xA4
-    s32 unkA8;            // at 0xA8
+    void* mLayoutArc;     // at 0xA8
 };
 
 extern HomeButton* gHomeButton;
@@ -102,7 +107,6 @@ extern u8 gPointerOverMenu;
 extern u8 gMenuVisible;
 extern f32 gMenuBrightness;
 
-void RequestFatal();
 u32 GetLanguageTexture();
 BOOL LoadSysFont();
 void FreeSysFonts();

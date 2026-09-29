@@ -21,6 +21,13 @@ public:
     void FadeOut(s32 frames);
     void SetOpaque();
 
+    void SetBaseColor(u8 r, u8 g, u8 b, u8 a) {
+        mBaseColor.r = r;
+        mBaseColor.g = g;
+        mBaseColor.b = b;
+        mBaseColor.a = a;
+    }
+
     BOOL StateIdle();
     BOOL StateFadeIn();
     BOOL StateFadeOut();

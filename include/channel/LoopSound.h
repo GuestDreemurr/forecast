@@ -6,6 +6,9 @@
 // A looping sound that keeps playing only while it is requested every frame
 class LoopSound {
 public:
+    LoopSound() : mRequested(FALSE) {}
+    ~LoopSound() {}
+
     void ClearRequest();
     void Update();
     void Request(u32 id, f32 volume, f32 pitch, f32 pan);

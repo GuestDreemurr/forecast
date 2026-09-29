@@ -4,26 +4,12 @@
 #include <channel/LayoutButton.h>
 #include <channel/SceneBase.h>
 #include <channel/System.h>
+#include <channel/ForecastData.h>
+#include <channel/WeatherScene.h>
 
 #include <wstring.h>
 #include <nw4r/ut.h>
 
-struct CityInfo {
-    u32* mId;        // at 0x0
-    wchar_t* mName;  // at 0x4
-};
-
-struct City {
-    CityInfo* mInfo; // at 0x0
-};
-
-City* FindCity(u32 id);
-
-extern u32 gTempUnit;
-extern u32 gWindUnit;
-extern s32 gSettingResult;
-extern u32 gCurrentCityId;
-extern u8 gButtonSounds[];
 extern nw4r::ut::TextWriterBase<wchar_t> gTextWriter;
 extern nw4r::ut::ArchiveFont* gSysFont;
 
@@ -35,8 +21,8 @@ WeatherSetting::WeatherSetting(void* arc)
       mCityBtn(NULL), mWindBtn(NULL), mState(NULL), mTextX(0.0f), mTextY(0.0f), mTextMaxWidth(0.0f),
       mTextHeight(0.0f), mTextScaleX(1.0f), mTextScaleY(1.0f), mTextCharSpace(0.0f), mKionBrightness(64),
       mCityBrightness(64), mWindBrightness(64), mStatePhase(0), unkBC(0) {
-    mSetLayout = new ButtonGroup(arc, "set.brlyt", gButtonSounds, false);
-    mBaseLayout = new ButtonGroup(arc, "base.brlyt", gButtonSounds, false);
+    mSetLayout = new ButtonGroup(arc, "set.brlyt", gButtonColors, false);
+    mBaseLayout = new ButtonGroup(arc, "base.brlyt", gButtonColors, false);
 
     mKionSet = mSetLayout->FindButton("kion_set");
     if (mKionSet == NULL) {

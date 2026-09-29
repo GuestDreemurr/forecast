@@ -13,6 +13,25 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+WeatherText.cpp:
+	.data       start:0x80199310 end:0x801996B8
+	.sdata      start:0x8032F5A0 end:0x8032F928
+
+WeatherTextUS.cpp:
+	.data       start:0x801996B8 end:0x80199AA8
+	.sdata      start:0x8032F928 end:0x8032FCF0
+
+WeatherScene.cpp:
+	.text       start:0x8000D5C8 end:0x800110D0
+	.ctors      start:0x80179248 end:0x8017924C
+	.rodata     start:0x801793A0 end:0x80179440
+	.data       start:0x80199AA8 end:0x8019A0D0
+	.bss        start:0x801D6F20 end:0x801D7150
+	.sdata      start:0x8032FCF0 end:0x8032FD08
+	.sbss       start:0x803309B0 end:0x80330A48
+	.sdata2     start:0x80331A00 end:0x80331A88
+	.sbss2      start:0x80333760 end:0x80333780
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274

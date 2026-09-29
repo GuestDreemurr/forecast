@@ -10,7 +10,11 @@ class SoundHandle;
 
 class Sound {
 public:
+    Sound(const char* path, void* heap);
     ~Sound();
+
+    void* mData; // at 0x0
+    void* mHeap; // at 0x4
 };
 
 void StartSound(nw4r::snd::SoundHandle* handle, u32 id);

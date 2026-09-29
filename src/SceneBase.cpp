@@ -136,7 +136,7 @@ static inline void ClearHoveredButtonsInline() {
 
 SceneBase::SceneBase(bool arg)
     : mDrawFunc(NULL), mState(NULL), mClockX(0.0f), mClockY(0.0f), unk84(0.0f), mMenuBarY(0.0f), unk8C(0.0f),
-      unk90(0.0f), mAmPmOffsetY(0.0f), mStatePhase(0), mClockAlpha(0), unkA0(0), unkA4(arg), unkA8(0) {
+      unk90(0.0f), mAmPmOffsetY(0.0f), mStatePhase(0), mClockAlpha(0), unkA0(0), unkA4(arg), mLayoutArc(NULL) {
     gFatalRequested = FALSE;
     sEarthModelData = NULL;
     sEarthLoading = FALSE;
@@ -343,7 +343,7 @@ static inline void FreeSysFontsInline() {
     }
 }
 
-void RequestFatal() {
+void SceneBase::RequestFatal() {
     gFatalRequested = TRUE;
 }
 
