@@ -48,6 +48,14 @@ public:
     BOOL StateReturnToMenu();
     BOOL StateFatal();
 
+    void Calc();
+
+    inline void UpdatePointerOverMenu() const;
+
+    BOOL IsState(StateFunc state) const {
+        return mState == state;
+    }
+
     void ChangeState(StateFunc state) {
         if (mState) {
             mStatePhase = -1;

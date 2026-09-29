@@ -8,6 +8,7 @@
 class Fade {
 public:
     void Draw();
+    void Calc();
     void FadeIn(s32 frames);
     void FadeOut(s32 frames);
 

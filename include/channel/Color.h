@@ -18,7 +18,4 @@ public:
     u8 a; // at 0x3
 };
 
-// Every translation unit that includes this header gets its own copy
-static Color sColorWhite(255, 255, 255, 255);
-
 #endif

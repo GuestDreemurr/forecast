@@ -1,5 +1,6 @@
 // d_scene.cpp: base class of the channel's scenes and the resources they share
 #include <channel/SceneBase.h>
+#include <channel/Color.h>
 #include <channel/Fade.h>
 #include <channel/HomeButton.h>
 #include <channel/LayoutButton.h>
@@ -14,6 +15,7 @@
 #include <nw4r/math.h>
 #include <nw4r/ut.h>
 #include <nw4r/g3d/g3d_scnroot.h>
+#include <nw4r/g3d/g3d_init.h>
 #include <revolution/CNT.h>
 #include <revolution/CX.h>
 #include <revolution/MEM.h>
@@ -23,27 +25,24 @@ extern "C" void ShutdownDownloader(s32 event);
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void WrapHour(s32* pHour);
 
-extern OSCalendarTime sCalendarTime;
-extern PointerHistory gPointerHistory;
 
 struct GlyphTexture {
     u32 texture; // at 0x0
     f32 width;   // at 0x4
     f32 height;  // at 0x8
 };
-extern GlyphTexture sGlyphTextures[89];
 extern TPLPalette* gCommonTpl;
-extern LayoutButton* sHoveredButtons[WPAD_MAX_CONTROLLERS];
 
 struct DragScroll {
+    DragScroll();
+    ~DragScroll() {}
+
     void Update();
 
     u8 unk0[0x34]; // at 0x0
 };
-extern DragScroll gDragScroll;
 
 void PlaySE(s32 id);
-extern wchar_t sTextBuf[0x100];
 extern nw4r::ut::ResFont* gTimeFont;
 
 extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
@@ -59,16 +58,33 @@ extern void* gEarthData;
 extern void* gEarthChunkBuf;
 extern WorkerThread* gEarthThread;
 extern void* gEarthModelData;
-extern MEMAllocator gSceneAllocator2;
 extern void* gSysFontBuf;
 extern void* gSysFontBuf2;
 extern nw4r::ut::ArchiveFont* gSysFont2;
 extern nw4r::ut::ArchiveFont* gSysFont;
 void UpdateSound();
+void CalcSound();
+extern "C" void HBMStartBlackOut(void);
 
 static const u32 sLanguageTextures[] = {100, 102, 98, 102, 101, 99, 97};
 
+PointerHistory gPointerHistory;
+OSCalendarTime sCalendarTime;
+GlyphTexture sGlyphTextures[89];
+DragScroll gDragScroll;
+LayoutButton* sHoveredButtons[WPAD_MAX_CONTROLLERS];
+nw4r::ut::TextWriterBase<wchar_t> gTextWriter;
+wchar_t sTextBuf[0x100];
+char sNameBuf[0x100];
+MEMAllocator gSceneAllocator1;
+MEMAllocator gSceneAllocator2;
+Color gHighlightColor(140, 180, 180, 255);
+
 HomeButton* gHomeButton;
+u32 gSceneFrameCount;
+u32 gBlinkState;
+s32 gAnimCounter1;
+s32 gAnimCounter2;
 u8 gFatalRequested;
 SimpleModel* gEarthModel;
 
@@ -136,6 +152,108 @@ void FreeSysFonts() {
     if (gSysFontBuf != NULL) {
         MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf);
         gSysFontBuf = NULL;
+    }
+}
+
+inline void SceneBase::UpdatePointerOverMenu() const {
+    gPointerOverMenu = FALSE;
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        BOOL valid = FALSE;
+        if (gPointerValid[i][0] && gKPADLatest[i] >= 0) {
+            valid = TRUE;
+        }
+
+        if (valid && GetPointerY(i) < mMenuBarY) {
+            gPointerOverMenu = TRUE;
+            break;
+        }
+    }
+}
+
+void SceneBase::Calc() {
+    if (gFatalRequested) {
+        if (!IsState(&SceneBase::StateFatal)) {
+            ChangeState(&SceneBase::StateFatal);
+        } else {
+            switch (mStatePhase) {
+            case 0: {
+                mStatePhase++;
+                GXColor clear = {0, 0, 0, 0};
+                GXSetCopyClear(clear, 0xFFFFFF);
+                StartFade(2, 20, 0, 0);
+                break;
+            }
+            case -1:
+                break;
+            default:
+                gNextScene = 'FATL';
+                break;
+            }
+        }
+        return;
+    }
+
+    if (OSGetResetButtonState()) {
+        if (gHomeButton->IsOpen()) {
+            HBMStartBlackOut();
+        } else {
+            Exit(TRUE, 4);
+            Restart();
+        }
+    }
+
+    nw4r::g3d::G3dReset();
+    OSTicksToCalendarTime(OSGetTime(), &sCalendarTime);
+    gSceneFrameCount++;
+    unk20();
+
+    if (gEarthLoading && gEarthModelData != NULL) {
+        if (gEarthChunkBuf != NULL) {
+            MEMFreeToExpHeap(gSceneHeap2, gEarthChunkBuf);
+            gEarthChunkBuf = NULL;
+        }
+
+        if (gEarthModel == NULL) {
+            gEarthModel = new (-32) SimpleModel(gEarthModelData);
+        }
+    }
+
+    UpdatePointerOverMenu();
+
+    if (mState) {
+        (this->*mState)();
+    }
+
+    if (!gFatalRequested) {
+        UpdateMenuFade();
+
+        u32 frame = gSceneFrameCount;
+        unkA0 = (frame >> 8) & 1;
+        if ((frame & 31) == 0) {
+            gBlinkState ^= 1;
+        }
+
+        if ((frame & 15) == 0) {
+            if (++gAnimCounter1 > 2) {
+                gAnimCounter1 = 0;
+            }
+            if (++gAnimCounter2 > 2) {
+                gAnimCounter2 = 0;
+            }
+        }
+
+        if (gFade != NULL) {
+            gFade->Calc();
+        }
+        if (gFade2 != NULL) {
+            gFade2->Calc();
+        }
+
+        unk2C();
+
+        if (gSound != NULL) {
+            CalcSound();
+        }
     }
 }
 

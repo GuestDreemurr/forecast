@@ -1,7 +1,7 @@
 #include <channel/System.h>
 #include <channel/Scene.h>
 #include <channel/LayoutObj.h>
-#include <channel/Color.h>
+#include <channel/ColorWhite.h>
 
 #include <channel/SimpleModel.h>
 
