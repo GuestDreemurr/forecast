@@ -1276,33 +1276,24 @@ static inline void DrawGlyph(int index, const Vec2& at, f32 scaleX, f32 scaleY) 
     DrawTextureAt(gCommonTpl, sGlyphTextures[index].texture, scaleX, scaleY, &pos);
 }
 
-f32 CalcDateWidth(const wchar_t* str) {
-    u32 len = wcslen(str);
+static inline f32 CalcDateWidthImpl(const wchar_t* str, u32 len) {
     f32 width = 0.0f;
-
     for (u32 i = 0; i < len; i++, str++) {
         int glyph = GetDateGlyph(*str);
         if (glyph >= 0) {
             width += sGlyphTextures[glyph].width;
         }
     }
-
     return width;
+}
+
+f32 CalcDateWidth(const wchar_t* str) {
+    return CalcDateWidthImpl(str, wcslen(str));
 }
 
 void DrawDateCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
                       const GXColor* shadowColor) {
-    u32 len = wcslen(str);
-    f32 width = 0.0f;
-    const wchar_t* p = str;
-
-    for (u32 i = 0; i < len; i++, p++) {
-        int glyph = GetDateGlyph(*p);
-        if (glyph >= 0) {
-            width += sGlyphTextures[glyph].width;
-        }
-    }
-
+    f32 width = CalcDateWidthImpl(str, wcslen(str));
     f32 halfWidth = 0.5f * width;
     int first = GetDateGlyph(*str);
     Vec2 start;
@@ -1340,10 +1331,8 @@ void DrawDate(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const
     }
 }
 
-f32 CalcNumWidth(const wchar_t* str, f32 spacing) {
-    u32 len = wcslen(str);
+static inline f32 CalcNumWidthImpl(const wchar_t* str, u32 len, f32 spacing) {
     f32 width = 0.0f;
-
     for (u32 i = 0; i < len; i++, str++) {
         int glyph = GetNumGlyph(*str);
         if (glyph >= 0) {
@@ -1358,23 +1347,13 @@ f32 CalcNumWidth(const wchar_t* str, f32 spacing) {
     return width;
 }
 
+f32 CalcNumWidth(const wchar_t* str, f32 spacing) {
+    return CalcNumWidthImpl(str, wcslen(str), spacing);
+}
+
 void DrawNumCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, f32 spacing, const GXColor* color,
                      const GXColor* color2) {
-    u32 len = wcslen(str);
-    f32 width = 0.0f;
-    const wchar_t* p = str;
-
-    for (u32 i = 0; i < len; i++, p++) {
-        int glyph = GetNumGlyph(*p);
-        if (glyph >= 0) {
-            width += sGlyphTextures[glyph].width;
-        }
-    }
-
-    if (!IsNearZero(spacing)) {
-        width += spacing * (len - 1);
-    }
-
+    f32 width = CalcNumWidthImpl(str, wcslen(str), spacing);
     f32 halfWidth = 0.5f * width;
     int first = GetNumGlyph(*str);
     Vec2 start;
@@ -1451,18 +1430,19 @@ void DrawNumRightAligned(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 sc
     }
 }
 
-f32 CalcTempWidth(const wchar_t* str) {
-    u32 len = wcslen(str);
+static inline f32 CalcTempWidthImpl(const wchar_t* str, u32 len) {
     f32 width = 0.0f;
-
     for (u32 i = 0; i < len; i++, str++) {
         int glyph = GetTempGlyph(*str);
         if (glyph >= 0) {
             width += sGlyphTextures[glyph].width;
         }
     }
-
     return width;
+}
+
+f32 CalcTempWidth(const wchar_t* str) {
+    return CalcTempWidthImpl(str, wcslen(str));
 }
 
 f32 GetTempGlyphHeight(const wchar_t* str) {
@@ -1475,17 +1455,7 @@ f32 GetTempGlyphHeight(const wchar_t* str) {
 
 void DrawTempCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
                       const GXColor* shadowColor) {
-    u32 len = wcslen(str);
-    f32 width = 0.0f;
-    const wchar_t* p = str;
-
-    for (u32 i = 0; i < len; i++, p++) {
-        int glyph = GetTempGlyph(*p);
-        if (glyph >= 0) {
-            width += sGlyphTextures[glyph].width;
-        }
-    }
-
+    f32 width = CalcTempWidthImpl(str, wcslen(str));
     f32 halfWidth = 0.5f * width;
     int first = GetTempGlyph(*str);
     Vec2 start;
