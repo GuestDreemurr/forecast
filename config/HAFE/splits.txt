@@ -13,14 +13,32 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+WeatherSetting.cpp:
+	.text       start:0x80027DA8 end:0x800289AC
+	.ctors      start:0x80179270 end:0x80179274
+	.data       start:0x8019B5D8 end:0x8019B738
+	.bss        start:0x801D7230 end:0x801D7258
+	.sdata      start:0x803300E0 end:0x803300F8
+	.sbss       start:0x80330AA8 end:0x80330AB8
+	.sdata2     start:0x80331D20 end:0x80331D38
+
+Region.cpp:
+	.text       start:0x8002C0CC end:0x8002C164
+	.data       start:0x8019B760 end:0x8019B790
+
 Scene.cpp:
-	.text       start:0x8002C0CC end:0x8002D1D4
-	.ctors      start:0x80179278 end:0x8017927C
+	.text       start:0x8002C164 end:0x8002CEE0
 	.rodata     start:0x8017B4A0 end:0x8017B4C8
-	.data       start:0x8019B760 end:0x8019B978
+	.data       start:0x8019B790 end:0x8019B968
+	.sdata2     start:0x80331E10 end:0x80331E60
+
+SimpleModel.cpp:
+	.text       start:0x8002CEE0 end:0x8002D1D4
+	.ctors      start:0x80179278 end:0x8017927C
+	.data       start:0x8019B968 end:0x8019B978
 	.bss        start:0x801D7270 end:0x801D7280
 	.sbss       start:0x80330AC0 end:0x80330AC8
-	.sdata2     start:0x80331E10 end:0x80331E70
+	.sdata2     start:0x80331E60 end:0x80331E70
 
 HomeButton.cpp:
 	.text       start:0x8002D1D4 end:0x8002E3C8
@@ -50,9 +68,28 @@ System.cpp:
 	.sbss       start:0x80330AD0 end:0x80330B78
 	.sdata2     start:0x80331F00 end:0x80331F78
 
+ButtonGroup.cpp:
+	.text       start:0x80039994 end:0x8003A4A8
+	.sdata      start:0x803301B8 end:0x803301C0
+	.sdata2     start:0x80332000 end:0x80332018
+
 PointerHistory.cpp:
 	.text       start:0x8003A4A8 end:0x8003A7DC
 	.sdata2     start:0x80332018 end:0x80332020
+
+Fade.cpp:
+	.text       start:0x8003A7DC end:0x8003B0A4
+	.ctors      start:0x80179288 end:0x8017928C
+	.data       start:0x8019C190 end:0x8019C1D0
+	.bss        start:0x801F6C58 end:0x801F6C68
+	.sbss       start:0x80330B98 end:0x80330BA0
+	.sdata2     start:0x80332020 end:0x80332040
+
+WorkerThread.cpp:
+	.text       start:0x8003B0A4 end:0x8003B1AC
+
+LoopSound.cpp:
+	.text       start:0x8003B1AC end:0x8003B2C8
 
 SceneBase.cpp:
 	.text       start:0x8003B2C8 end:0x8003F628

@@ -1,31 +1,21 @@
 #include <channel/System.h>
 #include <channel/Scene.h>
 #include <channel/LayoutObj.h>
-#include <channel/ColorWhite.h>
 
-#include <nw4r/g3d.h>
-#include <channel/SimpleModel.h>
 
 #include <nw4r/ef.h>
 #include <nw4r/ut.h>
+#include <nw4r/lyt/lyt_layout.h>
 
 #include <revolution/GX.h>
 #include <revolution/SC.h>
 #include <revolution/VI.h>
 #include <revolution/OS.h>
 
-// Layout allocator (nw4r::lyt)
-extern "C" MEMAllocator* lbl_803311C8;
-// Error screen layout archive
-extern "C" u8 lbl_8019C6C0[];
+// Error screen layout archive (embedded U8 archive)
+extern "C" u8 gErrorLayoutArc[];
 // Cursor textures
 extern "C" TPLPalette* gCommonTpl;
-// Scratch matrix for SimpleModel::CalcMtx
-extern "C" nw4r::math::MTX34 lbl_801F6B28;
-
-// Not yet decompiled (weather)
-void RotateMtxDeg(nw4r::math::MTX34* mtx, f32 x, f32 y, f32 z);
-void TranslateMtx(nw4r::math::MTX34* mtx, f32 x, f32 y, f32 z);
 
 // nw4r::ef memory manager, configured and compiled by the channel (global namespace, see ef_memorymanagerconfig.h)
 class MemoryManager : public nw4r::ef::MemoryManagerBase {
@@ -93,39 +83,6 @@ static inline void SetEffectTranslate(nw4r::ef::Effect* effect, const nw4r::math
     emitter->mParameter.mTranslate.y = pos.y;
     emitter->mParameter.mTranslate.z = pos.z;
     emitter->SetMtxDirty();
-}
-
-// Region group from the console's product area: 0 = Japan/Taiwan, 2 = PAL, 1 = everything else
-s32 GetAreaGroup(void) {
-    switch (SCGetProductArea()) {
-    case SC_AREA_JPN:
-    case SC_AREA_TWN:
-        return 0;
-    case SC_AREA_EUR:
-    case SC_AREA_AUS:
-    case SC_AREA_SAF:
-        return 2;
-    default:
-        return 1;
-    }
-}
-
-// System language, falling back to English if it's out of range
-u8 GetLanguage(void) {
-    u8 lang = SCGetLanguage();
-
-    switch (lang) {
-    case SC_LANG_JP:
-    case SC_LANG_EN:
-    case SC_LANG_DE:
-    case SC_LANG_FR:
-    case SC_LANG_SP:
-    case SC_LANG_IT:
-    case SC_LANG_NL:
-        return lang;
-    default:
-        return SC_LANG_EN;
-    }
 }
 
 Cursor::Cursor() {
@@ -373,8 +330,8 @@ void Cursor::UpdateParticles(nw4r::ef::Effect* effect, f32 rotation, f32 brightn
 }
 
 FatalScene::FatalScene() {
-    lbl_803311C8 = &gMEM1Allocator;
-    mLayout = new LayoutObj(lbl_8019C6C0, "error_system.brlyt", 0);
+    nw4r::lyt::Layout::SetAllocator(&gMEM1Allocator);
+    mLayout = new LayoutObj(gErrorLayoutArc, "error_system.brlyt", 0);
 }
 
 FatalScene::~FatalScene() {
@@ -407,37 +364,3 @@ void FatalScene::Calc() {
 void FatalScene::Draw() {
     mLayout->Draw();
 }
-
-SimpleModel::SimpleModel(void* resData) : mTrans(0.0f, 0.0f, 0.0f), mRot(0.0f, 0.0f, 0.0f), mScale(21.0f, 21.0f, 21.0f) {
-    nw4r::g3d::ResFile file(resData);
-    u32 size;
-
-    file.Init();
-    file.Bind();
-    mResMdl = file.GetResMdl(0);
-    mScnMdl = nw4r::g3d::ScnMdlSimple::Construct(&gMEM2Allocator32, &size, mResMdl, 1);
-}
-
-SimpleModel::~SimpleModel() {
-    mScnMdl->Destroy();
-}
-
-// Empty in this build
-void SimpleModel::Calc() {}
-
-void SimpleModel::UpdateMtx() {
-    mMtx = CalcMtx(mRot);
-    mScnMdl->SetMtx(nw4r::g3d::ScnObj::MTX_LOCAL, &mMtx);
-}
-
-nw4r::math::MTX34 SimpleModel::CalcMtx(const nw4r::math::VEC3& rot) {
-    nw4r::math::MTX34RotXYZFIdx(&lbl_801F6B28, 0.0f, 0.7111111f * rot.y, 0.0f);
-    f32 z = rot.z;
-    f32 x = rot.x;
-    RotateMtxDeg(&lbl_801F6B28, x, 0.0f, z);
-    TranslateMtx(&lbl_801F6B28, mTrans.x, mTrans.y, mTrans.z);
-    return lbl_801F6B28;
-}
-
-// Empty in this build
-void SimpleModel::Draw() {}

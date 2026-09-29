@@ -9,6 +9,7 @@ class HomeButton;
 class SimpleModel;
 class Fade;
 class Sound;
+class ButtonGroup;
 
 // Base class of the channel's scenes (d_scene.cpp). Runs a small state machine: each state is a
 // member function called with mStatePhase = -1 on exit and counting up from 0 while active.
@@ -108,6 +109,11 @@ void FreeSysFonts();
 BOOL LoadEarthModel();
 BOOL FreeEarthModel();
 void ToDegrees(u16 lon, u16 lat, Vec2* out);
+void PlaySE(s32 id);
+void UpdateButtons(ButtonGroup* group, s32 hoverSound);
+void ClearHoveredButtons();
+s32 CheckButtonHeld(const char* name, u32 buttons);
+s32 CheckButtonPressed(const char* name, u32 buttons);
 f32 CalcDateWidth(const wchar_t* str);
 void DrawDateCentered(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, const GXColor* color,
                       const GXColor* shadowColor);

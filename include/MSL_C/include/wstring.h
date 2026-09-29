@@ -10,6 +10,7 @@ extern "C" {
 
 wchar_t* wcschr(const wchar_t*, const wchar_t);
 
+wchar_t* wcscpy(wchar_t* dst, const wchar_t* src);
 wchar_t* wcscat(wchar_t* dst, const wchar_t* src);
 size_t wcslen(const wchar_t*);
 
