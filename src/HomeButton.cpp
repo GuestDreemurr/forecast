@@ -1,4 +1,6 @@
 #include <channel/HomeButton.h>
+#include <channel/Fade.h>
+#include <channel/SceneBase.h>
 #include <channel/System.h>
 
 #include <revolution/GX.h>
@@ -15,11 +17,6 @@
 #define HOME_BUTTON_WORK_BUFFER_SIZE 0x80000
 
 // Not yet decompiled (channel)
-extern "C" void SetFadeState(void* arg0, s32 arg1);
-extern "C" s32 LoadSysFont(void);
-extern "C" void FreeSysFonts(void);
-extern "C" void LoadEarthModel(void);
-extern "C" void FreeEarthModel(void);
 
 // Not yet decompiled (libraries)
 extern "C" void HBMCreate(HomeButtonInfo* info);
@@ -49,7 +46,6 @@ extern "C" void ManualRequestExit(s32 arg0);
 extern "C" void ManualSetHBMInfo(HomeButtonInfo* info);
 extern "C" u32 MEMGetTotalFreeSizeForExpHeap(MEMiHeapHead* heap);
 
-extern void* gFade; // d_scene m_pFade
 
 struct HomeButtonController {
     KPADStatus* status; // at 0x0
@@ -336,7 +332,7 @@ s32 HomeButton::Calc() {
                 mResult = HOME_BUTTON_RESULT_3;
             }
 
-            SetFadeState(gFade, 15);
+            gFade->FadeIn(15);
             VISetBlack(FALSE);
             VIFlush();
             mOpenManual = FALSE;

@@ -1,5 +1,5 @@
 #include <channel/DrawUtil.h>
-#include <channel/Color.h>
+#include <channel/ColorWhite.h>
 #include <channel/System.h>
 
 void DrawTexture(TPLPalette* palette, u32 id, f32 scaleX, f32 scaleY, const Vec* pos, u32 flip) {

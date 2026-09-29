@@ -293,7 +293,6 @@ ut::Rect TextBox::GetTextDrawRect(ut::WideTextWriter* pWriter) const {
     pWriter->SetLineSpace(mLineSpace);
     pWriter->SetCharSpace(mCharSpace);
 
-    pWriter->SetWidthLimit(mSize.width);
     pWriter->SetDrawFlag(MakeDrawFlag());
 
     if (mpTagProcessor != NULL) {

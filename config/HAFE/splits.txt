@@ -50,6 +50,20 @@ System.cpp:
 	.sbss       start:0x80330AD0 end:0x80330B78
 	.sdata2     start:0x80331F00 end:0x80331F78
 
+PointerHistory.cpp:
+	.text       start:0x8003A4A8 end:0x8003A7DC
+	.sdata2     start:0x80332018 end:0x80332020
+
+SceneBase.cpp:
+	.text       start:0x8003B2C8 end:0x8003F628
+	.ctors      start:0x8017928C end:0x80179290
+	.rodata     start:0x8018F4E8 end:0x8018F730
+	.data       start:0x8019C1D0 end:0x8019C630
+	.bss        start:0x801F6C68 end:0x801F76A0
+	.sdata      start:0x803301C0 end:0x803301E0
+	.sbss       start:0x80330BA0 end:0x80330C28
+	.sdata2     start:0x80332040 end:0x80332098
+
 revolution/CNT/cnt.c:
 	.text       start:0x80045CB0 end:0x80045E40
 
@@ -508,7 +522,7 @@ nw4r/snd/snd_DvdSoundArchive.cpp:
 	.text       start:0x800BBA20 end:0x800BC060
 	.data       start:0x801B70B0 end:0x801B7138
 	.sbss       start:0x80331120 end:0x80331128
-	.sbss2      start:0x80333780 end:0x80333790
+	.sbss2      start:0x80333780 end:0x80333788
 
 nw4r/snd/snd_EnvGenerator.cpp:
 	.text       start:0x800BC0B8 end:0x800BC3F0

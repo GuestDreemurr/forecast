@@ -1,8 +1,9 @@
 #include <channel/System.h>
 #include <channel/Scene.h>
 #include <channel/LayoutObj.h>
-#include <channel/Color.h>
+#include <channel/ColorWhite.h>
 
+#include <nw4r/g3d.h>
 #include <channel/SimpleModel.h>
 
 #include <nw4r/ef.h>

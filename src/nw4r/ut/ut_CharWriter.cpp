@@ -44,6 +44,14 @@ CharWriter::CharWriter()
 
 CharWriter::~CharWriter() {}
 
+void CharWriter::SetFont(const Font& rFont) {
+    mFont = &rFont;
+}
+
+const Font* CharWriter::GetFont() const {
+    return mFont;
+}
+
 void CharWriter::SetupGX() {
     ResetTextureCache();
 
@@ -84,6 +92,49 @@ void CharWriter::SetupGX() {
     }
 }
 
+void CharWriter::SetColorMapping(Color min, Color max) {
+    mColorMapping.min = min;
+    mColorMapping.max = max;
+}
+
+void CharWriter::SetGradationMode(GradationMode mode) {
+    mTextColor.gradationMode = mode;
+    UpdateVertexColor();
+}
+
+void CharWriter::SetTextColor(Color start) {
+    mTextColor.start = start;
+    UpdateVertexColor();
+}
+
+void CharWriter::SetTextColor(Color start, Color end) {
+    mTextColor.start = start;
+    mTextColor.end = end;
+    UpdateVertexColor();
+}
+
+Color CharWriter::GetTextColor() const {
+    return mTextColor.start;
+}
+
+void CharWriter::SetScale(f32 x, f32 y) {
+    mScale.x = x;
+    mScale.y = y;
+}
+
+void CharWriter::SetScale(f32 scale) {
+    mScale.x = scale;
+    mScale.y = scale;
+}
+
+f32 CharWriter::GetScaleH() const {
+    return mScale.x;
+}
+
+f32 CharWriter::GetScaleV() const {
+    return mScale.y;
+}
+
 void CharWriter::SetFontSize(f32 width, f32 height) {
     SetScale(width / mFont->GetWidth(), height / mFont->GetHeight());
 }
@@ -102,6 +153,14 @@ f32 CharWriter::GetFontAscent() const {
 
 f32 CharWriter::GetFontDescent() const {
     return mScale.y * mFont->GetDescent();
+}
+
+bool CharWriter::IsWidthFixed() const {
+    return mIsWidthFixed;
+}
+
+f32 CharWriter::GetFixedWidth() const {
+    return mFixedWidth;
 }
 
 void CharWriter::EnableLinearFilter(bool atSmall, bool atLarge) {
@@ -129,6 +188,35 @@ f32 CharWriter::Print(u16 ch) {
     mCursorPos.x += width;
 
     return width;
+}
+
+void CharWriter::SetCursor(f32 x, f32 y) {
+    mCursorPos.x = x;
+    mCursorPos.y = y;
+}
+
+void CharWriter::SetCursorX(f32 x) {
+    mCursorPos.x = x;
+}
+
+void CharWriter::SetCursorY(f32 y) {
+    mCursorPos.y = y;
+}
+
+void CharWriter::MoveCursorX(f32 dx) {
+    mCursorPos.x += dx;
+}
+
+void CharWriter::MoveCursorY(f32 dy) {
+    mCursorPos.y += dy;
+}
+
+f32 CharWriter::GetCursorX() const {
+    return mCursorPos.x;
+}
+
+f32 CharWriter::GetCursorY() const {
+    return mCursorPos.y;
 }
 
 void CharWriter::PrintGlyph(f32 x, f32 y, f32 z, const Glyph& rGlyph) {

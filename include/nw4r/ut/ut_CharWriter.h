@@ -33,73 +33,40 @@ public:
     void EnableLinearFilter(bool atSmall, bool atLarge);
     f32 Print(u16 ch);
 
-    void SetColorMapping(Color min, Color max) {
-        mColorMapping.min = min;
-        mColorMapping.max = max;
-    }
+    void SetColorMapping(Color min, Color max);
 
     void ResetColorMapping() {
         SetColorMapping(DEFAULT_COLOR_MAPPING_MIN, DEFAULT_COLOR_MAPPING_MAX);
     }
 
-    void SetTextColor(Color start) {
-        mTextColor.start = start;
-        UpdateVertexColor();
-    }
+    void SetTextColor(Color start);
+    Color GetTextColor() const;
 
-    void SetTextColor(Color start, Color end) {
-        mTextColor.start = start;
-        mTextColor.end = end;
-        UpdateVertexColor();
-    }
+    void SetTextColor(Color start, Color end);
 
-    void SetGradationMode(GradationMode mode) {
-        mTextColor.gradationMode = mode;
-        UpdateVertexColor();
-    }
+    void SetGradationMode(GradationMode mode);
 
-    f32 GetScaleH() const {
-        return mScale.x;
-    }
-    f32 GetScaleV() const {
-        return mScale.y;
-    }
+    f32 GetScaleH() const;
+    f32 GetScaleV() const;
 
-    void SetScale(f32 x, f32 y) {
-        mScale.x = x;
-        mScale.y = y;
-    }
+    void SetScale(f32 x, f32 y);
+    void SetScale(f32 scale);
 
-    f32 GetCursorX() const {
-        return mCursorPos.x;
-    }
-    void SetCursorX(f32 x) {
-        mCursorPos.x = x;
-    }
+    f32 GetCursorX() const;
+    void SetCursorX(f32 x);
 
-    f32 GetCursorY() const {
-        return mCursorPos.y;
-    }
-    void SetCursorY(f32 y) {
-        mCursorPos.y = y;
-    }
+    f32 GetCursorY() const;
+    void SetCursorY(f32 y);
 
-    void SetCursor(f32 x, f32 y) {
-        mCursorPos.x = x;
-        mCursorPos.y = y;
-    }
+    void SetCursor(f32 x, f32 y);
     void SetCursor(f32 x, f32 y, f32 z) {
         mCursorPos.x = x;
         mCursorPos.y = y;
         mCursorPos.z = z;
     }
 
-    void MoveCursorX(f32 dx) {
-        mCursorPos.x += dx;
-    }
-    void MoveCursorY(f32 dy) {
-        mCursorPos.y += dy;
-    }
+    void MoveCursorX(f32 dx);
+    void MoveCursorY(f32 dy);
 
     void SetAlpha(u8 alpha) {
         mAlpha = alpha;
@@ -112,23 +79,15 @@ public:
     void EnableFixedWidth(bool enable) {
         mIsWidthFixed = enable;
     }
-    bool IsWidthFixed() const {
-        return mIsWidthFixed;
-    }
+    bool IsWidthFixed() const;
 
     void SetFixedWidth(f32 width) {
         mFixedWidth = width;
     }
-    f32 GetFixedWidth() const {
-        return mFixedWidth;
-    }
+    f32 GetFixedWidth() const;
 
-    void SetFont(const Font& rFont) {
-        mFont = &rFont;
-    }
-    const Font* GetFont() const {
-        return mFont;
-    }
+    void SetFont(const Font& rFont);
+    const Font* GetFont() const;
 
     void SetFontSize(f32 width, f32 height);
 

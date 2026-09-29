@@ -43,6 +43,10 @@ public:
     BOOL OpenManual();
     void OnReset();
 
+    BOOL IsOpen() const {
+        return mIsActive || mOpenManual;
+    }
+
 private:
     void CheckHeaps();
 

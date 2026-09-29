@@ -11,7 +11,6 @@
 // Not yet decompiled (channel)
 extern "C" void InitDownloader(void);
 extern "C" void UpdateDownloader(void);
-extern "C" void CalcWeatherScene(WeatherScene* scene);
 
 // Not yet decompiled (libraries)
 extern "C" void CNTInit(void);
@@ -452,7 +451,7 @@ void SystemCalc(void) {
         case SCENE_NONE:
             break;
         case SCENE_WEATHER:
-            CalcWeatherScene(gWeatherScene);
+            gWeatherScene->Calc();
             break;
         case SCENE_FATAL:
             gFatalScene->Calc();

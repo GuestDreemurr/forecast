@@ -33,11 +33,6 @@ void ScnObj::CalcWorldMtx(const math::MTX34* pParent, u32* pParam) {
     } else {
         math::MTX34Copy(&mMtxArray[MTX_WORLD], &mMtxArray[MTX_LOCAL]);
     }
-
-    if (TestScnObjFlag(SCNOBJFLAG_ENABLE_CULLING)) {
-        mAABB[BOUNDINGVOLUME_AABB_WORLD].Set(&mAABB[BOUNDINGVOLUME_AABB_LOCAL],
-                                             &mMtxArray[MTX_WORLD]);
-    }
 }
 
 void ScnObj::CalcViewMtx(const math::MTX34* pCamera) {
@@ -61,11 +56,6 @@ ScnObj::ScnObj(MEMAllocator* pAllocator)
     math::MTX34Identity(&mMtxArray[MTX_LOCAL]);
     math::MTX34Identity(&mMtxArray[MTX_WORLD]);
     math::MTX34Identity(&mMtxArray[MTX_VIEW]);
-
-    mAABB[BOUNDINGVOLUME_AABB_LOCAL].min = math::VEC3(0.0f, 0.0f, 0.0f);
-    mAABB[BOUNDINGVOLUME_AABB_LOCAL].max = math::VEC3(0.0f, 0.0f, 0.0f);
-    mAABB[BOUNDINGVOLUME_AABB_WORLD].min = math::VEC3(0.0f, 0.0f, 0.0f);
-    mAABB[BOUNDINGVOLUME_AABB_WORLD].max = math::VEC3(0.0f, 0.0f, 0.0f);
 }
 
 ScnObj::~ScnObj() {
@@ -264,34 +254,6 @@ void ScnObj::EnableScnObjCallbackExecOp(ExecOp op) {
     mCallbackExecOpMask |= static_cast<u16>(op);
 }
 
-bool ScnObj::SetBoundingVolume(ScnObjBoundingVolumeType type,
-                               const math::AABB* pAABB) {
-    if (pAABB != NULL) {
-        if (type < BOUNDINGVOLUME_MAX) {
-            mAABB[type] = *pAABB;
-            return SetScnObjOption(OPTID_ENABLE_CULLING, TRUE);
-        }
-
-        return false;
-    }
-
-    return SetScnObjOption(OPTID_ENABLE_CULLING, FALSE);
-}
-
-bool ScnObj::GetBoundingVolume(ScnObjBoundingVolumeType type,
-                               math::AABB* pAABB) const {
-    if (pAABB != NULL) {
-        if (type < BOUNDINGVOLUME_MAX) {
-            *pAABB = mAABB[type];
-            return true;
-        }
-
-        return false;
-    }
-
-    return false;
-}
-
 /******************************************************************************
  *
  * ScnLeaf
@@ -348,11 +310,6 @@ void ScnLeaf::CalcWorldMtx(const math::MTX34* pParent, u32* pParam) {
 
     ScnObj::CalcWorldMtx(pParent, pParam);
     math::MTX34Scale(&mMtxArray[MTX_WORLD], &mMtxArray[MTX_WORLD], &mScale);
-
-    if (TestScnObjFlag(SCNOBJFLAG_ENABLE_CULLING)) {
-        mAABB[BOUNDINGVOLUME_AABB_WORLD].Set(&mAABB[BOUNDINGVOLUME_AABB_LOCAL],
-                                             &mMtxArray[MTX_WORLD]);
-    }
 }
 
 ScnLeaf::ScaleProperty ScnLeaf::GetScaleProperty() const {
