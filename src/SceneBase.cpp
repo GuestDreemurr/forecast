@@ -1401,16 +1401,17 @@ void DrawNumRightAligned(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 sc
     GXSetTevColor(GX_TEVREG0, *color);
     GXSetTevColor(GX_TEVREG1, *color2);
 
-    const wchar_t* p = str + (len - 1);
+    str += len - 1;
     f32 prevWidth;
     f32 spacing;
 
-    for (u32 i = 0; i < len; i++, p--) {
-        int index = GetNumGlyph(*p);
+    for (u32 i = 0; i < len; i++, str--) {
+        int index = GetNumGlyph(*str);
         if (index >= 0) {
             if (i != 0) {
-                cur.x -= spacing + 0.5f * (prevWidth + sGlyphTextures[index].width) * scaleX;
-                if (*p == L'(') {
+                prevWidth = 0.5f * (prevWidth + sGlyphTextures[index].width);
+                cur.x -= spacing + prevWidth * scaleX;
+                if (*str == L'(') {
                     cur.x += parenOffset;
                 }
             }
@@ -1418,7 +1419,7 @@ void DrawNumRightAligned(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 sc
             DrawGlyph(index, cur, scaleX, scaleY);
             prevWidth = sGlyphTextures[index].width;
 
-            switch (*p) {
+            switch (*str) {
             case L')':
                 spacing = wideSpacing;
                 break;
