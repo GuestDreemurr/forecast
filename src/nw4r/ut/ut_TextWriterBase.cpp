@@ -14,7 +14,6 @@ TagProcessorBase<T> TextWriterBase<T>::mDefaultTagProcessor;
 template <typename T>
 TextWriterBase<T>::TextWriterBase()
     : mCharSpace(0.0f),
-      mWidthLimit(NW4R_MATH_FLT_MAX),
       mLineSpace(0.0f),
       mTabWidth(4),
       mDrawFlag(0),
@@ -26,6 +25,41 @@ template <typename T> f32 TextWriterBase<T>::GetLineHeight() const {
     const Font* pFont = GetFont();
     int lf = pFont != NULL ? pFont->GetLineFeed() : 0;
     return mLineSpace + GetScaleV() * lf;
+}
+
+template <typename T> void TextWriterBase<T>::SetLineSpace(f32 space) {
+    mLineSpace = space;
+}
+
+template <typename T> void TextWriterBase<T>::SetCharSpace(f32 space) {
+    mCharSpace = space;
+}
+
+template <typename T> f32 TextWriterBase<T>::GetCharSpace() const {
+    return mCharSpace;
+}
+
+template <typename T> int TextWriterBase<T>::GetTabWidth() const {
+    return mTabWidth;
+}
+
+template <typename T> void TextWriterBase<T>::SetDrawFlag(u32 flag) {
+    mDrawFlag = flag;
+}
+
+template <typename T>
+void TextWriterBase<T>::SetTagProcessor(TagProcessorBase<T>* pProcessor) {
+    mTagProcessor = pProcessor;
+}
+
+template <typename T>
+TagProcessorBase<T>* TextWriterBase<T>::GetTagProcessor() const {
+    return mTagProcessor;
+}
+
+template <typename T>
+f32 TextWriterBase<T>::CalcStringWidth(const T* pStr) const {
+    return CalcStringWidth(pStr, StrLen(pStr));
 }
 
 template <typename T>
@@ -51,6 +85,10 @@ template <typename T> f32 TextWriterBase<T>::Print(const T* pStr, int len) {
     return width;
 }
 
+template <typename T> f32 TextWriterBase<T>::Print(const T* pStr) {
+    return Print(pStr, StrLen(pStr));
+}
+
 template <typename T>
 f32 TextWriterBase<T>::CalcLineWidth(const T* pStr, int len) {
     Rect rect;
@@ -67,7 +105,7 @@ bool TextWriterBase<T>::CalcLineRectImpl(Rect* pRect, const T** ppStr,
                                          int len) {
     const T* pStrBegin = *ppStr;
     const T* pStrEnd = pStrBegin + len;
-    bool useLimit = mWidthLimit < NW4R_MATH_FLT_MAX;
+    bool useLimit = GetWidthLimit() < NW4R_MATH_FLT_MAX;
 
     PrintContext<T> context = {
         this,     // writer
@@ -111,7 +149,7 @@ bool TextWriterBase<T>::CalcLineRectImpl(Rect* pRect, const T** ppStr,
                 mTagProcessor->CalcRect(&r, ch, &context2);
 
                 if (r.GetWidth() > 0.0f &&
-                    clone.GetCursorX() - context.x > mWidthLimit) {
+                    clone.GetCursorX() - context.x > GetWidthLimit()) {
                     overLimit = true;
                     ch = '\n';
                     reader.Set(pPrevStream);
@@ -156,7 +194,7 @@ bool TextWriterBase<T>::CalcLineRectImpl(Rect* pRect, const T** ppStr,
                 dx += GetFont()->GetCharWidth(ch) * GetScaleH();
             }
 
-            if (useLimit && pPrevStream != NULL && x + dx > mWidthLimit) {
+            if (useLimit && pPrevStream != NULL && x + dx > GetWidthLimit()) {
                 overLimit = true;
                 ch = '\n';
                 reader.Set(pPrevStream);
@@ -210,7 +248,7 @@ template <typename T> f32 TextWriterBase<T>::PrintImpl(const T* pStr, int len) {
     f32 cursorX = GetCursorX();
     f32 cursorY = GetCursorY();
 
-    bool useLimit = mWidthLimit < NW4R_MATH_FLT_MAX;
+    bool useLimit = GetWidthLimit() < NW4R_MATH_FLT_MAX;
 
     f32 orgCursorX = cursorX;
     f32 orgCursorY = cursorY;
@@ -255,7 +293,7 @@ template <typename T> f32 TextWriterBase<T>::PrintImpl(const T* pStr, int len) {
                 oper = mTagProcessor->CalcRect(&rect, ch, &context2);
 
                 if (rect.GetWidth() > 0.0f &&
-                    clone.GetCursorX() - context.x > mWidthLimit) {
+                    clone.GetCursorX() - context.x > GetWidthLimit()) {
                     ch = '\n';
                     reader.Set(pPrevStream);
                     continue;
@@ -311,7 +349,7 @@ template <typename T> f32 TextWriterBase<T>::PrintImpl(const T* pStr, int len) {
                                 ? GetFixedWidth()
                                 : GetFont()->GetCharWidth(ch) * GetScaleH();
 
-                if (baseX - cursorX + space + width > mWidthLimit) {
+                if (baseX - cursorX + space + width > GetWidthLimit()) {
                     ch = '\n';
                     reader.Set(pPrevStream);
                     continue;
@@ -364,8 +402,8 @@ f32 TextWriterBase<T>::AdjustCursor(f32* pX, f32* pY, const T* pStr, int len) {
         textWidth = rect.left + rect.right;
         textHeight = rect.top + rect.bottom;
 
-        if (textWidth > mWidthLimit) {
-            textWidth = mWidthLimit;
+        if (textWidth > GetWidthLimit()) {
+            textWidth = GetWidthLimit();
         }
     }
 

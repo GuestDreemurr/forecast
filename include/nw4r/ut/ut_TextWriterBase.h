@@ -8,6 +8,7 @@
 #include <nw4r/math.h>
 
 #include <cstdio>
+#include <cstring>
 #include <cwchar>
 
 namespace nw4r {
@@ -51,49 +52,27 @@ public:
     TextWriterBase();
     ~TextWriterBase();
 
+    // No width limit in this version of nw4r
     f32 GetWidthLimit() const {
-        return mWidthLimit;
-    }
-    void SetWidthLimit(f32 limit) {
-        mWidthLimit = limit;
-    }
-    void ResetWidthLimit() {
-        mWidthLimit = NW4R_MATH_FLT_MAX;
+        return NW4R_MATH_FLT_MAX;
     }
 
-    f32 GetCharSpace() const {
-        return mCharSpace;
-    }
-    void SetCharSpace(f32 space) {
-        mCharSpace = space;
-    }
+    void SetLineSpace(f32 space);
+    void SetCharSpace(f32 space);
+    f32 GetCharSpace() const;
+    int GetTabWidth() const;
+    void SetDrawFlag(u32 flag);
+    void SetTagProcessor(TagProcessorBase<T>* pProcessor);
+    TagProcessorBase<T>* GetTagProcessor() const;
 
     f32 GetLineSpace() const {
         return mLineSpace;
     }
-    void SetLineSpace(f32 space) {
-        mLineSpace = space;
-    }
-
-    int GetTabWidth() const {
-        return mTabWidth;
-    }
     void SetTabWidth(int width) {
         mTabWidth = width;
     }
-
     u32 GetDrawFlag() const {
         return mDrawFlag;
-    }
-    void SetDrawFlag(u32 flag) {
-        mDrawFlag = flag;
-    }
-
-    TagProcessorBase<T>* GetTagProcessor() const {
-        return mTagProcessor;
-    }
-    void SetTagProcessor(TagProcessorBase<T>* pProcessor) {
-        mTagProcessor = pProcessor;
     }
     void ResetTagProcessor() {
         mTagProcessor = &mDefaultTagProcessor;
@@ -102,12 +81,14 @@ public:
     f32 GetLineHeight() const;
 
     f32 CalcLineWidth(const T* pStr, int len);
+    f32 CalcStringWidth(const T* pStr) const;
     f32 CalcStringWidth(const T* pStr, int len) const;
     void CalcStringRect(Rect* pRect, const T* pStr, int len) const;
 
     int VSNPrintf(T* buffer, u32 count, const T* pStr, std::va_list args);
     f32 VPrintf(const T* pStr, std::va_list args);
     f32 Print(const T* pStr, int len);
+    f32 Print(const T* pStr);
 
     static T* GetBuffer() {
         return mFormatBuffer;
@@ -131,6 +112,8 @@ private:
                                          DRAWFLAG_MASK_ALIGN_V;
 
 private:
+    static int StrLen(const T* pStr);
+
     bool IsDrawFlagSet(u32 mask, u32 flag) const {
         return (mDrawFlag & mask) == flag;
     }
@@ -142,17 +125,24 @@ private:
     f32 AdjustCursor(f32* pX, f32* pY, const T* pStr, int len);
 
 private:
-    f32 mWidthLimit;                    // at 0x4C
-    f32 mCharSpace;                     // at 0x50
-    f32 mLineSpace;                     // at 0x54
-    int mTabWidth;                      // at 0x58
-    u32 mDrawFlag;                      // at 0x5C
-    TagProcessorBase<T>* mTagProcessor; // at 0x60
+    f32 mCharSpace;                     // at 0x4C
+    f32 mLineSpace;                     // at 0x50
+    int mTabWidth;                      // at 0x54
+    u32 mDrawFlag;                      // at 0x58
+    TagProcessorBase<T>* mTagProcessor; // at 0x5C
 
     static T* mFormatBuffer;
     static u32 mFormatBufferSize;
     static TagProcessorBase<T> mDefaultTagProcessor;
 };
+
+template <> inline int TextWriterBase<char>::StrLen(const char* pStr) {
+    return std::strlen(pStr);
+}
+
+template <> inline int TextWriterBase<wchar_t>::StrLen(const wchar_t* pStr) {
+    return std::wcslen(pStr);
+}
 
 template <>
 inline int TextWriterBase<char>::VSNPrintf(char* pBuffer, u32 count,
