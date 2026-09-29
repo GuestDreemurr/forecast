@@ -8,6 +8,7 @@
 class HomeButton;
 class SimpleModel;
 class Fade;
+class Sound;
 
 // Base class of the channel's scenes (d_scene.cpp). Runs a small state machine: each state is a
 // member function called with mStatePhase = -1 on exit and counting up from 0 while active.
@@ -72,8 +73,8 @@ public:
     }
 
     nw4r::ut::TextWriterBase<wchar_t> mTextWriter; // at 0x4
-    DrawFunc mDrawFunc;   // at 0x64, per-language clock
-    StateFunc mState;     // at 0x70
+    DrawFunc mDrawFunc;                            // at 0x64, per-language clock
+    StateFunc mState;                              // at 0x70
     f32 mClockX;          // at 0x7C
     f32 mClockY;          // at 0x80
     f32 unk84;            // at 0x84
@@ -93,7 +94,6 @@ extern SimpleModel* gEarthModel;
 extern u8 gFatalRequested;
 extern u8 gReturnToMenuRequested;
 extern s32 gGlobeAlpha;
-class Sound;
 extern Sound* gSound;
 extern Fade* gFade;
 extern Fade* gFade2;

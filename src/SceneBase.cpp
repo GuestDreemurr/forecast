@@ -27,7 +27,6 @@ extern "C" void ShutdownDownloader(s32 event);
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void WrapHour(s32* pHour);
 
-
 struct GlyphTexture {
     u32 texture; // at 0x0
     f32 width;   // at 0x4
@@ -80,7 +79,6 @@ static const char* sManualPagesEU[] = {
     "arc:/html/startup_hol.html",
 };
 
-
 PointerHistory gPointerHistory;
 OSCalendarTime sCalendarTime;
 GlyphTexture sGlyphTextures[89];
@@ -101,34 +99,33 @@ s32 gAnimCounter2;
 u8 gFatalRequested;
 u8 gReturnToMenuRequested;
 u8 gPointerOverMenu;
-static u8 gEarthLoading;
+static u8 sEarthLoading;
 Fade* gFade;
 Fade* gFade2;
-static void* gSysFontBuf;
-static void* gTimeFontBuf;
-static void* gSysFontBuf2;
-static void* gFutiFontBuf;
-static nw4r::ut::ArchiveFont* gSysFont2;
+static void* sSysFontBuf;
+static void* sTimeFontBuf;
+static void* sSysFontBuf2;
+static void* sFutiFontBuf;
+static nw4r::ut::ArchiveFont* sSysFont2;
 nw4r::ut::ResFont* gFutiFont;
 nw4r::ut::ArchiveFont* gSysFont;
 nw4r::ut::ResFont* gTimeFont;
 Sound* gSound;
-static void* gEarthModelData;
+static void* sEarthModelData;
 SimpleGlobe* gSimpleGlobe;
 SimpleModel* gEarthModel;
-static u32 gEarthFileSize;
-static u32 gEarthUncompSize;
-static u32 gEarthChunkSize;
+static u32 sEarthFileSize;
+static u32 sEarthUncompSize;
+static u32 sEarthChunkSize;
 TPLPalette* gCommonTpl;
-static void* gSceneMem1;
-static void* gSceneMem2;
-static MEMiHeapHead* gSceneHeap1;
-static MEMiHeapHead* gSceneHeap2;
-static WorkerThread* gEarthThread;
-static void* gEarthData;
-static void* gEarthChunkBuf;
+static void* sSceneMem1;
+static void* sSceneMem2;
+static MEMiHeapHead* sSceneHeap1;
+static MEMiHeapHead* sSceneHeap2;
+static WorkerThread* sEarthThread;
+static void* sEarthData;
+static void* sEarthChunkBuf;
 Color gHighlightColor(140, 180, 180, 255);
-
 
 static inline void ClearHoveredButtonsInline() {
     sHoveredButtons[0] = NULL;
@@ -137,33 +134,24 @@ static inline void ClearHoveredButtonsInline() {
     sHoveredButtons[3] = NULL;
 }
 
-static inline GXColor MakeColor(u8 r, u8 g, u8 b, u8 a) {
-    GXColor color;
-    color.r = r;
-    color.g = g;
-    color.b = b;
-    color.a = a;
-    return color;
-}
-
 SceneBase::SceneBase(bool arg)
     : mDrawFunc(NULL), mState(NULL), mClockX(0.0f), mClockY(0.0f), unk84(0.0f), mMenuBarY(0.0f), unk8C(0.0f),
       unk90(0.0f), mAmPmOffsetY(0.0f), mStatePhase(0), mClockAlpha(0), unkA0(0), unkA4(arg), unkA8(0) {
     gFatalRequested = FALSE;
-    gEarthModelData = NULL;
-    gEarthLoading = FALSE;
+    sEarthModelData = NULL;
+    sEarthLoading = FALSE;
 
     OSTicksToCalendarTime(OSGetTime(), &sCalendarTime);
 
     const GXColor clearColor = {0, 0, 0, 255};
     GXSetCopyClear(clearColor, 0xFFFFFF);
 
-    gSceneMem1 = MEM1Alloc(0x700000, 0);
-    gSceneMem2 = MEM2Alloc(0x1B00000, 0);
-    gSceneHeap1 = MEMCreateExpHeapEx(gSceneMem1, 0x700000, 0);
-    gSceneHeap2 = MEMCreateExpHeapEx(gSceneMem2, 0x1B00000, 0);
-    MEMInitAllocatorForExpHeap(&gSceneAllocator1, gSceneHeap1, 32);
-    MEMInitAllocatorForExpHeap(&gSceneAllocator2, gSceneHeap2, 32);
+    sSceneMem1 = MEM1Alloc(0x700000, 0);
+    sSceneMem2 = MEM2Alloc(0x1B00000, 0);
+    sSceneHeap1 = MEMCreateExpHeapEx(sSceneMem1, 0x700000, 0);
+    sSceneHeap2 = MEMCreateExpHeapEx(sSceneMem2, 0x1B00000, 0);
+    MEMInitAllocatorForExpHeap(&gSceneAllocator1, sSceneHeap1, 32);
+    MEMInitAllocatorForExpHeap(&gSceneAllocator2, sSceneHeap2, 32);
 
     gDragScroll.Reset();
     gPointerHistory.Reset();
@@ -171,8 +159,8 @@ SceneBase::SceneBase(bool arg)
     gSceneFrameCount = 0;
     gFade = NULL;
     gFade2 = NULL;
-    gSysFontBuf2 = NULL;
-    gSysFont2 = NULL;
+    sSysFontBuf2 = NULL;
+    sSysFont2 = NULL;
     gReturnToMenuRequested = FALSE;
     ClearHoveredButtonsInline();
     nw4r::lyt::Layout::SetAllocator(&gMEM1Allocator);
@@ -204,10 +192,10 @@ SceneBase::SceneBase(bool arg)
 
     void* timeFont;
     if (gLanguage == 0) {
-        timeFont = gTimeFontBuf =
+        timeFont = sTimeFontBuf =
             LoadCompressedContentFile(gUnk80330B64, "font_weather_time.brfnt.LZ", 32, NULL, gMEM1Heap);
     } else {
-        timeFont = gTimeFontBuf =
+        timeFont = sTimeFontBuf =
             LoadCompressedContentFile(gUnk80330B64, "font_weather_timeWW.brfnt.LZ", 32, NULL, gMEM1Heap);
     }
 
@@ -222,7 +210,7 @@ SceneBase::SceneBase(bool arg)
         OSPanic("d_scene.cpp", 421, "m_pTimeFont\n");
     }
 
-    if (!gTimeFont->SetResource(gTimeFontBuf)) {
+    if (!gTimeFont->SetResource(sTimeFontBuf)) {
         OSPanic("d_scene.cpp", 425, "nw4r::ut::ResFont::SetResource() failed.\n");
     }
 
@@ -232,8 +220,8 @@ SceneBase::SceneBase(bool arg)
         goto end;
     }
 
-    gFutiFontBuf = LoadCompressedContentFile(gUnk80330B64, "/font_weather_city.brfnt.LZ", 32, NULL, gMEM2Heap);
-    if (gFutiFontBuf == NULL) {
+    sFutiFontBuf = LoadCompressedContentFile(gUnk80330B64, "/font_weather_city.brfnt.LZ", 32, NULL, gMEM2Heap);
+    if (sFutiFontBuf == NULL) {
         OSReport("%s[%d]\n", "d_scene.cpp", 439);
         gFatalRequested = TRUE;
         goto end;
@@ -244,7 +232,7 @@ SceneBase::SceneBase(bool arg)
         OSPanic("d_scene.cpp", 448, "m_pFutiFont\n");
     }
 
-    if (!gFutiFont->SetResource(gFutiFontBuf)) {
+    if (!gFutiFont->SetResource(sFutiFontBuf)) {
         OSPanic("d_scene.cpp", 454, "m_pFutiFont->SetResource() failed.\n");
     }
 
@@ -332,15 +320,15 @@ end:;
 }
 
 static inline void FreeSysFontsInline() {
-    if (gSysFont2 != NULL) {
-        gSysFont2->Destroy();
-        delete gSysFont2;
-        gSysFont2 = NULL;
+    if (sSysFont2 != NULL) {
+        sSysFont2->Destroy();
+        delete sSysFont2;
+        sSysFont2 = NULL;
     }
 
-    if (gSysFontBuf2 != NULL) {
-        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf2);
-        gSysFontBuf2 = NULL;
+    if (sSysFontBuf2 != NULL) {
+        MEMFreeToAllocator(&gSceneAllocator2, sSysFontBuf2);
+        sSysFontBuf2 = NULL;
     }
 
     if (gSysFont != NULL) {
@@ -349,9 +337,9 @@ static inline void FreeSysFontsInline() {
         gSysFont = NULL;
     }
 
-    if (gSysFontBuf != NULL) {
-        MEMFreeToAllocator(&gSceneAllocator2, gSysFontBuf);
-        gSysFontBuf = NULL;
+    if (sSysFontBuf != NULL) {
+        MEMFreeToAllocator(&gSceneAllocator2, sSysFontBuf);
+        sSysFontBuf = NULL;
     }
 }
 
@@ -367,14 +355,14 @@ SceneBase::~SceneBase() {
         gEarthModel = NULL;
     }
 
-    if (gEarthModelData != NULL) {
-        MEMFreeToExpHeap(gSceneHeap2, gEarthModelData);
-        gEarthModelData = NULL;
+    if (sEarthModelData != NULL) {
+        MEMFreeToExpHeap(sSceneHeap2, sEarthModelData);
+        sEarthModelData = NULL;
     }
 
-    if (gEarthThread != NULL) {
-        delete gEarthThread;
-        gEarthThread = NULL;
+    if (sEarthThread != NULL) {
+        delete sEarthThread;
+        sEarthThread = NULL;
     }
 
     if (gSound != NULL) {
@@ -407,9 +395,9 @@ SceneBase::~SceneBase() {
         gFutiFont = NULL;
     }
 
-    if (gFutiFontBuf != NULL) {
-        MEM2Free(gFutiFontBuf);
-        gFutiFontBuf = NULL;
+    if (sFutiFontBuf != NULL) {
+        MEM2Free(sFutiFontBuf);
+        sFutiFontBuf = NULL;
     }
 
     if (gTimeFont != NULL) {
@@ -417,26 +405,26 @@ SceneBase::~SceneBase() {
         gTimeFont = NULL;
     }
 
-    if (gTimeFontBuf != NULL) {
-        MEM1Free(gTimeFontBuf);
-        gTimeFontBuf = NULL;
+    if (sTimeFontBuf != NULL) {
+        MEM1Free(sTimeFontBuf);
+        sTimeFontBuf = NULL;
     }
 
     FreeSysFontsInline();
 
-    if (gEarthChunkBuf != NULL) {
-        MEMFreeToExpHeap(gSceneHeap2, gEarthChunkBuf);
-        gEarthChunkBuf = NULL;
+    if (sEarthChunkBuf != NULL) {
+        MEMFreeToExpHeap(sSceneHeap2, sEarthChunkBuf);
+        sEarthChunkBuf = NULL;
     }
 
     if (gHomeButton != NULL) {
         delete gHomeButton;
     }
 
-    MEMDestroyExpHeap(gSceneHeap2);
-    MEMDestroyExpHeap(gSceneHeap1);
-    MEM2Free(gSceneMem2);
-    MEM1Free(gSceneMem1);
+    MEMDestroyExpHeap(sSceneHeap2);
+    MEMDestroyExpHeap(sSceneHeap1);
+    MEM2Free(sSceneMem2);
+    MEM1Free(sSceneMem1);
 }
 
 void SceneBase::Exit(BOOL shutdownNet, s32 event) {
@@ -451,14 +439,14 @@ void SceneBase::Exit(BOOL shutdownNet, s32 event) {
 }
 
 BOOL LoadSysFont() {
-    void* file = LoadContentFile(5, "wbf1.brfna", -32, NULL, gSceneHeap1);
+    void* file = LoadContentFile(5, "wbf1.brfna", -32, NULL, sSceneHeap1);
     if (file == NULL) {
         return TRUE;
     }
 
     u32 size = nw4r::ut::ArchiveFont::GetRequireBufferSize(file);
-    gSysFontBuf = MEMAllocFromAllocator(&gSceneAllocator2, size);
-    if (gSysFontBuf == NULL) {
+    sSysFontBuf = MEMAllocFromAllocator(&gSceneAllocator2, size);
+    if (sSysFontBuf == NULL) {
         MEM1Free(file);
         OSPanic("d_scene.cpp", 725, "m_pSysFontBuf\n");
     }
@@ -468,13 +456,13 @@ BOOL LoadSysFont() {
         OSPanic("d_scene.cpp", 732, "m_pSysFont\n");
     }
 
-    if (!gSysFont->Construct(gSysFontBuf, size, file)) {
+    if (!gSysFont->Construct(sSysFontBuf, size, file)) {
         MEM1Free(file);
         OSPanic("d_scene.cpp", 737, "nw4r::ut::ArchiveFont::Construct() failed.\n");
     }
 
     gSysFont->SetAlternateChar(0xE06B);
-    MEMFreeToExpHeap(gSceneHeap1, file);
+    MEMFreeToExpHeap(sSceneHeap1, file);
     return FALSE;
 }
 
@@ -534,14 +522,14 @@ void SceneBase::Calc() {
     gSceneFrameCount++;
     unk20();
 
-    if (gEarthLoading && gEarthModelData != NULL) {
-        if (gEarthChunkBuf != NULL) {
-            MEMFreeToExpHeap(gSceneHeap2, gEarthChunkBuf);
-            gEarthChunkBuf = NULL;
+    if (sEarthLoading && sEarthModelData != NULL) {
+        if (sEarthChunkBuf != NULL) {
+            MEMFreeToExpHeap(sSceneHeap2, sEarthChunkBuf);
+            sEarthChunkBuf = NULL;
         }
 
         if (gEarthModel == NULL) {
-            gEarthModel = new (-32) SimpleModel(gEarthModelData);
+            gEarthModel = new (-32) SimpleModel(sEarthModelData);
         }
     }
 
@@ -858,8 +846,8 @@ BOOL SceneBase::StateMain() {
             return TRUE;
         }
 
-        gHomeButton->unkE = gEarthModel != NULL || !gEarthLoading;
-        gHomeButton->unkF = gEarthLoading;
+        gHomeButton->unkE = gEarthModel != NULL || !sEarthLoading;
+        gHomeButton->unkF = sEarthLoading;
 
         switch (gHomeButton->Calc()) {
         case 1:
@@ -943,7 +931,7 @@ BOOL SceneBase::StateReturnToMenu() {
     case 2:
     default:
         if (gFade->mFading == 0) {
-            if (!gEarthLoading) {
+            if (!sEarthLoading) {
                 Exit(TRUE, 5);
                 ReturnToMenu();
             } else if (gEarthModel != NULL) {
@@ -982,12 +970,12 @@ BOOL LoadEarthModel() {
     u8 header[32] ATTRIBUTE_ALIGN(32);
     s32 result;
 
-    gEarthLoading = TRUE;
+    sEarthLoading = TRUE;
 
     result = contentOpenNAND(&gContentHandles[6], sEarthPath, &file);
     switch (result) {
     case 0:
-        gEarthFileSize = (contentGetLengthNAND(&file) + 31) & ~31;
+        sEarthFileSize = (contentGetLengthNAND(&file) + 31) & ~31;
         result = contentReadNAND(&file, header, sizeof(header), 0);
         contentCloseNAND(&file);
         if (result == 0) {
@@ -995,25 +983,25 @@ BOOL LoadEarthModel() {
             return FALSE;
         }
 
-        gEarthUncompSize = CXGetUncompressedSize(header);
+        sEarthUncompSize = CXGetUncompressedSize(header);
         break;
     default:
         OSReport("Error!! (%s) CNTOpen() failed. %d\n", sEarthPath, result);
         return FALSE;
     }
 
-    gEarthChunkSize = 0x10000;
-    gEarthData = MEMAllocFromExpHeapEx(gSceneHeap2, gEarthUncompSize, -32);
-    gEarthChunkBuf = MEMAllocFromExpHeapEx(gSceneHeap2, gEarthChunkSize, -32);
+    sEarthChunkSize = 0x10000;
+    sEarthData = MEMAllocFromExpHeapEx(sSceneHeap2, sEarthUncompSize, -32);
+    sEarthChunkBuf = MEMAllocFromExpHeapEx(sSceneHeap2, sEarthChunkSize, -32);
 
-    if (gEarthThread == NULL) {
-        gEarthThread = new WorkerThread(EarthLoadThread);
-        if (gEarthThread == NULL) {
+    if (sEarthThread == NULL) {
+        sEarthThread = new WorkerThread(EarthLoadThread);
+        if (sEarthThread == NULL) {
             OSPanic("d_scene.cpp", 1699, "\x83\x81\x83\x82\x83\x8A\x82\xAA\x82\xC8\x82\xA2\x81\x49\x81\x49\n");
             return FALSE;
         }
     } else {
-        gEarthThread->Restart(EarthLoadThread);
+        sEarthThread->Restart(EarthLoadThread);
     }
 
     return TRUE;
@@ -1027,15 +1015,15 @@ static void* EarthLoadThread(void* arg) {
     result = contentOpenNAND(&gContentHandles[6], sEarthPath, &file);
     switch (result) {
     case 0: {
-        CXInitUncompContextLZ(&ctx, gEarthData);
+        CXInitUncompContextLZ(&ctx, sEarthData);
 
-        for (u32 offset = 0; offset < gEarthFileSize; offset += gEarthChunkSize) {
-            u32 size = gEarthFileSize - offset;
-            if (size > gEarthChunkSize) {
-                size = gEarthChunkSize;
+        for (u32 offset = 0; offset < sEarthFileSize; offset += sEarthChunkSize) {
+            u32 size = sEarthFileSize - offset;
+            if (size > sEarthChunkSize) {
+                size = sEarthChunkSize;
             }
 
-            result = contentReadNAND(&file, gEarthChunkBuf, size, offset);
+            result = contentReadNAND(&file, sEarthChunkBuf, size, offset);
             if (result == 0) {
                 contentCloseNAND(&file);
                 OSReport("Error!! (%s) CNTRead() failed. %d\n", sEarthPath, result);
@@ -1043,7 +1031,7 @@ static void* EarthLoadThread(void* arg) {
                 return NULL;
             }
 
-            CXReadUncompLZ(&ctx, gEarthChunkBuf, size);
+            CXReadUncompLZ(&ctx, sEarthChunkBuf, size);
         }
 
         contentCloseNAND(&file);
@@ -1062,13 +1050,13 @@ static void* EarthLoadThread(void* arg) {
         return NULL;
     }
 
-    gEarthModelData = gEarthData;
-    gEarthData = NULL;
+    sEarthModelData = sEarthData;
+    sEarthData = NULL;
     return NULL;
 }
 
 BOOL FreeEarthModel() {
-    if (gEarthLoading) {
+    if (sEarthLoading) {
         if (gEarthModel != NULL) {
             if (gEarthModel != NULL) {
                 if (gSimpleGlobe != NULL) {
@@ -1082,12 +1070,12 @@ BOOL FreeEarthModel() {
                 gEarthModel = NULL;
             }
 
-            if (gEarthModelData != NULL) {
-                MEMFreeToExpHeap(gSceneHeap2, gEarthModelData);
-                gEarthModelData = NULL;
+            if (sEarthModelData != NULL) {
+                MEMFreeToExpHeap(sSceneHeap2, sEarthModelData);
+                sEarthModelData = NULL;
             }
 
-            gEarthLoading = FALSE;
+            sEarthLoading = FALSE;
             return TRUE;
         }
 
@@ -1254,10 +1242,6 @@ static inline int GetTempGlyph(wchar_t c) {
         }
     }
     return -1;
-}
-
-static inline f32 GetGlyphWidth(int i) {
-    return sGlyphTextures[i].width;
 }
 
 static inline BOOL IsNearZero(f32 x) {
