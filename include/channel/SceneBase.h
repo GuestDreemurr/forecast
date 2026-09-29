@@ -4,12 +4,14 @@
 
 class HomeButton;
 class SimpleModel;
+class Fade;
+struct Vec2;
 
 // Base class of the channel's scenes (d_scene.cpp). Runs a small state machine: each state is a
 // member function called with mStatePhase = -1 on exit and counting up from 0 while active.
 class SceneBase {
 public:
-    typedef void (SceneBase::*StateFunc)();
+    typedef BOOL (SceneBase::*StateFunc)();
 
     SceneBase(bool arg);
     virtual ~SceneBase();                    // at 0x8
@@ -30,12 +32,17 @@ public:
     virtual void unk44();                    // at 0x44
     virtual void unk48();                    // at 0x48
 
+    void UpdateMenuFade();
+    BOOL StateFatal();
+
     u8 unk4[0x64 - 0x4];  // at 0x4, nw4r::ut::TextWriterBase<wchar_t>
-    StateFunc mNextState; // at 0x64
+    StateFunc mDrawFunc;  // at 0x64
     StateFunc mState;     // at 0x70
-    f32 unk7C[7];         // at 0x7C
+    f32 unk7C[3];         // at 0x7C
+    f32 mMenuBarY;        // at 0x88, pointer above this counts as over the menu bar
+    f32 unk8C[3];         // at 0x8C
     s32 mStatePhase;      // at 0x98
-    s32 unk9C;            // at 0x9C
+    s32 mMenuShadeAlpha;  // at 0x9C
     s32 unkA0;            // at 0xA0
     u8 unkA4;             // at 0xA4
     s32 unkA8;            // at 0xA8
@@ -43,10 +50,18 @@ public:
 
 extern HomeButton* gHomeButton;
 extern SimpleModel* gEarthModel;
-extern u8 gExitRequested;
+extern u8 gFatalRequested;
 extern s32 gGlobeAlpha;
+class Sound;
+extern Sound* gSound;
+extern Fade* gFade;
+extern Fade* gFade2;
+extern u8 gPointerOverMenu;
+extern u8 gMenuVisible;
+extern f32 gMenuBrightness;
 
-void RequestExit();
+void RequestFatal();
 u32 GetLanguageTexture();
+void ToDegrees(u16 lon, u16 lat, Vec2* out);
 
 #endif
