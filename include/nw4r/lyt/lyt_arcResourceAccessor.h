@@ -61,6 +61,7 @@ public:
     virtual ut::Font* GetFont(const char* pName); // at 0x10
 
     bool Attach(void* pArchive, const char* pRootDir);
+    void* Detach();
 
     bool IsAttached() const {
         return mArcBuf != NULL;

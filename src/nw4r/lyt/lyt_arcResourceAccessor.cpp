@@ -130,6 +130,12 @@ bool ArcResourceAccessor::Attach(void* pArchive, const char* pRootDir) {
     return true;
 }
 
+void* ArcResourceAccessor::Detach() {
+    void* pArchive = mArcBuf;
+    mArcBuf = NULL;
+    return pArchive;
+}
+
 void* ArcResourceAccessor::GetResource(u32 type, const char* pName,
                                        u32* pSize) {
 

@@ -87,6 +87,10 @@ public:
         return mpRootPane;
     }
 
+    u8 GetOriginType() const {
+        return mOriginType;
+    }
+
     GroupContainer* GetGroupContainer() const {
         return mpGroupContainer;
     }

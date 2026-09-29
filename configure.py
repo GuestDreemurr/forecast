@@ -1208,6 +1208,7 @@ config.libs = [
                 Object(Matching, "DrawUtil.cpp"),
                 Object(NonMatching, "GlobeDots.cpp"),
                 Object(NonMatching, "System.cpp"),
+                Object(NonMatching, "ButtonGroup.cpp"),
                 Object(Matching, "PointerHistory.cpp"),
                 Object(Matching, "Fade.cpp"),
                 Object(Matching, "WorkerThread.cpp"),
