@@ -943,8 +943,8 @@ static inline void DrawGlyph(int index, const Vec2& at, f32 scaleX, f32 scaleY) 
     f32 offX = halfW * scaleX;
     f32 offY = halfH * scaleY;
     Vec pos;
-    pos.x = at.x - offX;
     pos.y = at.y - offY;
+    pos.x = at.x - offX;
     pos.z = 0.0f;
     DrawTextureAt(gCommonTpl, sGlyphTextures[index].texture, scaleX, scaleY, &pos);
 }
