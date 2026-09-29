@@ -929,6 +929,10 @@ static inline int GetTempGlyph(wchar_t c) {
     return -1;
 }
 
+static inline f32 GetGlyphWidth(int i) {
+    return sGlyphTextures[i].width;
+}
+
 static inline BOOL IsNearZero(f32 x) {
     return x < 0.0008f && x > -0.0008f;
 }
@@ -1070,7 +1074,8 @@ void DrawNum(const wchar_t* str, const Vec2* pos, f32 scaleX, f32 scaleY, f32 sp
         int index = GetNumGlyph(*str);
         if (index >= 0) {
             if (i != 0) {
-                cur.x += scaleX * (spacing + 0.5f * (prevWidth + sGlyphTextures[index].width));
+                prevWidth = scaleX * (spacing + 0.5f * (prevWidth + sGlyphTextures[index].width));
+                cur.x += prevWidth;
             }
 
             DrawGlyph(index, cur, scaleX, scaleY);
