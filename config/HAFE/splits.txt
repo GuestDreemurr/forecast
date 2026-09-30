@@ -36,6 +36,9 @@ WeatherTextUS.cpp:
 	.data       start:0x801996B8 end:0x80199AA8
 	.sdata      start:0x8032F928 end:0x8032FCF0
 
+ForecastCheck.cpp:
+	.text       start:0x8000C734 end:0x8000D5C8
+
 WeatherScene.cpp:
 	.text       start:0x8000D5C8 end:0x800110D0
 	.ctors      start:0x80179248 end:0x8017924C
