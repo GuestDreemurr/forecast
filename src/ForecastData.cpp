@@ -266,39 +266,37 @@ s32 ForecastData::LoadShort(void* data) {
     s32 result = 1;
 
     mShortBin = data;
-    if (data == NULL) {
-        return result;
-    }
-
-    ShortHeader* header = (ShortHeader*)data;
-    mShortHeader = header;
-    if (header->mNumEntries == 0) {
-        result = 14;
-        goto fail;
-    }
-    if (header->mEntryOffset == 0) {
-        result = 20;
-        goto fail;
-    }
-
-    mShortEntries = (ShortEntry*)((u8*)data + header->mEntryOffset);
-    if (header->mNumEntries != 0) {
-        mNow = new CityNow[header->mNumEntries];
-        if (mNow == NULL) {
-            result = 6;
+    if (data != NULL) {
+        ShortHeader* header = (ShortHeader*)data;
+        mShortHeader = header;
+        if (header->mNumEntries == 0) {
+            result = 14;
             goto fail;
         }
-        CityNow* now = mNow;
-        ShortEntry* entry = mShortEntries;
-        for (u32 i = 0; i < mShortHeader->mNumEntries; i++, now++, entry++) {
-            now->Setup(mShortBin, entry);
+        if (header->mEntryOffset == 0) {
+            result = 20;
+            goto fail;
         }
-    }
-    return 0x18;
 
-fail:
-    MEM2Free(mShortBin);
-    mShortBin = NULL;
+        mShortEntries = (ShortEntry*)((u8*)data + header->mEntryOffset);
+        if (header->mNumEntries != 0) {
+            mNow = new CityNow[header->mNumEntries];
+            if (mNow == NULL) {
+                result = 6;
+                goto fail;
+            }
+            CityNow* now = mNow;
+            ShortEntry* entry = mShortEntries;
+            for (u32 i = 0; i < mShortHeader->mNumEntries; i++, now++, entry++) {
+                now->Setup(mShortBin, entry);
+            }
+        }
+        return 0x18;
+
+    fail:
+        MEM2Free(mShortBin);
+        mShortBin = NULL;
+    }
     return result;
 }
 
@@ -710,9 +708,9 @@ static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, 
 }
 
 static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale) {
+    f32 fade = alpha / 255.0f;
     GXColor color;
     GXColor shadow;
-    f32 fade = alpha / 255.0f;
     color.r = 255;
     color.g = 255;
     color.b = 255;
@@ -765,11 +763,12 @@ static void DrawIconTexture(u32 texture, const Vec2* pos, GXColor color, f32 sca
 }
 
 s32 LaundryIndexInfo::Setup(void* base, IndexText* entry) {
+    u32 offset = entry->mTextOffset;
     mIndex = entry;
-    if (entry->mTextOffset == 0) {
+    if (offset == 0) {
         return 0x16;
     }
-    mText = (const wchar_t*)((u8*)base + entry->mTextOffset);
+    mText = (const wchar_t*)((u8*)base + offset);
     return 0x18;
 }
 
