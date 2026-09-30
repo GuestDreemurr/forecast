@@ -15,7 +15,7 @@ extern wchar_t sTextBuf[0x100];
 extern nw4r::ut::Font* gSysFont;
 
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
-void DrawWeatherIcon(u16 icon, const Vec2* pos, u8 alpha, f32 scale);
+void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
 
 static const f32 sBoxScalesJP[20] = {
     1.0f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.6f,
@@ -228,12 +228,12 @@ void WeatherBaseDay::SetPosition(const Vec2& pos, const f32& scale, const u8& vi
         }
     }
 
-    if (!IsBusy()) {
+    if (!IsEmpty()) {
         UpdateHover(checkHover);
     }
 }
 
-void WeatherBaseDay::DrawTextFit(TextBox* box, const wchar_t* text, u8 alpha) {
+void WeatherBaseDay::DrawTextFit(TextBox* box, const wchar_t* text, s32 alpha) {
     Vec2 pos;
     f32 scale;
 
@@ -288,11 +288,11 @@ static inline void FormatTemp(s32 temp) {
                          &mBoxes[2].mShadowColor); \
     }
 
-void WeatherBaseDay::DrawTempC(s32 temp, u8 alpha) {
+void WeatherBaseDay::DrawTempC(s32 temp, s32 alpha) {
     DRAW_TEMP_C(temp, alpha);
 }
 
-void WeatherBaseDay::DrawTemp(s32 temp, u8 alpha) {
+void WeatherBaseDay::DrawTemp(s32 temp, s32 alpha) {
     TextBox* box;
     wchar_t* buf = sTextBuf;
 
@@ -317,7 +317,7 @@ void WeatherBaseDay::DrawTemp(s32 temp, u8 alpha) {
     DrawTempCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
 }
 
-inline void WeatherBaseDay::PrintBox(TextBox* box, const wchar_t* text, u8 alpha) {
+inline void WeatherBaseDay::PrintBox(TextBox* box, const wchar_t* text, s32 alpha) {
     box->mColor.a = alpha;
     mWriter.SetScale(box->mScaleX, box->mScaleY);
     mWriter.SetTextColor(box->mColor);
@@ -362,7 +362,7 @@ static inline void FormatTempDiff(s8 diff) {
     (box)->mShadowColor.a = 0;                                                                               \
     DrawNumRightAligned(buf, &pos, (box)->mScaleX, (box)->mScaleY, &(box)->mColor, &(box)->mShadowColor)
 
-void WeatherBaseDay::DrawJP(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale) {
+void WeatherBaseDay::DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha, f32 scale) {
     s32 hour = mStartHour;
     Vec2 pos;
     wchar_t* buf;
@@ -616,7 +616,7 @@ void WeatherBaseDay::DrawJP(DayForecast* day, WeatherInfo* weather, u8 alpha, f3
         } \
     }
 
-void WeatherBaseDay::Draw(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale) {
+void WeatherBaseDay::DrawDay(DayForecast* day, WeatherInfo* weather, s32 alpha, f32 scale) {
     Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
     DrawWeatherIcon(weather->mType->mIcon, &pos, alpha, scale * mBoxes[4].mScaleX);
 

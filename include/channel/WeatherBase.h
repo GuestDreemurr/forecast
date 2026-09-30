@@ -26,16 +26,16 @@ class WeatherBase {
 public:
     WeatherBase(const Vec2& pos, const Vec2& size, s32 type);
     virtual ~WeatherBase() {}
-    virtual void Calc() = 0;
+    virtual void Reset() = 0;
     virtual void Draw() = 0;
     virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
-    virtual BOOL IsBusy() {
+    virtual BOOL IsEmpty() {
         return FALSE;
     }
 
-    void DrawIcon(TextBox* box, u32 id, u8 alpha);
-    void DrawIconLarge(TextBox* box, u32 id, u8 alpha);
-    void DrawText(TextBox* box, const wchar_t* text, u8 alpha);
+    void DrawIcon(TextBox* box, u32 id, s32 alpha);
+    void DrawIconLarge(TextBox* box, u32 id, s32 alpha);
+    void DrawText(TextBox* box, const wchar_t* text, s32 alpha);
 
     ButtonGroup* mLayout;                    // at 0x4
     Vec2 mPos;                               // at 0x8
@@ -69,23 +69,36 @@ public:
 
     void SetupJP(void* arc);
     void Setup(void* arc);
-    void DrawTextFit(TextBox* box, const wchar_t* text, u8 alpha);
-    void DrawTempC(s32 temp, u8 alpha);
-    void DrawTemp(s32 temp, u8 alpha);
-    void DrawJP(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale);
-    void Draw(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale);
+    void DrawTextFit(TextBox* box, const wchar_t* text, s32 alpha);
+    void DrawTempC(s32 temp, s32 alpha);
+    void DrawTemp(s32 temp, s32 alpha);
+    void DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha, f32 scale);
+    void DrawDay(DayForecast* day, WeatherInfo* weather, s32 alpha, f32 scale);
     void FormatWind(u8 dir, u8 speed);
     void FormatWindDefault(u8 dir, u8 speed);
     void UpdateHover(BOOL enable);
     Vec2F GetIconPos();
 
-    void PrintBox(TextBox* box, const wchar_t* text, u8 alpha);
+    void PrintBox(TextBox* box, const wchar_t* text, s32 alpha);
 
     ButtonGroup* mNoServiceLayout;  // at 0xA0, life_no_service.brlyt
     LayoutButton* mNoServiceText;   // at 0xA4
     TextBox* mIconBox;              // at 0xA8
     TextBox mBoxes[20];             // at 0xAC
     s32 mStartHour;                 // at 0x37C
+};
+
+// d_weather.cpp: the current weather panel, from short.bin
+class WeatherNow : public WeatherBaseDay {
+public:
+    WeatherNow(const Vec2& pos, void* arc, const Vec2& size, s32 type);
+    virtual ~WeatherNow() {}
+    virtual void Reset();
+    virtual void Draw();
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual BOOL IsEmpty();
+
+    void DrawNow(const s32& alpha);
 };
 
 #endif

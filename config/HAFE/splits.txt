@@ -40,10 +40,10 @@ ForecastCheck.cpp:
 	.text       start:0x8000C734 end:0x8000D5C8
 
 WeatherScene.cpp:
-	.text       start:0x8000D5C8 end:0x800110D0
+	.text       start:0x8000D5C8 end:0x80010C30
 	.ctors      start:0x80179248 end:0x8017924C
 	.rodata     start:0x801793A0 end:0x80179440
-	.data       start:0x80199AA8 end:0x8019A0D0
+	.data       start:0x80199AA8 end:0x8019A0B0
 	.bss        start:0x801D6F20 end:0x801D7150
 	.sdata      start:0x8032FCF0 end:0x8032FD08
 	.sbss       start:0x803309B0 end:0x80330A48
@@ -51,10 +51,12 @@ WeatherScene.cpp:
 	.sbss2      start:0x80333760 end:0x80333780
 
 Weather.cpp:
-	.text       start:0x800110D0 end:0x80011100
+	.text       start:0x80010C30 end:0x80011100
 	.ctors      start:0x8017924C end:0x80179250
+	.data       start:0x8019A0B0 end:0x8019A0D0
 	.bss        start:0x801D7150 end:0x801D7160
 	.sbss       start:0x80330A48 end:0x80330A50
+	.sdata2     start:0x80331A88 end:0x80331A98
 
 WeatherBase.cpp:
 	.text       start:0x8001C334 end:0x8001CA80

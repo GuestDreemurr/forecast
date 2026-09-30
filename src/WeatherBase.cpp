@@ -31,7 +31,7 @@ void WeatherBase::SetPosition(const Vec2& pos, const f32& scale, const u8& visib
     }
 }
 
-void WeatherBase::DrawIcon(TextBox* box, u32 id, u8 alpha) {
+void WeatherBase::DrawIcon(TextBox* box, u32 id, s32 alpha) {
     f32 halfWidth = box->mScaleX * (0.5f * GetTexWidth(gCommonTpl, id));
     f32 halfHeight = 0.5f * GetTexHeight(gCommonTpl, id);
     Vec pos;
@@ -52,7 +52,7 @@ void WeatherBase::DrawIcon(TextBox* box, u32 id, u8 alpha) {
     DrawTextureAt(gCommonTpl, id, box->mScaleX, box->mScaleX, &pos);
 }
 
-void WeatherBase::DrawIconLarge(TextBox* box, u32 id, u8 alpha) {
+void WeatherBase::DrawIconLarge(TextBox* box, u32 id, s32 alpha) {
     f32 halfWidth = box->mScaleX * (0.5f * GetTexWidth(gCommonTpl, id));
     f32 halfHeight = 0.5f * GetTexHeight(gCommonTpl, id);
     Vec pos;
@@ -73,7 +73,7 @@ void WeatherBase::DrawIconLarge(TextBox* box, u32 id, u8 alpha) {
     DrawTextureAt(gCommonTpl, id, box->mScaleX, box->mScaleX, &pos);
 }
 
-void WeatherBase::DrawText(TextBox* box, const wchar_t* text, u8 alpha) {
+void WeatherBase::DrawText(TextBox* box, const wchar_t* text, s32 alpha) {
     Vec2 pos;
     f32 scaleX;
     f32 scaleY;

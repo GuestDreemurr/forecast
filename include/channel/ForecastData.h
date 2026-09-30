@@ -2,6 +2,8 @@
 #define CHANNEL_FORECAST_DATA_H
 #include <types.h>
 
+struct WeatherInfo;
+
 // One place entry of forecast.bin (size 0x18)
 struct CityInfo {
     u32* mId;        // at 0x0
@@ -132,9 +134,12 @@ struct ShortEntry {
     u8 unk4[0xC - 0x4];    // at 0x4
     u16 mWeather;          // at 0xC
     u8 unkE;               // at 0xE
-    u8 unkF[0x11 - 0xF];   // at 0xF
+    s8 mTempC;             // at 0xF
+    s8 mTempF;             // at 0x10
     u8 mWindDirection;     // at 0x11
-    u8 unk12[0x18 - 0x12]; // at 0x12
+    u8 mWindSpeedKmh;      // at 0x12
+    u8 mWindSpeedMph;      // at 0x13
+    u8 unk14[0x18 - 0x14]; // at 0x14
 };
 
 // A place with its long-range, summary and current-weather entries (size 0x14)
@@ -146,7 +151,7 @@ public:
     CityInfo* mInfo;   // at 0x0
     void** mForecast;  // at 0x4
     void** mSummary;   // at 0x8
-    void** mNow;       // at 0xC
+    ShortEntry** mNow; // at 0xC
     u8 mIsNight;       // at 0x10
     u8 mIsDay;         // at 0x11
 };
@@ -160,8 +165,11 @@ public:
     s32 LoadForecast(void* data);
     s32 LoadShort(void* data);
     void** FindForecast(const u32& id);
+    WeatherInfo* FindWeatherInfo(const u32& code);
 
-    u8 unk0[0x20];              // at 0x0
+    u8 unk0[0x10];              // at 0x0
+    WeatherInfo* mWeatherInfo; // at 0x10, one per weather type
+    u8 unk14[0x20 - 0x14];      // at 0x14
     CityInfo* mPlaces;          // at 0x20
     u8 unk24[0x28 - 0x24];      // at 0x24
     ForecastHeader* mHeader;    // at 0x28
