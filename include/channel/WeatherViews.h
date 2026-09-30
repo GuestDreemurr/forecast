@@ -426,6 +426,7 @@ public:
     void UpdateArrows();
     void UpdateBelt();
     BOOL ChangeState(StateFunc state, s32 arg);
+    void SetState(StateFunc state);
     BOOL StateScroll(s32 arg);
     BOOL StateNormal(s32 arg);
     void UpdateBeltTextJP();

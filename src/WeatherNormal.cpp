@@ -78,19 +78,19 @@ static const char* sBoxNames[8] = {
     "icon_a", "icon_b", "icon_c", "icon_d", "text_icon_aUSA", "text_icon_bUSA", "text_icon_cUSA", "text_icon_dUSA",
 };
 
-#define CHANGE_STATE(state)                                                                                  \
-    {                                                                                                        \
-        StateFunc newState = state;                                                                          \
-        if (mState) {                                                                                        \
-            mPhase = -1;                                                                                     \
-            (this->*mState)(0);                                                                              \
-        }                                                                                                    \
-        mState = newState;                                                                                   \
-        mPhase = 0;                                                                                          \
-        if (mState) {                                                                                        \
-            (this->*mState)(0);                                                                              \
-        }                                                                                                    \
+#define CHANGE_STATE(state) SetState(state)
+
+inline void WeatherNormal::SetState(StateFunc state) {
+    if (mState) {
+        mPhase = -1;
+        (this->*mState)(0);
     }
+    mState = state;
+    mPhase = 0;
+    if (mState) {
+        (this->*mState)(0);
+    }
+}
 
 #define CHANGE_SCROLL(state) ChangeScroll(state)
 
@@ -1124,25 +1124,24 @@ void WeatherNormal::DrawTimes() {
     }
 }
 
-#define DRAW_ICONS(day, alpha, drawText, iconScale)                                                          \
-    {                                                                                                        \
-        TextBox* box = mBoxes;                                                                               \
-        for (s32 i = 0; i < 4; i++, box++) {                                                                 \
-            u32 code = day->mWeatherParts[i];                                                                \
-            WeatherInfo* info = gForecastData->FindWeatherInfo(code);                                        \
-            if (day->mWeatherParts[i] != 0xFFFF && info != NULL) {                                           \
-                u16 icon = info->mType->mIcon;                                                               \
-                DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, iconScale);                                    \
-            } else {                                                                                         \
-                wcscpy(sTextBuf, L"--");                                                                     \
-                box->mColor.a = alpha;                                                                       \
-                box->mShadowColor.a = alpha;                                                                 \
-                SetDefaultGXState();                                                                         \
-                SetOrthoProjection();                                                                        \
-                drawText(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor,                \
-                         &box->mShadowColor);                                                                \
-            }                                                                                                \
-        }                                                                                                    \
+// Draws the four 6-hour weather icons, or "--" where there is no forecast
+#define DRAW_ICONS()                                                                                     \
+    box = mBoxes;                                                                                        \
+    for (i = 0; i < 4; i++, box++) {                                                                     \
+        u32 code = d->mWeatherParts[i];                                                                  \
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);                                        \
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {                                             \
+            u16 icon = info->mType->mIcon;                                                               \
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);                                 \
+        } else {                                                                                         \
+            wcscpy(sTextBuf, L"--");                                                                     \
+            box->mColor.a = alpha;                                                                       \
+            box->mShadowColor.a = alpha;                                                                 \
+            SetDefaultGXState();                                                                         \
+            SetOrthoProjection();                                                                        \
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor,        \
+                             &box->mShadowColor);                                                        \
+        }                                                                                                \
     }
 
 #define SETUP_TIME_TEXT(flag)                                                                                \
@@ -1203,16 +1202,16 @@ void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
     SETUP_TIME_TEXT(0x111);
     s32 h = hour;
     {
-    TextBox* box = &mBoxes[4];
-    for (s32 i = 0; i < 4; i++, box++) {
-        wchar_t* p = FormatNumber(h, sTextBuf, 2, FALSE);
-        *p = L'-';
-        h += 6;
-        WrapHourTo24(&h);
-        FormatNumber(h, p + 1, 2, FALSE);
-        wcscat(sTextBuf, L"\x6642"); // "o'clock"
-        PRINT_TIME(box, alpha, box->mX);
-    }
+        TextBox* box = &mBoxes[4];
+        for (s32 i = 0; i < 4; i++, box++) {
+            wchar_t* p = FormatNumber(h, sTextBuf, 2, FALSE);
+            *p = L'-';
+            h += 6;
+            WrapHourTo24(&h);
+            FormatNumber(h, p + 1, 2, FALSE);
+            wcscat(sTextBuf, L"\x6642"); // "o'clock"
+            PRINT_TIME(box, alpha, box->mX);
+        }
     }
 }
 
@@ -1239,22 +1238,7 @@ void WeatherNormal::DrawTimesUS(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x122);
     box = &mBoxes[4];
@@ -1301,22 +1285,7 @@ void WeatherNormal::DrawTimesEU(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x122);
     h = hour;
@@ -1358,22 +1327,7 @@ void WeatherNormal::DrawTimesDE(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x100);
     h = hour;
@@ -1420,22 +1374,7 @@ void WeatherNormal::DrawTimesFR(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x122);
     s32 h = hour;
@@ -1477,22 +1416,7 @@ void WeatherNormal::DrawTimesES(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x122);
     s32 h = hour;
@@ -1535,22 +1459,7 @@ void WeatherNormal::DrawTimesIT(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x122);
     s32 h = hour;
@@ -1591,22 +1500,7 @@ void WeatherNormal::DrawTimesNL(DayForecast* day, s32 hour) {
     }
 
     alpha = 255.0f * mTimesAlpha;
-    box = mBoxes;
-    for (i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
-            u16 icon = info->mType->mIcon;
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
-        } else {
-            wcscpy(sTextBuf, L"--");
-            box->mColor.a = alpha;
-            box->mShadowColor.a = alpha;
-            SetDefaultGXState();
-            SetOrthoProjection();
-            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-        }
-    }
+    DRAW_ICONS();
 
     SETUP_TIME_TEXT(0x100);
     s32 h = hour;
