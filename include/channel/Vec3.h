@@ -7,6 +7,11 @@
 class Vec3 : public Vec {
 public:
     Vec3();
+    Vec3(f32 x, f32 y, f32 z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
     ~Vec3();
 };
 

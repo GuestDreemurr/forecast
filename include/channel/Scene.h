@@ -2,6 +2,7 @@
 #define CHANNEL_SCENE_H
 #include <types.h>
 #include <channel/SceneBase.h>
+#include <channel/WeatherScene.h>
 
 class LayoutObj;
 class MemoryManager;
@@ -35,23 +36,6 @@ public:
     u8 unk61[0x3];           // at 0x61
 };
 
-// 'WTH2': the main forecast scene
-class WeatherScene : public SceneBase {
-public:
-    WeatherScene();
-    virtual ~WeatherScene();           // at 0x8
-    virtual void Exit(BOOL shutdownNet, s32 event); // at 0xC
-    virtual void Init();               // at 0x1C
-    virtual void unk20();              // at 0x20
-    virtual void unk24();              // at 0x24
-    virtual void unk28();              // at 0x28
-    virtual void unk2C();              // at 0x2C
-    virtual void Draw();               // at 0x30
-    virtual void unk38();              // at 0x38
-
-    u8 unkAC[0x16C - 0xAC]; // at 0xAC
-};
-
 // 'FATL': the error screen
 class FatalScene {
 public:
@@ -67,7 +51,6 @@ public:
 };
 
 extern Cursor* gCursor;
-extern WeatherScene* gWeatherScene;
 extern FatalScene* gFatalScene;
 
 #endif

@@ -216,7 +216,7 @@ void ButtonGroup::SetButtonParams(s32 a, s32 b, s32 c) {
     }
 }
 
-void ButtonGroup::SetPaneAlpha(u8 alpha) {
+void ButtonGroup::SetPaneAlpha(s32 alpha) {
     for (int i = 0; i < mNumButtons; i++) {
         mButtons[i]->SetPaneAlpha(alpha);
     }

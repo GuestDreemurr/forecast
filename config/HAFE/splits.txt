@@ -13,6 +13,141 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+Connect.cpp:
+	.text       start:0x8000AA94 end:0x8000BAC8
+	.rodata     start:0x80179358 end:0x80179388
+	.data       start:0x80198D80 end:0x80199018
+	.sdata      start:0x8032F568 end:0x8032F580
+	.sdata2     start:0x803319A0 end:0x803319E0
+
+ErrorWindow.cpp:
+	.text       start:0x8000BAC8 end:0x8000C734
+	.rodata     start:0x80179388 end:0x801793A0
+	.data       start:0x80199018 end:0x80199310
+	.sdata      start:0x8032F580 end:0x8032F5A0
+	.sbss       start:0x803309A8 end:0x803309B0
+	.sdata2     start:0x803319E0 end:0x80331A00
+
+WeatherText.cpp:
+	.data       start:0x80199310 end:0x801996B8
+	.sdata      start:0x8032F5A0 end:0x8032F928
+
+WeatherTextUS.cpp:
+	.data       start:0x801996B8 end:0x80199AA8
+	.sdata      start:0x8032F928 end:0x8032FCF0
+
+ForecastCheck.cpp:
+	.text       start:0x8000C734 end:0x8000D5C8
+
+WeatherScene.cpp:
+	.text       start:0x8000D5C8 end:0x80010C30
+	.ctors      start:0x80179248 end:0x8017924C
+	.rodata     start:0x801793A0 end:0x80179440
+	.data       start:0x80199AA8 end:0x8019A0B0
+	.bss        start:0x801D6F20 end:0x801D7150
+	.sdata      start:0x8032FCF0 end:0x8032FD08
+	.sbss       start:0x803309B0 end:0x80330A48
+	.sdata2     start:0x80331A00 end:0x80331A88
+	.sbss2      start:0x80333760 end:0x80333780
+
+Weather.cpp:
+	.text       start:0x80010C30 end:0x80011100
+	.ctors      start:0x8017924C end:0x80179250
+	.data       start:0x8019A0B0 end:0x8019A0D0
+	.bss        start:0x801D7150 end:0x801D7160
+	.sbss       start:0x80330A48 end:0x80330A50
+	.sdata2     start:0x80331A88 end:0x80331A98
+
+WeatherOther.cpp:
+	.text       start:0x80011100 end:0x8001230C
+	.ctors      start:0x80179250 end:0x80179254
+	.rodata     start:0x80179440 end:0x80179658
+	.data       start:0x8019A0D0 end:0x8019A1F8
+	.bss        start:0x801D7160 end:0x801D7170
+	.sdata      start:0x8032FD08 end:0x8032FD30
+	.sbss       start:0x80330A50 end:0x80330A58
+	.sdata2     start:0x80331A98 end:0x80331AC0
+
+WeatherToday.cpp:
+	.text       start:0x8001230C end:0x80012A1C
+	.ctors      start:0x80179254 end:0x80179258
+	.data       start:0x8019A1F8 end:0x8019A230
+	.bss        start:0x801D7170 end:0x801D7180
+	.sbss       start:0x80330A58 end:0x80330A60
+	.sdata2     start:0x80331AC0 end:0x80331AE0
+
+WeatherTomorrow.cpp:
+	.text       start:0x80012A1C end:0x8001312C
+	.ctors      start:0x80179258 end:0x8017925C
+	.data       start:0x8019A230 end:0x8019A268
+	.bss        start:0x801D7180 end:0x801D7190
+	.sbss       start:0x80330A60 end:0x80330A68
+	.sdata2     start:0x80331AE0 end:0x80331B00
+
+WeatherWeek.cpp:
+	.text       start:0x8001312C end:0x80014B40
+	.ctors      start:0x8017925C end:0x80179260
+	.rodata     start:0x80179658 end:0x80179AA8
+	.data       start:0x8019A268 end:0x8019A980
+	.bss        start:0x801D7190 end:0x801D71C0
+	.sdata      start:0x8032FD30 end:0x8032FD98
+	.sbss       start:0x80330A68 end:0x80330A78
+	.sdata2     start:0x80331B00 end:0x80331B28
+
+WeatherAddress.cpp:
+	.text       start:0x80014B40 end:0x80017548
+	.ctors      start:0x80179260 end:0x80179264
+	.data       start:0x8019A980 end:0x8019AB08
+	.bss        start:0x801D71C0 end:0x801D71E8
+	.sdata      start:0x8032FD98 end:0x8032FDC8
+	.sbss       start:0x80330A78 end:0x80330A88
+	.sdata2     start:0x80331B28 end:0x80331B70
+
+WeatherAround.cpp:
+	.text       start:0x80017548 end:0x8001C334
+	.ctors      start:0x80179264 end:0x80179268
+	.rodata     start:0x80179AA8 end:0x80179CE0
+	.data       start:0x8019AB08 end:0x8019AC70
+	.bss        start:0x801D71E8 end:0x801D7210
+	.sdata      start:0x8032FDC8 end:0x8032FE60
+	.sbss       start:0x80330A88 end:0x80330A98
+	.sdata2     start:0x80331B70 end:0x80331C18
+
+WeatherBase.cpp:
+	.text       start:0x8001C334 end:0x8001CA80
+	.data       start:0x8019AC70 end:0x8019AC90
+	.sdata2     start:0x80331C18 end:0x80331C50
+
+WeatherBaseDay.cpp:
+	.text       start:0x8001CA80 end:0x8001F720
+	.ctors      start:0x80179268 end:0x8017926C
+	.rodata     start:0x80179DC0 end:0x8017A038
+	.data       start:0x8019AC90 end:0x8019AF48
+	.bss        start:0x801D7210 end:0x801D7220
+	.sdata      start:0x8032FE60 end:0x8032FEE0
+	.sbss       start:0x80330A98 end:0x80330AA0
+	.sdata2     start:0x80331C50 end:0x80331C80
+
+ForecastData.cpp:
+	.text       start:0x8001F720 end:0x80020F9C
+	.rodata     start:0x8017A038 end:0x8017B358
+	.data       start:0x8019AF48 end:0x8019B148
+	.sdata      start:0x8032FEE0 end:0x8032FEE8
+	.sdata2     start:0x80331C80 end:0x80331CA8
+
+WeatherNormal.cpp:
+	.text       start:0x80020F9C end:0x80027C84
+	.ctors      start:0x8017926C end:0x80179270
+	.rodata     start:0x8017B358 end:0x8017B4A0
+	.data       start:0x8019B148 end:0x8019B5D8
+	.bss        start:0x801D7220 end:0x801D7230
+	.sdata      start:0x8032FEE8 end:0x803300E0
+	.sbss       start:0x80330AA0 end:0x80330AA8
+	.sdata2     start:0x80331CA8 end:0x80331D20
+
+ForecastNow.cpp:
+	.text       start:0x80027C84 end:0x80027DA8
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274
@@ -21,6 +156,9 @@ WeatherSetting.cpp:
 	.sdata      start:0x803300E0 end:0x803300F8
 	.sbss       start:0x80330AA8 end:0x80330AB8
 	.sdata2     start:0x80331D20 end:0x80331D38
+
+ForecastSummary.cpp:
+	.text       start:0x800289AC end:0x80028AA0
 
 Region.cpp:
 	.text       start:0x8002C0CC end:0x8002C164

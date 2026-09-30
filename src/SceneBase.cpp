@@ -27,12 +27,6 @@ extern "C" void ShutdownDownloader(s32 event);
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void WrapHour(s32* pHour);
 
-struct GlyphTexture {
-    u32 texture; // at 0x0
-    f32 width;   // at 0x4
-    f32 height;  // at 0x8
-};
-
 struct DragScroll {
     DragScroll();
     ~DragScroll() {}
@@ -136,7 +130,7 @@ static inline void ClearHoveredButtonsInline() {
 
 SceneBase::SceneBase(bool arg)
     : mDrawFunc(NULL), mState(NULL), mClockX(0.0f), mClockY(0.0f), unk84(0.0f), mMenuBarY(0.0f), unk8C(0.0f),
-      unk90(0.0f), mAmPmOffsetY(0.0f), mStatePhase(0), mClockAlpha(0), unkA0(0), unkA4(arg), unkA8(0) {
+      unk90(0.0f), mAmPmOffsetY(0.0f), mStatePhase(0), mClockAlpha(0), unkA0(0), unkA4(arg), mLayoutArc(NULL) {
     gFatalRequested = FALSE;
     sEarthModelData = NULL;
     sEarthLoading = FALSE;
@@ -343,7 +337,7 @@ static inline void FreeSysFontsInline() {
     }
 }
 
-void RequestFatal() {
+void SceneBase::RequestFatal() {
     gFatalRequested = TRUE;
 }
 

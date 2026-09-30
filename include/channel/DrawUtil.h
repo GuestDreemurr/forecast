@@ -7,6 +7,14 @@
 #include <revolution/TPL.h>
 
 struct Rect {
+    Rect() {
+        left = 0.0f;
+        top = 0.0f;
+        right = 0.0f;
+        bottom = 0.0f;
+    }
+    ~Rect();
+
     f32 left;   // at 0x0
     f32 top;    // at 0x4
     f32 right;  // at 0x8
