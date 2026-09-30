@@ -50,6 +50,12 @@ WeatherScene.cpp:
 	.sdata2     start:0x80331A00 end:0x80331A88
 	.sbss2      start:0x80333760 end:0x80333780
 
+Weather.cpp:
+	.text       start:0x800110D0 end:0x80011100
+	.ctors      start:0x8017924C end:0x80179250
+	.bss        start:0x801D7150 end:0x801D7160
+	.sbss       start:0x80330A48 end:0x80330A50
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274
