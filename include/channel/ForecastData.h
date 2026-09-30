@@ -36,8 +36,8 @@ public:
     ForecastData();
     ~ForecastData();
 
-    s32 LoadForecast(s32 arg);
-    s32 LoadShort(s32 arg);
+    s32 LoadForecast(void* data);
+    s32 LoadShort(void* data);
     void** FindForecast(const u32& id);
 
     u8 unk0[0x20];              // at 0x0
@@ -52,5 +52,7 @@ extern City** gCities;
 extern City* gCurrentCity;
 
 City* FindCity(u32 id);
+BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, void* shortData, u32 shortSize,
+                       s32* shortResult);
 
 #endif

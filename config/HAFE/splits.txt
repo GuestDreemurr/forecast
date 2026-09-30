@@ -13,6 +13,13 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+Connect.cpp:
+	.text       start:0x8000AA94 end:0x8000BAC8
+	.rodata     start:0x80179358 end:0x80179388
+	.data       start:0x80198D80 end:0x80199018
+	.sdata      start:0x8032F568 end:0x8032F580
+	.sdata2     start:0x803319A0 end:0x803319E0
+
 ErrorWindow.cpp:
 	.text       start:0x8000BAC8 end:0x8000C734
 	.rodata     start:0x80179388 end:0x801793A0

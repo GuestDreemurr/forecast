@@ -6,7 +6,11 @@
 
 class ForecastData;
 
-// Connect.cpp: downloads forecast.bin/short.bin and shows the "connecting" screen (size 0x460)
+class ButtonGroup;
+class Fade;
+
+// Connect.cpp: downloads forecast.bin/short.bin through WiiConnect24 and shows the "connecting" screen
+// (size 0x460)
 class Connect {
 public:
     Connect(void* arc, ForecastData* data);
@@ -17,8 +21,33 @@ public:
     void Draw();
     BOOL IsDone();
     void PauseSound(bool pause);
+    void DrawProgress();
+    void SetErrorCode(s32 wc24Code, s32 localCode);
 
-    u8 unk0[0x460];
+    ForecastData* mData;          // at 0x0
+    void* mForecastBuf;           // at 0x4
+    void* mShortBuf;              // at 0x8
+    Fade* mFade;                  // at 0xC
+    s32 mState;                   // at 0x10
+    s32 mTask;                    // at 0x14
+    s64 mForecastTime;            // at 0x18
+    s64 mShortTime;               // at 0x20
+    u32 mForecastSize;            // at 0x28
+    u32 mShortSize;               // at 0x2C
+    s32 mTaskState;               // at 0x30
+    s32 mTaskResult;              // at 0x34
+    s32 mForecastCheck;           // at 0x38
+    s32 mShortCheck;              // at 0x3C
+    char mForecastUrl[0x200];     // at 0x40
+    char mShortUrl[0x200];        // at 0x240
+    wchar_t* mServerMessage;      // at 0x440
+    s32 mProgressFrame;           // at 0x444
+    ButtonGroup* mConnectLayout;  // at 0x448, error1.brlyt
+    ButtonGroup* mErrorLayout;    // at 0x44C, error0.brlyt
+    s32 mDisplayState;            // at 0x450
+    nw4r::snd::SoundHandle mSound; // at 0x454
+    u8 mSoundPlaying;             // at 0x458
+    u8 unk459[0x460 - 0x459];     // at 0x459
 };
 
 class ButtonGroup;

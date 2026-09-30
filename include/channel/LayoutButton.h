@@ -42,6 +42,7 @@ public:
     BOOL Contains(f32 x, f32 y);
     void SetPaneAlpha(u8 alpha);
     void SetState(s32 state);
+    void SetText(const wchar_t* text);
     void Hide();
 
     void SetParams(s32 a, s32 b, s32 c) {

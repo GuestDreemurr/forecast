@@ -35,7 +35,6 @@ extern s32 gCursorState[4];
 
 u32 GetUniversalMinutes();
 f32 SmoothApproach(f32* value, f32 target, f32 rate, f32 maxStep, f32 minStep);
-void PauseSound(nw4r::snd::SoundHandle* handle, bool pause, s32 fadeFrames);
 void UpdateDragScroll();
 
 
@@ -1178,7 +1177,7 @@ void UpdateCurrentCity() {
 s32 LoadForecastData() {
     gForecastData = new ForecastData;
 
-    switch (gForecastData->LoadForecast(0)) {
+    switch (gForecastData->LoadForecast(NULL)) {
     case 10:
         OSReport("ERROR_MESSAGE_e !!\n");
         return 10;
@@ -1240,7 +1239,7 @@ s32 LoadForecastData() {
         break;
     }
 
-    switch (gForecastData->LoadShort(0)) {
+    switch (gForecastData->LoadShort(NULL)) {
     case 1:
         OSReport("MEM_ERROR_ShortBin_e !!\n");
         break;
