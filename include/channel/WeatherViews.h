@@ -295,15 +295,18 @@ public:
     Func unkEC;                      // at 0xEC
     Func mDrawLegend;                // at 0xF8
     SizeFunc mLabelSize;             // at 0x104
-    Rect mHitRect;                   // at 0x110
-    Rect mPressRect;                 // at 0x120
+    nw4r::ut::Rect mHitRect;         // at 0x110
+    nw4r::ut::Rect mPressRect;       // at 0x120
     Rect mRects[6];                  // at 0x130
-    nw4r::ut::Color mZoomOutColors[4]; // at 0x190
+    nw4r::ut::Color mZoomOutI0Color0; // at 0x190
+    nw4r::ut::Color mZoomOutI0Color1; // at 0x194
+    nw4r::ut::Color mZoomOutI1Color0; // at 0x198
+    nw4r::ut::Color mZoomOutI1Color1; // at 0x19C
     TextBox mTitles[3];              // at 0x1A0
-    Vector2 mPressPos;               // at 0x20C
+    nw4r::math::VEC2 mPressPos;      // at 0x20C
     Vector2 mTouchPos[4];            // at 0x214
     u8 unk234[0x23C - 0x234];        // at 0x234
-    Vec mTitlePos;                   // at 0x23C
+    nw4r::math::VEC3 mTitlePos;      // at 0x23C
     u8 mInputActive;                 // at 0x248
     u8 mHovering[4];                 // at 0x249
     u8 mCanSelect;                   // at 0x24D
@@ -324,7 +327,7 @@ public:
     s32 mTempUnit;                   // at 0x290
     s32 mZoomOutAlpha;               // at 0x294
     f32 mLabelScale;                 // at 0x298
-    Vector2 mHome;                   // at 0x29C
+    nw4r::math::VEC2 mHome;          // at 0x29C
     f32 mFontScale;                  // at 0x2A4
     u8 unk2A8[0x2AC - 0x2A8];        // at 0x2A8
     f32 mSlideOffset;                // at 0x2AC

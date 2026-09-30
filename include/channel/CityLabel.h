@@ -6,6 +6,7 @@
 #include <channel/Vec2F.h>
 #include <channel/Vec3.h>
 #include <channel/Vector2.h>
+#include <nw4r/ut/ut_Rect.h>
 #include <nw4r/ut/ut_TextWriterBase.h>
 
 class City;
@@ -73,7 +74,7 @@ public:
     City* mCity;               // at 0x14
     u8 unk18[0xFC - 0x18];     // at 0x18
     nw4r::ut::TextWriterBase<wchar_t> mWriter; // at 0xFC
-    Rect mBounds;              // at 0x15C
+    nw4r::ut::Rect mBounds;    // at 0x15C
     Rect mBgRects[2];          // at 0x16C
     u8 unk18C[0x1F8 - 0x18C];  // at 0x18C
     Vector2 mPos;              // at 0x1F8

@@ -98,8 +98,22 @@ static inline void UpdateLabelScale(WeatherAround* self) {
     self->mZoomLevel = gSimpleGlobe != NULL ? gSimpleGlobe->mZoomLevel : 0;
 }
 
-static inline BOOL InRect(const Rect& rect, f32 x, f32 y) {
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+static inline void SetVec2(Vec2& v, f32 x, f32 y) {
+    v.x = x;
+    v.y = y;
+}
+
+static inline void DecTimer(s32* timer) {
+    if (*timer != 0) {
+        (*timer)--;
+    }
+}
+
+static inline BOOL InRect(s32 index, const nw4r::ut::Rect& rect, f32 x, f32 y) {
+    if (index >= 0 && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 static inline void AppendLabel(CityLabel*& head, CityLabel* label, CityLabel* CityLabel::*next) {
@@ -119,15 +133,12 @@ WeatherAround::WeatherAround(void* arc)
       mBelt(NULL), mKion(NULL), mRain(NULL), mHigh(NULL), mNextButton(NULL), mZoomInButton(NULL),
       mZoomOutButton(NULL), mRotAButton(NULL), mRotBButton(NULL), mZoomOutI0(NULL), mZoomOutI1(NULL), mState(NULL),
       mPageState(NULL), mDrawLabels(NULL), mZoomState(NULL), mTiltState(NULL), unkEC(NULL), mDrawLegend(NULL),
-      mLabelSize(NULL), mPressPos(0.0f, 0.0f), mTitlePos(), mInputActive(FALSE), mNextPressed(FALSE), mActive(FALSE),
+      mLabelSize(NULL), mPressPos(0.0f, 0.0f), mTitlePos(0.0f, 68.0f, 0.0f), mInputActive(FALSE), mNextPressed(FALSE), mActive(FALSE),
       mShowLegend(FALSE), mBlinking(TRUE), mHitIndex(-1), unk258(0x105), mSelected(-1), mPressIndex(-1),
       mPointerIdle(0), mIdleTimer(0), mHoverTimer(0), mTempUnit(gTempUnit), mZoomOutAlpha(0), mHome(34.8f, 135.4f),
       mFontScale(3.0f), mSlideOffset(0.0f), mSlideMax(0.0f), mBlink(0.0f), mRotateAmount(0.0f), mFrame(0),
       unk2FC(0), unk2FE(0), mDay(0), mPhase(0), mZoomLevel(0), mPagePhase(0), mBlinkOn(FALSE), mAnimFrame(0),
       mBlinkDir(0), mDots(NULL) {
-    mTitlePos.x = 0.0f;
-    mTitlePos.y = 68.0f;
-    mTitlePos.z = 0.0f;
     unk280[0] = 0;
     unk280[1] = 0;
     unk280[2] = 0;
@@ -145,9 +156,9 @@ WeatherAround::WeatherAround(void* arc)
     mZoomOutButton->mColorCallback = ZoomOutColorCallback;
     mZoomOutI0 = mZoomOutButton->FindPane("zoom_outI0");
     mZoomOutAlpha = GetTevColor1Alpha(mZoomOutI0);
-    GetTevColors(mZoomOutI0, &mZoomOutColors[0], &mZoomOutColors[1]);
+    GetTevColors(mZoomOutI0, &mZoomOutI0Color0, &mZoomOutI0Color1);
     mZoomOutI1 = mZoomOutButton->FindPane("zoom_outI1");
-    GetTevColors(mZoomOutI1, &mZoomOutColors[2], &mZoomOutColors[3]);
+    GetTevColors(mZoomOutI1, &mZoomOutI1Color0, &mZoomOutI1Color1);
     mZoomOutButton->mCalcCallback = ZoomOutCalcCallback;
     mZoomOutButton->mCallbackArg = this;
     mRotAButton = mLayout->FindButton("rot_a");
@@ -309,24 +320,28 @@ void WeatherAround::Show() {
 
 void WeatherAround::UpdateButtonFade() {
     SimpleGlobe* globe = gSimpleGlobe;
+    f32 minDist;
+    f32 x;
+    f32 y;
     f32 left = -16.0f;
     f32 right = 16.0f + GetScreenWidth();
     f32 top = 63.0f;
     f32 bottom = 393.0f;
-    f32 minDist = 900.0f;
+    minDist = 900.0f;
+    s32 i;
     BOOL moved = FALSE;
     BOOL onScreen = FALSE;
     BOOL hovered = FALSE;
 
-    for (s32 i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
         if (globe->mGrabbed[i]) {
             continue;
         }
-        if (!(gPointerValid[i][0] && gKPADLatest[i] >= 0)) {
+        if (!IsPointerValid(i)) {
             continue;
         }
-        f32 x = gPointerX[i][0];
-        f32 y = gPointerY[i][0];
+        x = gPointerX[i][0];
+        y = gPointerY[i][0];
         f32 oldX, oldY;
         if (gPointerHistory.GetOldest(i, &oldX, &oldY)) {
             if (x >= left && x < right && oldX >= left && oldX < right) {
@@ -373,9 +388,9 @@ void WeatherAround::UpdateButtonFade() {
         mHoverTimer++;
     }
 
-    mLayout->SetButtonParams(
-        32.0f + (s32)(255.0f - 32) * nw4r::math::SinFIdx(40.743664f * ((1.5708f * (15 - mHoverTimer)) / 15.0f)),
-        mHoverTimer, 15);
+    s32 minAlpha = 32;
+    mLayout->SetButtonParams(minAlpha + (s32)(255.0f - minAlpha) * nw4r::math::SinRad((1.5708f * (15 - mHoverTimer)) / 15.0f),
+                             mHoverTimer, 15);
     UpdateZoomButtons();
 }
 
@@ -383,31 +398,27 @@ void WeatherAround::UpdateZoomButtons() {
     SimpleGlobe* globe = gSimpleGlobe;
 
     if (globe->mZoomLevel >= 9) {
-        mZoomOutButton->mLocked = TRUE;
-        mZoomOutButton->Release();
+        mZoomOutButton->Lock();
     } else {
-        mZoomOutButton->mLocked = FALSE;
+        mZoomOutButton->Unlock();
     }
 
     if (globe->mZoomLevel <= 0) {
-        mZoomInButton->mLocked = TRUE;
-        mZoomInButton->Release();
+        mZoomInButton->Lock();
     } else {
-        mZoomInButton->mLocked = FALSE;
+        mZoomInButton->Unlock();
     }
 
     if (globe->mTiltLevel <= 0) {
-        mRotBButton->mLocked = TRUE;
-        mRotBButton->Release();
+        mRotBButton->Lock();
     } else {
-        mRotBButton->mLocked = FALSE;
+        mRotBButton->Unlock();
     }
 
     if (globe->mTiltLevel >= 5) {
-        mRotAButton->mLocked = TRUE;
-        mRotAButton->Release();
+        mRotAButton->Lock();
     } else {
-        mRotAButton->mLocked = FALSE;
+        mRotAButton->Unlock();
     }
 }
 
@@ -444,10 +455,9 @@ void WeatherAround::CalcActive() {
     gTitleOffsetY = mSlideOffset;
 
     if (gSimpleGlobe->IsDefaultView()) {
-        mResetButton->mLocked = FALSE;
+        mResetButton->Unlock();
     } else {
-        mResetButton->mLocked = TRUE;
-        mResetButton->Release();
+        mResetButton->Lock();
     }
 
     UpdateButtons(mLayout, 40);
@@ -527,7 +537,7 @@ void WeatherAround::CalcActive() {
     for (s32 i = 0; i < 4; i++) {
         f32 x = gCursorX[i];
         f32 y = gCursorY[i];
-        if (mHitIndex >= 0 && InRect(mHitRect, x, y)) {
+        if (InRect(mHitIndex, mHitRect, x, y)) {
             mHovering[i] = TRUE;
         }
         f32 pointerY = gPointerY[i][0];
@@ -587,10 +597,9 @@ void WeatherAround::DrawGlobe() {
     gTitleOffsetY = mSlideOffset;
 
     if (gSimpleGlobe->IsDefaultView()) {
-        mResetButton->mLocked = FALSE;
+        mResetButton->Unlock();
     } else {
-        mResetButton->mLocked = TRUE;
-        mResetButton->Release();
+        mResetButton->Lock();
     }
 
     UpdateZoomButtons();
@@ -765,45 +774,266 @@ void WeatherAround::DrawDetails() {
     FOR_EACH_LIST(mFrontList, mNextFront, label->DrawName());
 }
 
-void WeatherAround::UpdateLabels() {
-    // TODO
+#define APPEND_LABEL(head, label, next)                                                                      \
+    {                                                                                                        \
+        if (head != NULL) {                                                                                  \
+            CityLabel* last;                                                                                 \
+            for (last = head; last->next != NULL; last = last->next) {                                       \
+            }                                                                                                \
+            last->next = label;                                                                              \
+        } else {                                                                                             \
+            head = label;                                                                                    \
+        }                                                                                                    \
+    }
+
+#define RESET_PRESS()                                                                                        \
+    {                                                                                                        \
+        mPressIndex = mHitIndex;                                                                             \
+        mPressRect = mHitRect;                                                                               \
+        mSelected = -1;                                                                                      \
+    }
+
+template <typename A, typename B>
+static inline f32 DistSq(const A& a, const B& b) {
+    Vec2 d;
+    d.x = a.x - b.x;
+    d.y = a.y - b.y;
+    return d.x * d.x + d.y * d.y;
 }
 
+void WeatherAround::UpdateLabels() {
+    f32 top = 63.0f;
+    f32 bottom = 393.0f;
+
+    ClearLists();
+
+    if (unk250) {
+        RESET_PRESS();
+        return;
+    }
+
+    f32 releaseDist = 2500.0f;
+    f32 pressDist = 2500.0f;
+    f32 hoverDist[4];
+    s32 hoverIndex[4];
+    s32 selected = gForecastData->mHeader->mNumPlaces;
+    hoverDist[0] = releaseDist;
+    hoverDist[1] = releaseDist;
+    hoverIndex[0] = selected;
+    hoverIndex[1] = selected;
+    hoverIndex[2] = selected;
+    hoverIndex[3] = selected;
+    hoverDist[2] = releaseDist;
+    hoverDist[3] = releaseDist;
+
+    CityLabel** label = mLabels;
+    for (s32 i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
+        (*label)->mScale = mLabelScale;
+        (*label)->Project(gSimpleGlobe->mView, mZoomLevel);
+        (*label)->UpdateEdgeFade();
+        if (!((*label)->mFlags & CITY_LABEL_ON_SCREEN)) {
+            continue;
+        }
+
+        Vec2 pos;
+        pos.x = (*label)->mPos.x;
+        pos.y = (*label)->mPos.y;
+
+        s32 chan;
+        for (chan = 0; chan < 4; chan++) {
+            if (sHoveredButtons[chan] == NULL && (gRelease[chan] & WPAD_BUTTON_A) && mPressTimers[chan] != 0 &&
+                !InRect(mPressIndex, mPressRect, mTouchPos[chan].x, mTouchPos[chan].y) &&
+                DistSq(mPressPos, mTouchPos[chan]) < 1600.0f) {
+                break;
+            }
+        }
+        if (chan == 4) {
+            chan = -1;
+        }
+        if (chan >= 0) {
+            f32 dist = DistSq(mTouchPos[chan], pos);
+            if (dist < releaseDist) {
+                releaseDist = dist;
+                selected = i;
+            }
+        }
+
+        for (chan = 0; chan < 4; chan++) {
+            if (sHoveredButtons[chan] == NULL && (gTrig[chan] & WPAD_BUTTON_A) &&
+                !InRect(mPressIndex, mPressRect, mTouchPos[chan].x, mTouchPos[chan].y) &&
+                DistSq(mPressPos, mTouchPos[chan]) < 1600.0f) {
+                break;
+            }
+        }
+        if (chan == 4) {
+            chan = -1;
+        }
+        if (chan >= 0) {
+            f32 dist = DistSq(mTouchPos[chan], pos);
+            if (dist < pressDist) {
+                pressDist = dist;
+            }
+        }
+
+        if (mInputActive) {
+            for (s32 j = 0; j < 4; j++) {
+                if (sHoveredButtons[j] == NULL && gKPADLatest[j] >= 0) {
+                    f32 y = gCursorY[j];
+                    f32 x = gCursorX[j];
+                    if (y > top && y < bottom && !InRect(mHitIndex, mHitRect, x, y)) {
+                        Vec2 cursor;
+                        cursor.x = x;
+                        cursor.y = y;
+                        f32 dist = DistSq(cursor, pos);
+                        if (dist < hoverDist[j]) {
+                            hoverDist[j] = dist;
+                            hoverIndex[j] = i;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (mInputActive) {
+        for (s32 j = 0; j < 4; j++) {
+            if (hoverIndex[j] < (s32)gForecastData->mHeader->mNumPlaces) {
+                mLabels[hoverIndex[j]]->mFlags |= CITY_LABEL_HOVERED;
+                mHovering[j] = TRUE;
+            }
+        }
+    }
+
+    if (selected < (s32)gForecastData->mHeader->mNumPlaces) {
+        if (mPressIndex != selected) {
+            mSelected = selected;
+        }
+    } else if (gTrigAll & WPAD_BUTTON_A) {
+        RESET_PRESS();
+    }
+
+    label = mLabels;
+    for (s32 i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
+        if (mSelected == i) {
+            mCanSelect = FALSE;
+            if (gLastSettingResult == 3) {
+                static f32 sSelectX = 0.0f;
+                static f32 sSelectY = 0.0f;
+                PlaySE(37);
+                gSimpleGlobe->mSpeedX = sSelectX;
+                gSimpleGlobe->mSpeedY = sSelectY;
+                gSimpleGlobe->mSpinning = FALSE;
+                gSettingResult = 2;
+                gCityPos.x = (*label)->mPos.x;
+                gCityPos.y = (*label)->mPos.y;
+                gCurrentCity = (*label)->mCity;
+            }
+        } else if ((*label)->mInputFlags & CITY_LABEL_SELECTED) {
+            (*label)->mInputFlags &= ~CITY_LABEL_SELECTED;
+        }
+
+        if ((*label)->IsDrawn()) {
+            APPEND_LABEL(mOverlapList, *label, mNextOverlap);
+        }
+    }
+
+    for (CityLabel* a = mOverlapList; a != NULL; a = a->mNextOverlap) {
+        for (CityLabel* b = a->mNextOverlap; b != NULL; b = b->mNextOverlap) {
+            if (CheckOverlap(a, b)) {
+                a->mFlags |= CITY_LABEL_HIDDEN;
+            }
+        }
+    }
+
+    f32 scale = mLabelScale;
+    f32 nameScale = 2.5f * scale;
+    if (nameScale > 1.1f) {
+        nameScale = 1.1f;
+    }
+
+    label = mLabels;
+    mHitIndex = -1;
+    for (s32 i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
+        (*label)->UpdateHover();
+        if (!((*label)->mFlags & CITY_LABEL_ON_SCREEN)) {
+            continue;
+        }
+
+        (*label)->UpdateAlpha();
+        if ((*label)->mFlags & CITY_LABEL_HOVERED) {
+            PlayWeatherSound(*label);
+        }
+
+        Vec2 pos;
+        pos.x = (*label)->mPos.x;
+        pos.y = (*label)->mPos.y;
+        f32 bounce = 0.2f * EaseCos((*label)->mBounce);
+        Vec2 size = GetLabelSize(*label);
+        if (bounce > 0.0f) {
+            bounce += scale;
+            pos.x += 0.5f * size.x * bounce;
+            (*label)->SetPosition(&pos, nameScale + 0.1f * EaseCos((*label)->mBounce));
+            if ((*label)->IsDrawn()) {
+                APPEND_LABEL(mFrontList, *label, mNextFront);
+            }
+            APPEND_LABEL(mBackList, *label, mNext);
+        } else {
+            pos.x += 0.5f * size.x * scale;
+            (*label)->SetPosition(&pos, nameScale);
+            if ((*label)->IsDrawn()) {
+                CityLabel* l = *label;
+                if (*l->mCity->mInfo->mId == gCurrentCityId) {
+                    mFrontBuckets[10] = l;
+                } else {
+                    APPEND_LABEL(mFrontBuckets[l->mPriority], l, mNextFrontBack);
+                }
+            }
+            CityLabel* l = *label;
+            if (*l->mCity->mInfo->mId == gCurrentCityId) {
+                mBackBuckets[10] = l;
+            } else {
+                APPEND_LABEL(mBackBuckets[l->mPriority], l, mNextBack);
+            }
+        }
+
+        if ((*label)->mInputFlags & CITY_LABEL_HIT) {
+            Vector2 box = (*label)->GetBoxPos();
+            pos.x = box.x;
+            pos.y = box.y;
+            Vector2 size = (*label)->GetSize();
+            Vec2 half;
+            half.x = size.x * 0.5f;
+            half.y = size.y * 0.5f;
+            mHitIndex = i;
+            mHitRect.left = pos.x - half.x;
+            mHitRect.right = pos.x + half.x;
+            mHitRect.top = pos.y - half.y;
+            mHitRect.bottom = pos.y + half.y;
+        }
+    }
+}
+
+#define CLEAR_LIST(head, next)                                                                               \
+    {                                                                                                        \
+        CityLabel* label = head;                                                                             \
+        while (label != NULL) {                                                                              \
+            CityLabel* cur = label;                                                                          \
+            label = label->next;                                                                             \
+            cur->next = NULL;                                                                                \
+        }                                                                                                    \
+        head = NULL;                                                                                         \
+    }
+
 void WeatherAround::ClearLists() {
-    CityLabel* label;
-    CityLabel* next;
-
-    for (label = mBackList; label != NULL; label = next) {
-        next = label->mNext;
-        label->mNext = NULL;
-    }
-    mBackList = NULL;
+    CLEAR_LIST(mBackList, mNext);
     for (s32 i = 0; i < 11; i++) {
-        for (label = mBackBuckets[i]; label != NULL; label = next) {
-            next = label->mNextBack;
-            label->mNextBack = NULL;
-        }
-        mBackBuckets[i] = NULL;
+        CLEAR_LIST(mBackBuckets[i], mNextBack);
     }
-
-    for (label = mFrontList; label != NULL; label = next) {
-        next = label->mNextFront;
-        label->mNextFront = NULL;
-    }
-    mFrontList = NULL;
+    CLEAR_LIST(mFrontList, mNextFront);
     for (s32 i = 0; i < 11; i++) {
-        for (label = mFrontBuckets[i]; label != NULL; label = next) {
-            next = label->mNextFrontBack;
-            label->mNextFrontBack = NULL;
-        }
-        mFrontBuckets[i] = NULL;
+        CLEAR_LIST(mFrontBuckets[i], mNextFrontBack);
     }
-
-    for (label = mOverlapList; label != NULL; label = next) {
-        next = label->mNextOverlap;
-        label->mNextOverlap = NULL;
-    }
-    mOverlapList = NULL;
+    CLEAR_LIST(mOverlapList, mNextOverlap);
 }
 
 BOOL WeatherAround::StateGlobe() {
@@ -812,7 +1042,7 @@ BOOL WeatherAround::StateGlobe() {
         mPhase++;
         {
             Func state = &WeatherAround::StateZoom;
-            if (mZoomState) {
+            if (mZoomPhase) {
                 mZoomPhase = -1;
                 (this->*mZoomState)();
             }
@@ -820,11 +1050,15 @@ BOOL WeatherAround::StateGlobe() {
             mZoomPhase = 0;
             if (mZoomState) {
                 (this->*mZoomState)();
+                if (gSimpleGlobe != NULL) {
+                    gSimpleGlobe->SyncZoom();
+                }
+                UpdateLabelScale(this);
             }
         }
         {
             Func state = &WeatherAround::StateTilt;
-            if (mTiltState) {
+            if (mTiltPhase) {
                 mTiltPhase = -1;
                 (this->*mTiltState)();
             }
@@ -864,7 +1098,7 @@ void WeatherAround::UpdateDrag() {
                 f32 y = gCursorY[i];
                 f32 x = gCursorX[i];
                 if (y > top && y < bottom) {
-                    if (!(mHitIndex >= 0 && InRect(mHitRect, x, y)) && gSimpleGlobe->UpdateGrab(i) &&
+                    if (!(InRect(mHitIndex, mHitRect, x, y)) && gSimpleGlobe->UpdateGrab(i) &&
                         mCanSelect == TRUE) {
                         PlaySE(21);
                     }
@@ -901,14 +1135,24 @@ void WeatherAround::UpdateDrag() {
 }
 
 BOOL WeatherAround::CheckOverlap(CityLabel* a, CityLabel* b) {
-    f32 aw = a->mBounds.right - a->mBounds.left;
-    f32 ah = a->mBounds.bottom - a->mBounds.top;
-    f32 bw = b->mBounds.right - b->mBounds.left;
-    f32 bh = b->mBounds.bottom - b->mBounds.top;
-    f32 dx = __fabsf((a->mBounds.left + 0.5f * aw) - (b->mBounds.left + 0.5f * bw));
-    f32 dy = __fabsf((a->mBounds.top + 0.5f * ah) - (b->mBounds.top + 0.5f * bh));
+    f32 aLeft = a->mBounds.left;
+    f32 aw = a->mBounds.right - aLeft;
+    f32 aTop = a->mBounds.top;
+    f32 ah = a->mBounds.bottom - aTop;
+    f32 bLeft = b->mBounds.left;
+    f32 bw = b->mBounds.right - bLeft;
+    f32 bTop = b->mBounds.top;
+    f32 bh = b->mBounds.bottom - bTop;
+    f32 acx = 0.5f * aw + aLeft;
+    f32 acy = 0.5f * ah + aTop;
+    f32 bcx = 0.5f * bw + bLeft;
+    f32 bcy = 0.5f * bh + bTop;
+    f32 dx = __fabsf(acx - bcx);
+    f32 dy = __fabsf(acy - bcy);
+    f32 maxX = 0.5f * (aw + bw);
+    f32 maxY = 0.5f * (ah + bh);
 
-    if ((a->mFlags & CITY_LABEL_HIDDEN) || dx > 0.5f * (aw + bw) || dy > 0.5f * (ah + bh)) {
+    if ((a->mFlags & CITY_LABEL_HIDDEN) || dx > maxX || dy > maxY) {
         return FALSE;
     }
     if (a->mFlags & CITY_LABEL_HOVERED) {
@@ -933,16 +1177,16 @@ BOOL WeatherAround::CheckOverlap(CityLabel* a, CityLabel* b) {
 }
 
 void WeatherAround::UpdateTouch() {
-    if (gTrigAll & ~WPAD_BUTTON_A) {
+    if (gTrigAll & 0xF7FF) {
         mSelected = -1;
     }
 
     for (s32 i = 0; i < 4; i++) {
         if (gHold[i] & WPAD_BUTTON_A) {
-            mTouchPos[i].x = gCursorX[i];
-            mTouchPos[i].y = gCursorY[i];
-            if (mPressTimers[i] != 0) {
-                mPressTimers[i]--;
+            SetVec2(mTouchPos[i], gCursorX[i], gCursorY[i]);
+            s32* timer = &mPressTimers[i];
+            if (*timer != 0) {
+                (*timer)--;
             }
         }
         if (gTrig[i] & WPAD_BUTTON_A) {
@@ -956,7 +1200,7 @@ void WeatherAround::UpdateTouch() {
         s32 hit = mHitIndex;
         f32 y = gCursorY[i];
         f32 x = gCursorX[i];
-        if (hit >= 0 && InRect(mHitRect, x, y) && (gTrig[i] & WPAD_BUTTON_A)) {
+        if (InRect(hit, mHitRect, x, y) && (gTrig[i] & WPAD_BUTTON_A)) {
             mPressIndex = hit;
             mPressRect = mHitRect;
             mSelected = -1;
@@ -1206,7 +1450,7 @@ void WeatherAround::UpdateBlink() {
                 mBlinkDir--;
             }
         }
-        mZoomOutColors[1].a = mZoomOutAlpha * mBlink;
+        mZoomOutI0Color1.a = mZoomOutAlpha * mBlink;
         mZoomOutButton->SetChildVisible("zoom_outI0", TRUE);
     } else {
         mBlinkDir = 0;
@@ -1275,7 +1519,7 @@ Vec2F WeatherAround::GetTempSizeLarge(CityLabel* label) {
     return label->GetTempSizeLarge(mDay);
 }
 
-static void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom);
+void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom);
 
 static void ZoomOutColorCallback(nw4r::lyt::Pane* pane, const GXColor* color) {
     char name[100] = "zoom_outT";
@@ -1289,16 +1533,18 @@ static void ZoomOutColorCallback(nw4r::lyt::Pane* pane, const GXColor* color) {
     }
 }
 
-static void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom) {
-    textBox->SetTextColor(0, top);
-    textBox->SetTextColor(1, bottom);
+inline void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom) {
+    // TextBox::mTextColors is protected
+    nw4r::ut::Color* colors = (nw4r::ut::Color*)((u8*)textBox + 0xD8);
+    colors[0] = top;
+    colors[1] = bottom;
 }
 
 static void ZoomOutCalcCallback(void* arg) {
     WeatherAround* self = (WeatherAround*)arg;
     if (self->mBlinking) {
-        SetTevColors(self->mZoomOutI0, &self->mZoomOutColors[0], &self->mZoomOutColors[1]);
-        SetTevColors(self->mZoomOutI1, &self->mZoomOutColors[2], &self->mZoomOutColors[3]);
+        SetTevColors(self->mZoomOutI0, &self->mZoomOutI0Color0, &self->mZoomOutI0Color1);
+        SetTevColors(self->mZoomOutI1, &self->mZoomOutI1Color0, &self->mZoomOutI1Color1);
     }
 }
 

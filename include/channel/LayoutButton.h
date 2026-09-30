@@ -79,6 +79,16 @@ public:
         return std::strcmp(mPane->mName, name) == 0;
     }
 
+    // Locked buttons ignore the pointer
+    void Lock() {
+        mLocked = TRUE;
+        Release();
+    }
+
+    void Unlock() {
+        mLocked = FALSE;
+    }
+
     BOOL IsInactive() const {
         return mDisabled || mLocked || mHidden;
     }
