@@ -56,6 +56,11 @@ Weather.cpp:
 	.bss        start:0x801D7150 end:0x801D7160
 	.sbss       start:0x80330A48 end:0x80330A50
 
+WeatherBase.cpp:
+	.text       start:0x8001C334 end:0x8001CA80
+	.data       start:0x8019AC70 end:0x8019AC90
+	.sdata2     start:0x80331C18 end:0x80331C50
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274
