@@ -241,6 +241,8 @@ public:
     void DrawRain();
     void DrawHigh();
     void DrawDetails();
+    s32 FindReleasedTouch();
+    s32 FindPressedTouch();
     void UpdateLabels();
     void ClearLists();
     BOOL StateGlobe();

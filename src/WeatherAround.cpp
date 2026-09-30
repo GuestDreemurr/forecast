@@ -112,6 +112,14 @@ static inline void DecTimer(s32* timer) {
     }
 }
 
+static inline BOOL IsNearZero(f32 value) {
+    BOOL result = FALSE;
+    if (value < 0.0008f && value > -0.0008f) {
+        result = TRUE;
+    }
+    return result;
+}
+
 static inline BOOL InRect(s32 index, const nw4r::ut::Rect& rect, f32 x, f32 y) {
     if (index >= 0 && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
         return TRUE;
@@ -440,8 +448,7 @@ void WeatherAround::Calc() {
     UpdateBlink();
 }
 
-static f32 sStopX = 0.0f;
-static f32 sStopY = 0.0f;
+static Vec2 sBackSpeed = {0.0f, 0.0f};
 
 void WeatherAround::CalcActive() {
     mInputActive = TRUE;
@@ -471,8 +478,7 @@ void WeatherAround::CalcActive() {
 
     if (CheckButtonPressed("back", WPAD_BUTTON_A) >= 0) {
         PlaySE(38);
-        gSimpleGlobe->mSpeedX = sStopX;
-        gSimpleGlobe->mSpeedY = sStopY;
+        gSimpleGlobe->mSpeed = sBackSpeed;
         gSimpleGlobe->mSpinning = FALSE;
         gSettingResult = 6;
         gCurrentCity = FindCity(gCurrentCityId);
@@ -556,7 +562,7 @@ void WeatherAround::CalcActive() {
         }
     }
 
-    mDots->UpdateAlpha(gSimpleGlobe->mSpeedX, gSimpleGlobe->mSpeedY);
+    mDots->UpdateAlpha(gSimpleGlobe->mSpeed.x, gSimpleGlobe->mSpeed.y);
 }
 
 void WeatherAround::CalcGlobe() {
@@ -800,13 +806,14 @@ void WeatherAround::DrawDetails() {
 
 #define APPEND_LABEL(head, label, next)                                                                      \
     {                                                                                                        \
+        CityLabel* newLabel = label;                                                                         \
         if (head != NULL) {                                                                                  \
             CityLabel* last;                                                                                 \
             for (last = head; last->next != NULL; last = last->next) {                                       \
             }                                                                                                \
-            last->next = label;                                                                              \
+            last->next = newLabel;                                                                           \
         } else {                                                                                             \
-            head = label;                                                                                    \
+            head = newLabel;                                                                                 \
         }                                                                                                    \
     }
 
@@ -825,8 +832,34 @@ static inline f32 DistSq(const A& a, const B& b) {
     return d.x * d.x + d.y * d.y;
 }
 
-static f32 sSelectX = 0.0f;
-static f32 sSelectY = 0.0f;
+static Vec2 sSelectSpeed = {0.0f, 0.0f};
+
+// The pointer that just let go of A near where it was pressed
+inline s32 WeatherAround::FindReleasedTouch() {
+    Vector2* touch = mTouchPos;
+    s32* timer = mPressTimers;
+    for (s32 i = 0; i < 4; i++, touch++, timer++) {
+        if (sHoveredButtons[i] == NULL && (gRelease[i] & WPAD_BUTTON_A) && *timer != 0) {
+            if (!InRect(mPressIndex, mPressRect, touch->x, touch->y) && DistSq(mPressPos, *touch) < 1600.0f) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+// The pointer that just pressed A
+inline s32 WeatherAround::FindPressedTouch() {
+    Vector2* touch = mTouchPos;
+    for (s32 i = 0; i < 4; i++, touch++) {
+        if (sHoveredButtons[i] == NULL && (gTrig[i] & WPAD_BUTTON_A)) {
+            if (!InRect(mPressIndex, mPressRect, touch->x, touch->y) && DistSq(mPressPos, *touch) < 1600.0f) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
 
 void WeatherAround::UpdateLabels() {
     f32 top = 63.0f;
@@ -839,19 +872,18 @@ void WeatherAround::UpdateLabels() {
         return;
     }
 
-    f32 releaseDist = 2500.0f;
-    f32 pressDist = 2500.0f;
-    f32 hoverDist[4];
     s32 hoverIndex[4];
+    f32 hoverDist[4];
+    Vec2 pos;
+    Vec2 cursor;
+    Vec2 half;
+    f32 releaseDist = 2500.0f;
     s32 selected = gForecastData->mHeader->mNumPlaces;
-    hoverDist[0] = releaseDist;
-    hoverDist[1] = releaseDist;
-    hoverIndex[0] = selected;
-    hoverIndex[1] = selected;
-    hoverIndex[2] = selected;
-    hoverIndex[3] = selected;
-    hoverDist[2] = releaseDist;
-    hoverDist[3] = releaseDist;
+    f32 pressDist = 2500.0f;
+    for (s32 j = 0; j < 4; j++) {
+        hoverDist[j] = 2500.0f;
+        hoverIndex[j] = selected;
+    }
 
     CityLabel** label = mLabels;
     for (s32 i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
@@ -862,21 +894,9 @@ void WeatherAround::UpdateLabels() {
             continue;
         }
 
-        Vec2 pos;
-        pos.x = (*label)->mPos.x;
-        pos.y = (*label)->mPos.y;
+        pos = (*label)->mPos;
 
-        s32 chan;
-        for (chan = 0; chan < 4; chan++) {
-            if (sHoveredButtons[chan] == NULL && (gRelease[chan] & WPAD_BUTTON_A) && mPressTimers[chan] != 0 &&
-                !InRect(mPressIndex, mPressRect, mTouchPos[chan].x, mTouchPos[chan].y) &&
-                DistSq(mPressPos, mTouchPos[chan]) < 1600.0f) {
-                break;
-            }
-        }
-        if (chan == 4) {
-            chan = -1;
-        }
+        s32 chan = FindReleasedTouch();
         if (chan >= 0) {
             f32 dist = DistSq(mTouchPos[chan], pos);
             if (dist < releaseDist) {
@@ -885,16 +905,7 @@ void WeatherAround::UpdateLabels() {
             }
         }
 
-        for (chan = 0; chan < 4; chan++) {
-            if (sHoveredButtons[chan] == NULL && (gTrig[chan] & WPAD_BUTTON_A) &&
-                !InRect(mPressIndex, mPressRect, mTouchPos[chan].x, mTouchPos[chan].y) &&
-                DistSq(mPressPos, mTouchPos[chan]) < 1600.0f) {
-                break;
-            }
-        }
-        if (chan == 4) {
-            chan = -1;
-        }
+        chan = FindPressedTouch();
         if (chan >= 0) {
             f32 dist = DistSq(mTouchPos[chan], pos);
             if (dist < pressDist) {
@@ -908,7 +919,6 @@ void WeatherAround::UpdateLabels() {
                     f32 y = gCursorY[j];
                     f32 x = gCursorX[j];
                     if (y > top && y < bottom && !InRect(mHitIndex, mHitRect, x, y)) {
-                        Vec2 cursor;
                         cursor.x = x;
                         cursor.y = y;
                         f32 dist = DistSq(cursor, pos);
@@ -945,8 +955,7 @@ void WeatherAround::UpdateLabels() {
             mCanSelect = FALSE;
             if (gLastSettingResult == 3) {
                 PlaySE(37);
-                gSimpleGlobe->mSpeedX = sSelectX;
-                gSimpleGlobe->mSpeedY = sSelectY;
+                gSimpleGlobe->mSpeed = sSelectSpeed;
                 gSimpleGlobe->mSpinning = FALSE;
                 gSettingResult = 2;
                 gCityPos.x = (*label)->mPos.x;
@@ -989,11 +998,10 @@ void WeatherAround::UpdateLabels() {
             PlayWeatherSound(*label);
         }
 
-        Vec2 pos;
-        pos.x = (*label)->mPos.x;
-        pos.y = (*label)->mPos.y;
+        pos = (*label)->mPos;
         f32 bounce = 0.2f * EaseCos((*label)->mBounce);
-        Vec2 size = GetLabelSize(*label);
+        Vec2F size;
+        size = GetLabelSize(*label);
         if (bounce > 0.0f) {
             bounce += scale;
             pos.x += 0.5f * size.x * bounce;
@@ -1025,10 +1033,9 @@ void WeatherAround::UpdateLabels() {
             Vector2 box = (*label)->GetBoxPos();
             pos.x = box.x;
             pos.y = box.y;
-            Vector2 size = (*label)->GetSize();
-            Vec2 half;
-            half.x = size.x * 0.5f;
-            half.y = size.y * 0.5f;
+            Vector2 boxSize = (*label)->GetSize();
+            half.x = boxSize.x * 0.5f;
+            half.y = boxSize.y * 0.5f;
             mHitIndex = i;
             mHitRect.left = pos.x - half.x;
             mHitRect.right = pos.x + half.x;
@@ -1120,8 +1127,8 @@ void WeatherAround::UpdateDrag() {
         switch (gSimpleGlobe->UpdateDrag(i)) {
         case 0:
             if (sHoveredButtons[i] == NULL) {
-                f32 y = gCursorY[i];
                 f32 x = gCursorX[i];
+                f32 y = gCursorY[i];
                 if (y > top && y < bottom) {
                     if (!(InRect(mHitIndex, mHitRect, x, y)) && gSimpleGlobe->UpdateGrab(i) &&
                         mCanSelect == TRUE) {
@@ -1144,9 +1151,8 @@ void WeatherAround::UpdateDrag() {
 
     f32 rot = gSimpleGlobe->mView != NULL ? gSimpleGlobe->mView->mRotation : 0.0f;
     f32 delta = __fabsf(rot - startRot);
-    if (!(delta < 0.0008f && delta > -0.0008f)) {
-        f32 amount = mRotateAmount;
-        if (amount < 0.0008f && amount > -0.0008f) {
+    if (!IsNearZero(delta)) {
+        if (IsNearZero(mRotateAmount)) {
             f32 t = delta > 2.0f ? 2.0f : delta;
             t *= 0.5f;
             PlayLoopSE(18, 0.5f + 0.5f * t, 1.0f + t, 0.0f, 0.5f);
@@ -1284,6 +1290,15 @@ void WeatherAround::StatePage() {
     }
 }
 
+static inline void CopyTempUnit(wchar_t* dst) {
+    wchar_t* buf = dst;
+    if (gTempUnit == 0) {
+        wcscpy(buf, L"(\xFF9F" L"C)");
+    } else {
+        wcscpy(buf, L"(\xFF9F" L"F)");
+    }
+}
+
 void WeatherAround::SetupIconsJP() {
     SET_PAGE(sPagesJP[gForecastPageStep]);
     mBelt->SetState(gForecastPageStep);
@@ -1309,11 +1324,7 @@ void WeatherAround::SetupTempDetailJP() {
     mTitles[1].mColor.a = 255;
     wcscpy(mLegendText[1], L"\x6700\x9AD8");
     SET_COLOR(mTitles[2].mColor, gColorWhite);
-    if (gTempUnit == 0) {
-        wcscpy(mLegendText[2], L"(\xFF9F" L"C)");
-    } else {
-        wcscpy(mLegendText[2], L"(\xFF9F" L"F)");
-    }
+    CopyTempUnit(mLegendText[2]);
 }
 
 void WeatherAround::SetupTempJP() {
@@ -1332,22 +1343,18 @@ void WeatherAround::SetupTempJP() {
         SET_COLOR(mTitles[1].mColor, gColorWhite);
         wcscpy(mLegendText[1], L"\x524D\x65E5\x6BD4");
         SET_COLOR(mTitles[2].mColor, gColorWhite);
-        if (gTempUnit == 0) {
-            wcscpy(mLegendText[2], L"(\xFF9F" L"C)");
-        } else {
-            wcscpy(mLegendText[2], L"(\xFF9F" L"F)");
-        }
+        CopyTempUnit(mLegendText[2]);
     }
 }
 
 #define FORMAT_HOURS(buf, start, end)                                                                        \
     {                                                                                                        \
         wchar_t* p = FormatNumber(start, buf, 4, FALSE);                                                     \
-        p[0] = L'-';                                                                                         \
-        p[1] = L'\0';                                                                                        \
-        p = FormatNumber(end, p + 1, 4, FALSE);                                                              \
-        p[0] = L'\x6642';                                                                                    \
-        p[1] = L'\0';                                                                                        \
+        *p++ = L'-';                                                                                         \
+        *p = L'\0';                                                                                          \
+        p = FormatNumber(end, p, 4, FALSE);                                                                  \
+        *p++ = L'\x6642';                                                                                    \
+        *p = L'\0';                                                                                          \
     }
 
 void WeatherAround::SetupRainJP() {
@@ -1359,8 +1366,8 @@ void WeatherAround::SetupRainJP() {
     mShowLegend = TRUE;
     mDrawLegend = &WeatherAround::DrawLegend;
 
-    s32 offset = 0;
     City* city = FindCity(gCurrentCityId);
+    s32 offset = 0;
     if (city != NULL) {
         if (city->mForecast != NULL) {
             offset = 0;
@@ -1407,11 +1414,7 @@ void WeatherAround::SetupTemp2JP() {
         SET_COLOR(mTitles[1].mColor, gColorCyan);
         wcscpy(mLegendText[1], L"\x6700\x4F4E");
         SET_COLOR(mTitles[2].mColor, gColorWhite);
-        if (gTempUnit == 0) {
-            wcscpy(mLegendText[2], L"(\xFF9F" L"C)");
-        } else {
-            wcscpy(mLegendText[2], L"(\xFF9F" L"F)");
-        }
+        CopyTempUnit(mLegendText[2]);
     }
 }
 
@@ -1424,8 +1427,8 @@ void WeatherAround::SetupRain2JP() {
     mShowLegend = TRUE;
     mDrawLegend = &WeatherAround::DrawLegend;
 
-    s32 offset = 0;
     City* city = FindCity(gCurrentCityId);
+    s32 offset = 0;
     if (city != NULL) {
         if (city->mForecast != NULL) {
             offset = 0;
@@ -1474,18 +1477,21 @@ void WeatherAround::StateTilt() {
 
 void WeatherAround::UpdateBlink() {
     if (mBlinking) {
-        if (mBlinkDir == 0) {
+        switch (mBlinkDir) {
+        case 0:
             mBlink += 0.05f;
             if (mBlink > 1.0f) {
                 mBlink = 1.0f;
                 mBlinkDir++;
             }
-        } else {
+            break;
+        default:
             mBlink -= 0.05f;
             if (mBlink < 0.0f) {
                 mBlink = 0.0f;
                 mBlinkDir--;
             }
+            break;
         }
         mZoomOutI0Color1.a = mZoomOutAlpha * mBlink;
         mZoomOutButton->SetChildVisible("zoom_outI0", TRUE);
@@ -1565,7 +1571,8 @@ static void ZoomOutColorCallback(nw4r::lyt::Pane* pane, const GXColor* color) {
     if (child != NULL) {
         nw4r::lyt::TextBox* textBox = nw4r::ut::DynamicCast<nw4r::lyt::TextBox*>(child);
         nw4r::ut::Color c = *color;
-        c.a = c.a * gMenuBrightness;
+        f32 brightness = gMenuBrightness;
+        c.a = c.a * brightness;
         SetTextBoxColors(textBox, c, c);
     }
 }

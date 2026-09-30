@@ -58,8 +58,7 @@ public:
     nw4r::g3d::ScnRoot* mScnRoot; // at 0x0
     GlobeView* mView;             // at 0x4
     u8 unk8[0x6C - 0x8];          // at 0x8
-    f32 mSpeedX;                  // at 0x6C
-    f32 mSpeedY;                  // at 0x70
+    Vec2 mSpeed;                  // at 0x6C, rotation speed
     u8 unk74[0x8C - 0x74];        // at 0x74
     u8 mGrabbed[4];               // at 0x8C
     u8 mSpinning;                 // at 0x90
