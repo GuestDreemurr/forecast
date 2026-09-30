@@ -81,11 +81,10 @@ void WeatherOther::SetupJP(void* arc) {
         }
 
         Vec2F center = box->mPane->GetCenter();
-        f32 x = center.x;
-        f32 y = center.y;
-        box->mX = x;
-        box->mX = centerX + x * scaleX;
-        box->mY = centerY - y;
+        box->mX = center.x;
+        box->mY = center.y;
+        box->mX = centerX + box->mX * scaleX;
+        box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
         f32 w = pane->mRight - pane->mLeft;
         f32 h = pane->mTop - pane->mBottom;
@@ -143,11 +142,10 @@ void WeatherOther::Setup(void* arc) {
         }
 
         Vec2F center = box->mPane->GetCenter();
-        f32 x = center.x;
-        f32 y = center.y;
-        box->mX = x;
-        box->mX = centerX + x * scaleX;
-        box->mY = centerY - y;
+        box->mX = center.x;
+        box->mY = center.y;
+        box->mX = centerX + box->mX * scaleX;
+        box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
         f32 w = pane->mRight - pane->mLeft;
         f32 h = pane->mTop - pane->mBottom;
@@ -193,23 +191,25 @@ void WeatherOther::Draw() {
                 return;
             }
 
-            IndexInfo* uv = gForecastData->FindUVIndex(forecast->mEntry->mDays[mDay].mUVIndex);
+            IndexInfo* uv = gForecastData->FindUVIndex((u8)forecast->mEntry->mDays[mDay].mUVIndex);
             mWriter.SetDrawFlag(0x111);
             mWriter.SetupGX();
             if (uv != NULL) {
                 DrawText(&mBoxes[0], uv->mText, alpha);
                 SetDefaultGXState();
                 SetOrthoProjection();
-                u8 code = uv->mIndex->mCode;
+                u8 a = alpha;
+                wchar_t* buf = sTextBuf;
+                s32 code = uv->mIndex->mCode;
                 if (code == 0xFF) {
-                    wcscpy(sTextBuf, L"--");
+                    wcscpy(buf, L"--");
                 } else {
-                    FormatNumber(code, sTextBuf, 4, FALSE);
+                    FormatNumber(code, buf, 4, FALSE);
                 }
 
                 Vec2F pos(mBoxes[1].mX + mPos.x, mBoxes[1].mY - mPos.y);
-                mBoxes[1].mColor.a = alpha;
-                mBoxes[1].mShadowColor.a = alpha;
+                mBoxes[1].mColor.a = a;
+                mBoxes[1].mShadowColor.a = a;
                 DrawTempCentered(sTextBuf, &pos, mBoxes[1].mScaleX, mBoxes[1].mScaleY, &mBoxes[1].mColor,
                                  &mBoxes[1].mShadowColor);
             }
@@ -247,25 +247,51 @@ BOOL WeatherOther::IsEmpty() {
 }
 
 BOOL WeatherOther::HasDataJP(CityForecast* forecast) {
-    if (gForecastData->FindUVIndex(forecast->mEntry->mDays[mDay].mUVIndex) != NULL) {
+    if (gForecastData->FindUVIndex((u8)forecast->mEntry->mDays[mDay].mUVIndex) != NULL) {
         return TRUE;
     }
 
-    if (gForecastData->FindLaundryIndex(forecast->mEntry->mDays[mDay].mLaundryIndex) != NULL) {
+    if (gForecastData->FindLaundryIndex((u8)forecast->mEntry->mDays[mDay].mLaundryIndex) != NULL) {
         return TRUE;
     }
 
-    return gForecastData->FindPollenIndex(forecast->mEntry->mDays[mDay].mPollenIndex) != NULL;
+    return gForecastData->FindPollenIndex((u8)forecast->mEntry->mDays[mDay].mPollenIndex) != NULL;
 }
 
 BOOL WeatherOther::HasData(CityForecast* forecast) {
-    return gForecastData->FindUVIndex(forecast->mEntry->mDays[mDay].mUVIndex) != NULL;
+    return gForecastData->FindUVIndex((u8)forecast->mEntry->mDays[mDay].mUVIndex) != NULL;
 }
 
+#define DRAW_INDEX_NUM(box, info, alpha_)                                                                    \
+    {                                                                                                        \
+        u8 a = alpha_;                                                                                       \
+        wchar_t* buf = sTextBuf;                                                                             \
+        s32 code = (info)->mIndex->mCode;                                                                    \
+        if (code == 0xFF) {                                                                                  \
+            wcscpy(buf, L"--");                                                                              \
+        } else {                                                                                             \
+            FormatNumber(code, buf, 4, FALSE);                                                               \
+        }                                                                                                    \
+        Vec2F pos((box)->mX + mPos.x, (box)->mY - mPos.y);                                                   \
+        (box)->mColor.a = a;                                                                                 \
+        (box)->mShadowColor.a = a;                                                                           \
+        DrawDateCentered(sTextBuf, &pos, (box)->mScaleX, (box)->mScaleY, &(box)->mColor, &(box)->mShadowColor); \
+    }
+
+#define DRAW_NO_INDEX_NUM(box, alpha_)                                                                       \
+    {                                                                                                        \
+        u8 a = alpha_;                                                                                       \
+        wcscpy(sTextBuf, L"--");                                                                             \
+        Vec2F pos((box)->mX + mPos.x, (box)->mY - mPos.y);                                                   \
+        (box)->mColor.a = a;                                                                                 \
+        (box)->mShadowColor.a = a;                                                                           \
+        DrawDateCentered(sTextBuf, &pos, (box)->mScaleX, (box)->mScaleY, &(box)->mColor, &(box)->mShadowColor); \
+    }
+
 void WeatherOther::DrawJP(CityForecast* forecast, const s32& alpha) {
-    IndexInfo* uv = gForecastData->FindUVIndex(forecast->mEntry->mDays[mDay].mUVIndex);
-    IndexInfo* laundry = gForecastData->FindLaundryIndex(forecast->mEntry->mDays[mDay].mLaundryIndex);
-    IndexInfo* pollen = gForecastData->FindPollenIndex(forecast->mEntry->mDays[mDay].mPollenIndex);
+    IndexInfo* uv = gForecastData->FindUVIndex((u8)forecast->mEntry->mDays[mDay].mUVIndex);
+    IndexInfo* laundry = gForecastData->FindLaundryIndex((u8)forecast->mEntry->mDays[mDay].mLaundryIndex);
+    IndexInfo* pollen = gForecastData->FindPollenIndex((u8)forecast->mEntry->mDays[mDay].mPollenIndex);
 
     mWriter.SetDrawFlag(0x100);
     mWriter.SetupGX();
@@ -286,65 +312,20 @@ void WeatherOther::DrawJP(CityForecast* forecast, const s32& alpha) {
     SetOrthoProjection();
 
     if (laundry != NULL) {
-        u8 code = laundry->mIndex->mCode;
-        if (code == 0xFF) {
-            wcscpy(sTextBuf, L"--");
-        } else {
-            FormatNumber(code, sTextBuf, 4, FALSE);
-        }
-        Vec2F pos(mBoxes[3].mX + mPos.x, mBoxes[3].mY - mPos.y);
-        mBoxes[3].mColor.a = alpha;
-        mBoxes[3].mShadowColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, mBoxes[3].mScaleX, mBoxes[3].mScaleY, &mBoxes[3].mColor,
-                         &mBoxes[3].mShadowColor);
+        DRAW_INDEX_NUM(&mBoxes[3], laundry, alpha);
     } else {
-        wcscpy(sTextBuf, L"--");
-        Vec2F pos(mBoxes[3].mX + mPos.x, mBoxes[3].mY - mPos.y);
-        mBoxes[3].mColor.a = alpha;
-        mBoxes[3].mShadowColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, mBoxes[3].mScaleX, mBoxes[3].mScaleY, &mBoxes[3].mColor,
-                         &mBoxes[3].mShadowColor);
+        DRAW_NO_INDEX_NUM(&mBoxes[3], alpha);
     }
 
     if (uv != NULL) {
-        u8 code = uv->mIndex->mCode;
-        if (code == 0xFF) {
-            wcscpy(sTextBuf, L"--");
-        } else {
-            FormatNumber(code, sTextBuf, 4, FALSE);
-        }
-        Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
-        mBoxes[4].mColor.a = alpha;
-        mBoxes[4].mShadowColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, mBoxes[4].mScaleX, mBoxes[4].mScaleY, &mBoxes[4].mColor,
-                         &mBoxes[4].mShadowColor);
+        DRAW_INDEX_NUM(&mBoxes[4], uv, alpha);
     } else {
-        wcscpy(sTextBuf, L"--");
-        Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
-        mBoxes[4].mColor.a = alpha;
-        mBoxes[4].mShadowColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, mBoxes[4].mScaleX, mBoxes[4].mScaleY, &mBoxes[4].mColor,
-                         &mBoxes[4].mShadowColor);
+        DRAW_NO_INDEX_NUM(&mBoxes[4], alpha);
     }
 
     if (pollen != NULL) {
-        u8 code = pollen->mIndex->mCode;
-        if (code == 0xFF) {
-            wcscpy(sTextBuf, L"--");
-        } else {
-            FormatNumber(code, sTextBuf, 4, FALSE);
-        }
-        Vec2F pos(mBoxes[5].mX + mPos.x, mBoxes[5].mY - mPos.y);
-        mBoxes[5].mColor.a = alpha;
-        mBoxes[5].mShadowColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, mBoxes[5].mScaleX, mBoxes[5].mScaleY, &mBoxes[5].mColor,
-                         &mBoxes[5].mShadowColor);
+        DRAW_INDEX_NUM(&mBoxes[5], pollen, alpha);
     } else {
-        wcscpy(sTextBuf, L"--");
-        Vec2F pos(mBoxes[5].mX + mPos.x, mBoxes[5].mY - mPos.y);
-        mBoxes[5].mColor.a = alpha;
-        mBoxes[5].mShadowColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, mBoxes[5].mScaleX, mBoxes[5].mScaleY, &mBoxes[5].mColor,
-                         &mBoxes[5].mShadowColor);
+        DRAW_NO_INDEX_NUM(&mBoxes[5], alpha);
     }
 }

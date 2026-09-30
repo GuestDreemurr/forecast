@@ -114,11 +114,10 @@ void WeatherBaseDay::SetupJP(void* arc) {
         }
 
         Vec2F center = box->mPane->GetCenter();
-        f32 x = center.x;
-        f32 y = center.y;
-        box->mX = x;
-        box->mX = centerX + x * scaleX;
-        box->mY = centerY - y;
+        box->mX = center.x;
+        box->mY = center.y;
+        box->mX = centerX + box->mX * scaleX;
+        box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
         f32 w = pane->mRight - pane->mLeft;
         f32 h = pane->mTop - pane->mBottom;
@@ -191,11 +190,10 @@ void WeatherBaseDay::Setup(void* arc) {
         }
 
         Vec2F center = box->mPane->GetCenter();
-        f32 x = center.x;
-        f32 y = center.y;
-        box->mX = x;
-        box->mX = centerX + x * scaleX;
-        box->mY = centerY - y;
+        box->mX = center.x;
+        box->mY = center.y;
+        box->mX = centerX + box->mX * scaleX;
+        box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
         f32 w = pane->mRight - pane->mLeft;
         f32 h = pane->mTop - pane->mBottom;
