@@ -58,14 +58,15 @@ static inline const wchar_t* GetWindDirName(u8 dir) {
 }
 
 static inline const wchar_t* GetWindUnitName() {
+    s32 unit = gWindUnit;
     if (gRegion == 1) {
-        return ((WindUnitNames*)gWindUnitNames)[gLanguage][gWindUnit];
+        return ((WindUnitNames*)gWindUnitNames)[gLanguage][unit];
     } else {
-        return ((WindUnitNames*)gWindUnitNames2)[gLanguage][gWindUnit];
+        return ((WindUnitNames*)gWindUnitNames2)[gLanguage][unit];
     }
 }
 
-WeatherBaseDay::WeatherBaseDay(void* arc, const Vec2& pos, const Vec2& size, s32 type)
+WeatherBaseDay::WeatherBaseDay(const Vec2& pos, void* arc, const Vec2& size, s32 type)
     : WeatherBase(pos, size, type), mNoServiceLayout(NULL), mNoServiceText(NULL) {
     mStartHour = 0;
     if (gLanguage == 0) {
@@ -112,12 +113,17 @@ void WeatherBaseDay::SetupJP(void* arc) {
             OSPanic("d_weather_base_day.cpp", 189, "");
         }
 
-        Vec2 center = box->mPane->GetCenter();
-        box->mX = center.x;
-        box->mX = centerX + center.x * scaleX;
-        box->mY = centerY - center.y;
-        box->mWidth = scaleX * (box->mPane->mRight - box->mPane->mLeft);
-        box->mHeight = __fabs(box->mPane->mTop - box->mPane->mBottom);
+        Vec2F center = box->mPane->GetCenter();
+        f32 x = center.x;
+        f32 y = center.y;
+        box->mX = x;
+        box->mX = centerX + x * scaleX;
+        box->mY = centerY - y;
+        LayoutButton* pane = box->mPane;
+        f32 w = pane->mRight - pane->mLeft;
+        f32 h = pane->mTop - pane->mBottom;
+        box->mWidth = scaleX * w;
+        box->mHeight = __fabsf(h);
         box->mScaleX = sBoxScalesJP[i];
         box->mScaleY = sBoxScalesJP[i];
 
@@ -184,12 +190,17 @@ void WeatherBaseDay::Setup(void* arc) {
             OSPanic("d_weather_base_day.cpp", 263, "");
         }
 
-        Vec2 center = box->mPane->GetCenter();
-        box->mX = center.x;
-        box->mX = centerX + center.x * scaleX;
-        box->mY = centerY - center.y;
-        box->mWidth = scaleX * (box->mPane->mRight - box->mPane->mLeft);
-        box->mHeight = __fabs(box->mPane->mTop - box->mPane->mBottom);
+        Vec2F center = box->mPane->GetCenter();
+        f32 x = center.x;
+        f32 y = center.y;
+        box->mX = x;
+        box->mX = centerX + x * scaleX;
+        box->mY = centerY - y;
+        LayoutButton* pane = box->mPane;
+        f32 w = pane->mRight - pane->mLeft;
+        f32 h = pane->mTop - pane->mBottom;
+        box->mWidth = scaleX * w;
+        box->mHeight = __fabsf(h);
         box->mScaleX = sBoxScales[i];
         box->mScaleY = sBoxScales[i];
         SetColor(box->mColor, gColorWhite);
@@ -207,11 +218,12 @@ void WeatherBaseDay::Setup(void* arc) {
 void WeatherBaseDay::SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover) {
     WeatherBase::SetPosition(pos, scale, visible, checkHover);
 
+    City* city = gCurrentCity;
     mStartHour = 0;
-    if (gCurrentCity != NULL) {
-        if (gCurrentCity->mForecast != NULL) {
+    if (city != NULL) {
+        if (city->mForecast != NULL) {
             mStartHour = 0;
-        } else if (gCurrentCity->mSummary != NULL) {
+        } else if (city->mSummary != NULL) {
             mStartHour = 0;
         }
     }
@@ -251,39 +263,45 @@ void WeatherBaseDay::DrawTextFit(TextBox* box, const wchar_t* text, u8 alpha) {
     mWriter.Print(text);
 }
 
-inline void WeatherBaseDay::DrawTempCInline(s8 temp, u8 alpha) {
-    Vec2 pos;
-
+static inline void FormatTemp(s32 temp) {
     if (temp <= -128) {
         wcscpy(sTextBuf, L"--");
     } else {
         FormatNumber(temp, sTextBuf, 4, FALSE);
     }
+}
+
+inline void WeatherBaseDay::DrawTempCInline(s32 temp, u8 alpha) {
+    wchar_t* buf = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(buf, L"--");
+    } else {
+        FormatNumber(temp, buf, 4, FALSE);
+    }
 
     wcscat(sTextBuf, L"\xFF9F" L"C");
-    pos.y = mBoxes[2].mY - mPos.y;
-    pos.x = mBoxes[2].mX + mPos.x;
-    mBoxes[2].mShadowColor.a = alpha;
+    Vec2F pos(mBoxes[2].mX + mPos.x, mBoxes[2].mY - mPos.y);
     mBoxes[2].mColor.a = alpha;
+    mBoxes[2].mShadowColor.a = alpha;
     DrawTempCentered(sTextBuf, &pos, mBoxes[2].mScaleX, mBoxes[2].mScaleY, &mBoxes[2].mColor,
                      &mBoxes[2].mShadowColor);
 }
 
-void WeatherBaseDay::DrawTempC(s8 temp, u8 alpha) {
+void WeatherBaseDay::DrawTempC(s32 temp, u8 alpha) {
     DrawTempCInline(temp, alpha);
 }
 
-void WeatherBaseDay::DrawTemp(s8 temp, u8 alpha) {
-    Vec2 pos;
+void WeatherBaseDay::DrawTemp(s32 temp, u8 alpha) {
     TextBox* box;
+    wchar_t* buf = sTextBuf;
 
     if (temp <= -128) {
-        wcscpy(sTextBuf, L"--");
+        wcscpy(buf, L"--");
     } else {
-        FormatNumber(temp, sTextBuf, 4, FALSE);
+        FormatNumber(temp, buf, 4, FALSE);
     }
 
-    s32 len = wcslen(sTextBuf);
+    s32 len = wcslen(buf);
     if (gRegion == 1) {
         wcscat(sTextBuf, L"\xFF9F");
         box = &mBoxes[3];
@@ -292,10 +310,9 @@ void WeatherBaseDay::DrawTemp(s8 temp, u8 alpha) {
         box = &mBoxes[2];
     }
 
-    pos.y = box->mY - mPos.y;
-    pos.x = box->mX + mPos.x;
-    box->mShadowColor.a = alpha;
+    Vec2F pos(box->mX + mPos.x, box->mY - mPos.y);
     box->mColor.a = alpha;
+    box->mShadowColor.a = alpha;
     DrawTempCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
 }
 
@@ -316,14 +333,6 @@ static inline void FormatHours(s32 start, s32 end) {
     p[1] = L'\0';
 }
 
-static inline void FormatTemp(s8 temp) {
-    if (temp <= -128) {
-        wcscpy(sTextBuf, L"--");
-    } else {
-        FormatNumber(temp, sTextBuf, 4, FALSE);
-    }
-}
-
 static inline void FormatTempDiff(s8 diff) {
     if (diff <= -128) {
         wcscpy(sTextBuf, L"--");
@@ -338,18 +347,27 @@ static inline void FormatTempDiff(s8 diff) {
     }
 }
 
-inline void WeatherBaseDay::DrawNumBox(TextBox* box, u8 alpha) {
-    Vec2 pos;
-    pos.x = box->mX + mPos.x;
-    pos.y = box->mY - mPos.y;
-    box->mColor.a = alpha;
-    box->mShadowColor.a = 0;
-    DrawNumRightAligned(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
-}
+#define PRINT_BOX(box, text, alpha)                                                                          \
+    (box)->mColor.a = alpha;                                                                                 \
+    mWriter.SetScale((box)->mScaleX, (box)->mScaleY);                                                        \
+    mWriter.SetTextColor((box)->mColor);                                                                     \
+    mWriter.SetCursor((box)->mX + mPos.x, (box)->mY - mPos.y);                                               \
+    mWriter.Print(text)
+
+#define DRAW_NUM_BOX(box, alpha)                                                                             \
+    pos.x = (box)->mX + mPos.x;                                                                              \
+    pos.y = (box)->mY - mPos.y;                                                                              \
+    (box)->mColor.a = alpha;                                                                                 \
+    (box)->mShadowColor.a = 0;                                                                               \
+    DrawNumRightAligned(buf, &pos, (box)->mScaleX, (box)->mScaleY, &(box)->mColor, &(box)->mShadowColor)
 
 void WeatherBaseDay::DrawJP(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale) {
     s32 hour = mStartHour;
     Vec2 pos;
+    wchar_t* buf;
+    wchar_t* p;
+    s32 temp;
+
     pos.x = mBoxes[19].mX + mPos.x;
     pos.y = mBoxes[19].mY - mPos.y;
 
@@ -367,62 +385,146 @@ void WeatherBaseDay::DrawJP(DayForecast* day, WeatherInfo* weather, u8 alpha, f3
     mWriter.SetCharSpace(scale * gUnkSceneFloat);
     mWriter.SetupGX();
 
-    DrawText(&mBoxes[0], weather->mText, alpha);
-    PrintBox(&mBoxes[1], L"\x6C17\x6E29 (\x524D\x65E5\x6BD4)", alpha);
+    TextBox* boxes = mBoxes;
+    DrawText(&boxes[0], weather->mText, alpha);
+    PRINT_BOX(&boxes[1], L"\x6C17\x6E29 (\x524D\x65E5\x6BD4)", alpha);
 
-    FormatHours(hour, hour + 6);
-    PrintBox(&mBoxes[2], sTextBuf, alpha);
-    FormatHours(hour + 6, hour + 12);
-    PrintBox(&mBoxes[3], sTextBuf, alpha);
-    FormatHours(hour + 12, hour + 18);
-    PrintBox(&mBoxes[4], sTextBuf, alpha);
+    p = FormatNumber(hour, sTextBuf, 4, FALSE);
+    p[0] = L'-';
+    p[1] = L'\0';
+    p = FormatNumber(hour + 6, p + 1, 4, FALSE);
+    p[0] = L'\x6642';
+    p[1] = L'\0';
+    PRINT_BOX(&boxes[2], sTextBuf, alpha);
+
+    p = FormatNumber(hour + 6, sTextBuf, 4, FALSE);
+    p[0] = L'-';
+    p[1] = L'\0';
+    p = FormatNumber(hour + 12, p + 1, 4, FALSE);
+    p[0] = L'\x6642';
+    p[1] = L'\0';
+    PRINT_BOX(&boxes[3], sTextBuf, alpha);
+
+    p = FormatNumber(hour + 12, sTextBuf, 4, FALSE);
+    p[0] = L'-';
+    p[1] = L'\0';
+    p = FormatNumber(hour + 18, p + 1, 4, FALSE);
+    p[0] = L'\x6642';
+    p[1] = L'\0';
+    PRINT_BOX(&boxes[4], sTextBuf, alpha);
+
+    p = FormatNumber(hour + 18, sTextBuf, 4, FALSE);
+    p[0] = L'-';
     s32 end = hour + 24;
+    p[1] = L'\0';
     if (end > 24) {
         end -= 24;
     }
-    FormatHours(hour + 18, end);
-    PrintBox(&mBoxes[5], sTextBuf, alpha);
+    p = FormatNumber(end, p + 1, 4, FALSE);
+    p[0] = L'\x6642';
+    p[1] = L'\0';
+    PRINT_BOX(&boxes[5], sTextBuf, alpha);
 
-    PrintBox(&mBoxes[6], L"\x6700\x9AD8", alpha);
-    PrintBox(&mBoxes[7], L"\x6700\x4F4E", alpha);
+    PRINT_BOX(&boxes[6], L"\x6700\x9AD8", alpha);
+    PRINT_BOX(&boxes[7], L"\x6700\x4F4E", alpha);
+    boxes[8].mColor.a = alpha;
+    mWriter.SetScale(boxes[8].mScaleX, boxes[8].mScaleY);
+    mWriter.SetTextColor(boxes[8].mColor);
+    mWriter.SetCursor(boxes[8].mX + mPos.x, boxes[8].mY - mPos.y);
     if (gTempUnit == 0) {
-        PrintBox(&mBoxes[8], L"(\xFF9F" L"C)", alpha);
+        mWriter.Print(L"(\xFF9F" L"C)");
     } else {
-        PrintBox(&mBoxes[8], L"(\xFF9F" L"F)", alpha);
+        mWriter.Print(L"(\xFF9F" L"F)");
     }
-    PrintBox(&mBoxes[9], L"\x964D\x6C34\x78BA\x7387", alpha);
-    PrintBox(&mBoxes[10], L"(%)", alpha);
+    PRINT_BOX(&boxes[9], L"\x964D\x6C34\x78BA\x7387", alpha);
+    PRINT_BOX(&boxes[10], L"(%)", alpha);
 
     SetDefaultGXState();
     SetOrthoProjection();
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_C2, GX_CC_TEXC, GX_CC_C1, GX_CC_C2);
+    GXSetTevColorIn(GX_TEVSTAGE0, (GXTevColorArg)4, (GXTevColorArg)8, (GXTevColorArg)2, (GXTevColorArg)4);
 
-    FormatTemp(gTempUnit == 0 ? day->mMaxC : day->mMaxF);
-    DrawNumBox(&mBoxes[11], alpha);
-    FormatTempDiff(gTempUnit == 0 ? day->mMaxDiffC : day->mMaxDiffF);
-    DrawNumBox(&mBoxes[12], alpha);
-    FormatTemp(gTempUnit == 0 ? day->mMinC : day->mMinF);
-    DrawNumBox(&mBoxes[13], alpha);
-    FormatTempDiff(gTempUnit == 0 ? day->mMinDiffC : day->mMinDiffF);
-    DrawNumBox(&mBoxes[14], alpha);
+    if (gTempUnit == 0) {
+        temp = day->mMaxC;
+    } else {
+        temp = day->mMaxF;
+    }
+    buf = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(buf, L"--");
+    } else {
+        FormatNumber(temp, buf, 4, FALSE);
+    }
+    DRAW_NUM_BOX(&mBoxes[11], alpha);
+
+    if (gTempUnit == 0) {
+        temp = day->mMaxDiffC;
+    } else {
+        temp = day->mMaxDiffF;
+    }
+    p = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(p, L"--");
+    } else {
+        *p++ = L'(';
+        if (temp > 0) {
+            *p++ = L'+';
+        }
+        FormatNumber(temp, p, 4, FALSE);
+        wcscat(sTextBuf, L")");
+    }
+    buf = sTextBuf;
+    DRAW_NUM_BOX(&mBoxes[12], alpha);
+
+    if (gTempUnit == 0) {
+        temp = day->mMinC;
+    } else {
+        temp = day->mMinF;
+    }
+    buf = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(buf, L"--");
+    } else {
+        FormatNumber(temp, buf, 4, FALSE);
+    }
+    DRAW_NUM_BOX(&mBoxes[13], alpha);
+
+    if (gTempUnit == 0) {
+        temp = day->mMinDiffC;
+    } else {
+        temp = day->mMinDiffF;
+    }
+    p = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(p, L"--");
+    } else {
+        *p++ = L'(';
+        if (temp > 0) {
+            *p++ = L'+';
+        }
+        FormatNumber(temp, p, 4, FALSE);
+        wcscat(sTextBuf, L")");
+    }
+    buf = sTextBuf;
+    DRAW_NUM_BOX(&mBoxes[14], alpha);
 
     SetDefaultGXState();
     SetOrthoProjection();
+    buf = sTextBuf;
     for (s32 i = 0; i < 4; i++) {
-        u8 percent = day->mPercent[i];
+        s32 percent = day->mPercent[i];
         if (percent == 0xFF) {
-            wcscpy(sTextBuf, L"--");
+            wcscpy(buf, L"--");
         } else {
-            FormatNumber(percent, sTextBuf, 4, FALSE);
+            FormatNumber(percent, buf, 4, FALSE);
         }
 
-        s32 len = wcslen(sTextBuf);
+        s32 len = wcslen(buf);
         TextBox* box = &mBoxes[sRainBoxesJP[i]];
         pos.x = box->mX + mPos.x;
         pos.y = box->mY - mPos.y;
-        box->mShadowColor.a = alpha;
         box->mColor.a = alpha;
-        DrawDateCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        box->mShadowColor.a = alpha;
+        DrawDateCentered(buf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
     }
 }
 
@@ -431,8 +533,6 @@ inline void WeatherBaseDay::FormatWindInline(u8 dir, u8 speed) {
 
     switch (gLanguage) {
     case 6:
-    case 4:
-    case 3:
         wcscpy(sTextBuf, GetWindDirName(dir));
         if (dir != 0) {
             wcscat(sTextBuf, L", ");
@@ -447,11 +547,55 @@ inline void WeatherBaseDay::FormatWindInline(u8 dir, u8 speed) {
         }
         break;
     case 5:
+        if (dir == 0) {
+            wcscpy(sTextBuf, GetWindDirName(dir));
+        } else {
+            wcscpy(sTextBuf, L"Vento da ");
+            wcscat(sTextBuf, GetWindDirName(dir));
+            wcscat(sTextBuf, L", ");
+            p = &sTextBuf[wcslen(sTextBuf)];
+            if (speed != 0xFF) {
+                FormatNumber(speed, p, 4, FALSE);
+            } else {
+                wcscat(sTextBuf, L"--");
+            }
+            wcscat(sTextBuf, L" ");
+            wcscat(sTextBuf, GetWindUnitName());
+        }
+        break;
+    case 4:
+        wcscpy(sTextBuf, GetWindDirName(dir));
+        if (dir != 0) {
+            wcscat(sTextBuf, L", ");
+            p = &sTextBuf[wcslen(sTextBuf)];
+            if (speed != 0xFF) {
+                FormatNumber(speed, p, 4, FALSE);
+            } else {
+                wcscat(sTextBuf, L"--");
+            }
+            wcscat(sTextBuf, L" ");
+            wcscat(sTextBuf, GetWindUnitName());
+        }
+        break;
+    case 3:
+        wcscpy(sTextBuf, GetWindDirName(dir));
+        if (dir != 0) {
+            wcscat(sTextBuf, L", ");
+            p = &sTextBuf[wcslen(sTextBuf)];
+            if (speed != 0xFF) {
+                FormatNumber(speed, p, 4, FALSE);
+            } else {
+                wcscat(sTextBuf, L"--");
+            }
+            wcscat(sTextBuf, L" ");
+            wcscat(sTextBuf, GetWindUnitName());
+        }
+        break;
     case 2:
         if (dir == 0) {
             wcscpy(sTextBuf, GetWindDirName(dir));
         } else {
-            wcscpy(sTextBuf, gLanguage == 5 ? L"Vento da " : L"Wind aus ");
+            wcscpy(sTextBuf, L"Wind aus ");
             wcscat(sTextBuf, GetWindDirName(dir));
             wcscat(sTextBuf, L", ");
             p = &sTextBuf[wcslen(sTextBuf)];
@@ -471,9 +615,7 @@ inline void WeatherBaseDay::FormatWindInline(u8 dir, u8 speed) {
 }
 
 void WeatherBaseDay::Draw(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale) {
-    Vec2 pos;
-    pos.x = mBoxes[4].mX + mPos.x;
-    pos.y = mBoxes[4].mY - mPos.y;
+    Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
     DrawWeatherIcon(weather->mType->mIcon, &pos, alpha, scale * mBoxes[4].mScaleX);
 
     SetDefaultGXState();
@@ -537,23 +679,27 @@ void WeatherBaseDay::FormatWindDefault(u8 dir, u8 speed) {
 }
 
 void WeatherBaseDay::UpdateHover(BOOL enable) {
+    TextBox* icon;
     s32 prev = unk98;
     unk98 = -1;
     if (!enable) {
         return;
     }
 
-    TextBox* icon = mIconBox;
+    icon = mIconBox;
     f32 left = (icon->mX + mPos.x) - 0.5f * icon->mWidth;
     f32 top = (icon->mY - mPos.y) - 0.5f * icon->mHeight;
     f32 right = left + icon->mWidth;
     f32 bottom = top + icon->mHeight;
 
     for (s32 i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        if (gKPADLatest[i] >= 0 && gCursorX[i] > left && gCursorX[i] < right && gCursorY[i] > top &&
-            gCursorY[i] < bottom) {
-            unk98 = i;
-            break;
+        if (gKPADLatest[i] >= 0) {
+            f32 x = gCursorX[i];
+            f32 y = gCursorY[i];
+            if (x > left && x < right && y > top && y < bottom) {
+                unk98 = i;
+                break;
+            }
         }
     }
 
@@ -576,9 +722,6 @@ void WeatherBaseDay::UpdateHover(BOOL enable) {
     }
 }
 
-Vec2 WeatherBaseDay::GetIconPos() {
-    Vec2 pos;
-    pos.y = mIconBox->mY - mPos.y;
-    pos.x = mIconBox->mX + mPos.x;
-    return pos;
+Vec2F WeatherBaseDay::GetIconPos() {
+    return Vec2F(mIconBox->mX + mPos.x, mIconBox->mY - mPos.y);
 }

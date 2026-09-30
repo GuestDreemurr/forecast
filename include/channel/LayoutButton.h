@@ -4,6 +4,7 @@
 #include <cstring>
 #include <revolution/GX.h>
 #include <nw4r/math/math_types.h>
+#include <channel/Vec2F.h>
 
 namespace nw4r {
 namespace lyt {
@@ -43,7 +44,7 @@ public:
     void SetPaneAlpha(u8 alpha);
     void SetState(s32 state);
     void SetText(const wchar_t* text);
-    Vec2 GetCenter();
+    Vec2F GetCenter();
     void Hide();
 
     void SetParams(s32 a, s32 b, s32 c) {
