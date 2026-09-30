@@ -17,7 +17,7 @@ WeatherBase::WeatherBase(const Vec2& pos, const Vec2& size, s32 type)
     mRect.MoveTo(x, y);
 }
 
-void WeatherBase::SetPosition(const Vec2& pos, const f32& scale, const u8& visible) {
+void WeatherBase::SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover) {
     mPos = pos;
     mScale = scale;
     mVisible = visible;

@@ -61,6 +61,16 @@ WeatherBase.cpp:
 	.data       start:0x8019AC70 end:0x8019AC90
 	.sdata2     start:0x80331C18 end:0x80331C50
 
+WeatherBaseDay.cpp:
+	.text       start:0x8001CA80 end:0x8001F720
+	.ctors      start:0x80179268 end:0x8017926C
+	.rodata     start:0x80179DC0 end:0x8017A038
+	.data       start:0x8019AC90 end:0x8019AF48
+	.bss        start:0x801D7210 end:0x801D7220
+	.sdata      start:0x8032FE60 end:0x8032FEE0
+	.sbss       start:0x80330A98 end:0x80330AA0
+	.sdata2     start:0x80331C50 end:0x80331C80
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274

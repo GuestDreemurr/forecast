@@ -56,10 +56,18 @@ struct ShortHeader {
 struct DayForecast {
     u16 mWeather;          // at 0x0
     u16 mWeatherParts[4];  // at 0x2
-    u8 unkA[0x12 - 0xA];   // at 0xA
+    s8 mMaxC;              // at 0xA, -128 = none
+    s8 mMaxDiffC;          // at 0xB, change from the day before
+    s8 mMinC;              // at 0xC
+    s8 mMinDiffC;          // at 0xD
+    s8 mMaxF;              // at 0xE
+    s8 mMaxDiffF;          // at 0xF
+    s8 mMinF;              // at 0x10
+    s8 mMinDiffF;          // at 0x11
     u8 mPercent[4];        // at 0x12, precipitation chances, 0xFF = none
     u8 mWindDirection;     // at 0x16
-    u8 unk17[0x19 - 0x17]; // at 0x17
+    u8 mWindSpeedKmh;      // at 0x17
+    u8 mWindSpeedMph;      // at 0x18
     u8 mUVIndex;           // at 0x19
     u8 mLaundryIndex;      // at 0x1A
     u8 mPollenIndex;       // at 0x1B
@@ -95,7 +103,7 @@ struct SummaryEntry {
 // Weather icon code and its text (size 0x8)
 struct WeatherType {
     u16 mCode;             // at 0x0
-    u8 unk2[2];            // at 0x2
+    u16 mIcon;             // at 0x2, 0x8000 = night variant
     u32 mTextOffset;       // at 0x4
 };
 
