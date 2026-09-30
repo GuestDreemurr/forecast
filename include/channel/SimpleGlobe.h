@@ -39,6 +39,7 @@ public:
     void SetMode(s32 mode);
     void SetSpeed(f32 speed);
     void Setup(const Vec* rotation);
+    void DrawModel();
     void Draw();
     void ClearInput();
     void UpdateView();
@@ -74,7 +75,6 @@ public:
     u8 unkCC[0xD0 - 0xCC];        // at 0xCC
 };
 
-void DrawEarthModel();
 
 extern SimpleGlobe* gSimpleGlobe;
 

@@ -46,7 +46,7 @@ public:
     void DrawName();
     void DrawTempAlt(s8 day, f32 scale);
     void DrawTemp(s8 day, f32 scale);
-    void DrawRain(s8 day, f32 scale);
+    void DrawRain(s32 day, f32 scale);
     void DrawHigh(f32 scale);
     void DrawDetail(BOOL tomorrow, f32 scale);
     void SetPosition(const Vec2* pos, f32 scale);

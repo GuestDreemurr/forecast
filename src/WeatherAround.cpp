@@ -37,6 +37,9 @@ void RequestWeatherSounds(u32 type, f32 volume);
 f32 EaseCos(u16 t);
 void PlayLoopSE(s32 id, f32 volume, f32 pitch, f32 pan, f32 fade);
 
+// Zero-initialized statics live in .sdata here, not .sbss
+#pragma explicit_zero_data on
+
 const s32 gLabelDetailZoom = 3;
 const f32 gLabelIconSize = 80.0f;
 
@@ -437,6 +440,9 @@ void WeatherAround::Calc() {
     UpdateBlink();
 }
 
+static f32 sStopX = 0.0f;
+static f32 sStopY = 0.0f;
+
 void WeatherAround::CalcActive() {
     mInputActive = TRUE;
     mCanSelect = TRUE;
@@ -464,8 +470,6 @@ void WeatherAround::CalcActive() {
     UpdateButtonFade();
 
     if (CheckButtonPressed("back", WPAD_BUTTON_A) >= 0) {
-        static f32 sStopX = 0.0f;
-        static f32 sStopY = 0.0f;
         PlaySE(38);
         gSimpleGlobe->mSpeedX = sStopX;
         gSimpleGlobe->mSpeedY = sStopY;
@@ -619,7 +623,7 @@ void WeatherAround::Draw() {
     SimpleGlobe* globe = gSimpleGlobe;
     mDots->Draw();
     if (globe != NULL) {
-        DrawEarthModel();
+        globe->DrawModel();
         globe->Draw();
     }
 
@@ -647,10 +651,11 @@ void WeatherAround::DrawTitles() {
     wchar_t* text = mLegendText[0];
     for (s32 i = 0; i < 3; i++, box++, text += 10) {
         Vec2 pos;
-        pos.x = box->mX;
         pos.y = box->mY + mSlideOffset;
+        pos.x = box->mX;
         gTextWriter.SetScale(box->mScaleX, box->mScaleY);
-        gTextWriter.SetCharSpace(box->mScaleX * gUnkSceneFloat);
+        f32 space = gUnkSceneFloat;
+        gTextWriter.SetCharSpace(box->mScaleX * space);
         gTextWriter.SetTextColor(box->mColor);
         gTextWriter.SetCursor(pos.x, pos.y);
         gTextWriter.Print(text);
@@ -659,6 +664,8 @@ void WeatherAround::DrawTitles() {
 
 void WeatherAround::DrawLegend() {
     Vec2 pos;
+    f32 space;
+    f32 half;
 
     SetDefaultGXState();
     SetOrthoProjection();
@@ -666,46 +673,53 @@ void WeatherAround::DrawLegend() {
     gTextWriter.SetDrawFlag(0x122);
     gTextWriter.SetupGX();
 
+    half = 0.5f * mTitles[0].mWidth;
     pos.y = mTitles[0].mY + mSlideOffset;
-    pos.x = mTitles[0].mX + 0.5f * mTitles[0].mWidth;
+    pos.x = mTitles[0].mX + half;
     gTextWriter.SetScale(mTitles[0].mScaleX, mTitles[0].mScaleY);
-    gTextWriter.SetCharSpace(mTitles[0].mScaleX * gUnkSceneFloat);
+    space = gUnkSceneFloat;
+    gTextWriter.SetCharSpace(mTitles[0].mScaleX * space);
     gTextWriter.SetTextColor(mTitles[0].mColor);
     gTextWriter.SetCursor(pos.x, pos.y);
     gTextWriter.Print(mLegendText[0]);
 
+    half = 0.5f * mTitles[1].mWidth;
     pos.y = mTitles[1].mY + mSlideOffset;
-    pos.x = mTitles[1].mX + 0.5f * mTitles[1].mWidth;
+    pos.x = mTitles[1].mX + half;
     gTextWriter.SetScale(mTitles[1].mScaleX, mTitles[1].mScaleY);
-    gTextWriter.SetCharSpace(mTitles[1].mScaleX * gUnkSceneFloat);
+    space = gUnkSceneFloat;
+    gTextWriter.SetCharSpace(mTitles[1].mScaleX * space);
     gTextWriter.SetTextColor(mTitles[1].mColor);
     gTextWriter.SetCursor(pos.x, pos.y);
     gTextWriter.Print(mLegendText[1]);
 
     gTextWriter.SetDrawFlag(0x111);
     gTextWriter.SetupGX();
-    pos.x = mTitles[2].mX;
     pos.y = mTitles[2].mY + mSlideOffset;
+    pos.x = mTitles[2].mX;
     gTextWriter.SetScale(mTitles[2].mScaleX, mTitles[2].mScaleY);
-    gTextWriter.SetCharSpace(mTitles[2].mScaleX * gUnkSceneFloat);
+    space = gUnkSceneFloat;
+    gTextWriter.SetCharSpace(mTitles[2].mScaleX * space);
     gTextWriter.SetTextColor(mTitles[2].mColor);
     gTextWriter.SetCursor(pos.x, pos.y);
     gTextWriter.Print(mLegendText[2]);
 }
 
 #define FOR_EACH_BUCKET(buckets, next, body)                                                                 \
-    for (s32 i = 0; i < 11; i++) {                                                                           \
-        for (CityLabel* label = buckets[i]; label != NULL; label = label->next) {                            \
+    for (i = 0; i < 11; i++) {                                                                               \
+        for (label = buckets[i]; label != NULL; label = label->next) {                                       \
             body;                                                                                            \
         }                                                                                                    \
     }
 
 #define FOR_EACH_LIST(list, next, body)                                                                      \
-    for (CityLabel* label = list; label != NULL; label = label->next) {                                      \
+    for (label = list; label != NULL; label = label->next) {                                                 \
         body;                                                                                                \
     }
 
 void WeatherAround::DrawIcons() {
+    CityLabel* label;
+    s32 i;
     f32 scale = mLabelScale;
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
     FOR_EACH_BUCKET(mBackBuckets, mNextBack, {
@@ -723,6 +737,8 @@ void WeatherAround::DrawIcons() {
 }
 
 void WeatherAround::DrawTempsToday() {
+    CityLabel* label;
+    s32 i;
     f32 scale = mLabelScale;
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
     FOR_EACH_BUCKET(mBackBuckets, mNextBack, label->DrawTemp(0, scale));
@@ -733,6 +749,8 @@ void WeatherAround::DrawTempsToday() {
 }
 
 void WeatherAround::DrawTempsTomorrow() {
+    CityLabel* label;
+    s32 i;
     f32 scale = mLabelScale;
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
     FOR_EACH_BUCKET(mBackBuckets, mNextBack, label->DrawTempAlt(1, scale));
@@ -743,8 +761,10 @@ void WeatherAround::DrawTempsTomorrow() {
 }
 
 void WeatherAround::DrawRain() {
+    CityLabel* label;
+    s32 i;
+    s32 day = mDay;
     f32 scale = mLabelScale;
-    s8 day = mDay;
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
     FOR_EACH_BUCKET(mBackBuckets, mNextBack, label->DrawRain(day, scale));
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawName());
@@ -754,6 +774,8 @@ void WeatherAround::DrawRain() {
 }
 
 void WeatherAround::DrawHigh() {
+    CityLabel* label;
+    s32 i;
     f32 scale = mLabelScale;
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
     FOR_EACH_BUCKET(mBackBuckets, mNextBack, label->DrawHigh(scale));
@@ -764,6 +786,8 @@ void WeatherAround::DrawHigh() {
 }
 
 void WeatherAround::DrawDetails() {
+    CityLabel* label;
+    s32 i;
     f32 scale = mLabelScale;
     BOOL tomorrow = mDay != 0;
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
@@ -800,6 +824,9 @@ static inline f32 DistSq(const A& a, const B& b) {
     d.y = a.y - b.y;
     return d.x * d.x + d.y * d.y;
 }
+
+static f32 sSelectX = 0.0f;
+static f32 sSelectY = 0.0f;
 
 void WeatherAround::UpdateLabels() {
     f32 top = 63.0f;
@@ -917,8 +944,6 @@ void WeatherAround::UpdateLabels() {
         if (mSelected == i) {
             mCanSelect = FALSE;
             if (gLastSettingResult == 3) {
-                static f32 sSelectX = 0.0f;
-                static f32 sSelectY = 0.0f;
                 PlaySE(37);
                 gSimpleGlobe->mSpeedX = sSelectX;
                 gSimpleGlobe->mSpeedY = sSelectY;
@@ -1284,7 +1309,11 @@ void WeatherAround::SetupTempDetailJP() {
     mTitles[1].mColor.a = 255;
     wcscpy(mLegendText[1], L"\x6700\x9AD8");
     SET_COLOR(mTitles[2].mColor, gColorWhite);
-    wcscpy(mLegendText[2], gTempUnit == 0 ? L"(\xFF9F" L"C)" : L"(\xFF9F" L"F)");
+    if (gTempUnit == 0) {
+        wcscpy(mLegendText[2], L"(\xFF9F" L"C)");
+    } else {
+        wcscpy(mLegendText[2], L"(\xFF9F" L"F)");
+    }
 }
 
 void WeatherAround::SetupTempJP() {
@@ -1303,7 +1332,11 @@ void WeatherAround::SetupTempJP() {
         SET_COLOR(mTitles[1].mColor, gColorWhite);
         wcscpy(mLegendText[1], L"\x524D\x65E5\x6BD4");
         SET_COLOR(mTitles[2].mColor, gColorWhite);
-        wcscpy(mLegendText[2], gTempUnit == 0 ? L"(\xFF9F" L"C)" : L"(\xFF9F" L"F)");
+        if (gTempUnit == 0) {
+            wcscpy(mLegendText[2], L"(\xFF9F" L"C)");
+        } else {
+            wcscpy(mLegendText[2], L"(\xFF9F" L"F)");
+        }
     }
 }
 
@@ -1374,7 +1407,11 @@ void WeatherAround::SetupTemp2JP() {
         SET_COLOR(mTitles[1].mColor, gColorCyan);
         wcscpy(mLegendText[1], L"\x6700\x4F4E");
         SET_COLOR(mTitles[2].mColor, gColorWhite);
-        wcscpy(mLegendText[2], gTempUnit == 0 ? L"(\xFF9F" L"C)" : L"(\xFF9F" L"F)");
+        if (gTempUnit == 0) {
+            wcscpy(mLegendText[2], L"(\xFF9F" L"C)");
+        } else {
+            wcscpy(mLegendText[2], L"(\xFF9F" L"F)");
+        }
     }
 }
 
