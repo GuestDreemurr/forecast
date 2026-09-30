@@ -58,6 +58,16 @@ Weather.cpp:
 	.sbss       start:0x80330A48 end:0x80330A50
 	.sdata2     start:0x80331A88 end:0x80331A98
 
+WeatherOther.cpp:
+	.text       start:0x80011100 end:0x8001230C
+	.ctors      start:0x80179250 end:0x80179254
+	.rodata     start:0x80179440 end:0x80179658
+	.data       start:0x8019A0D0 end:0x8019A1F8
+	.bss        start:0x801D7160 end:0x801D7170
+	.sdata      start:0x8032FD08 end:0x8032FD30
+	.sbss       start:0x80330A50 end:0x80330A58
+	.sdata2     start:0x80331A98 end:0x80331AC0
+
 WeatherBase.cpp:
 	.text       start:0x8001C334 end:0x8001CA80
 	.data       start:0x8019AC70 end:0x8019AC90

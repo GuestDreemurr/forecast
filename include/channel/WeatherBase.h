@@ -88,6 +88,34 @@ public:
     s32 mStartHour;                 // at 0x37C
 };
 
+struct CityForecast;
+
+// d_weather_a_other.cpp: the lifestyle index panel (UV, laundry, pollen) (size 0x194)
+class WeatherOther : public WeatherBase {
+public:
+    typedef BOOL (WeatherOther::*HasDataFunc)(CityForecast* forecast);
+
+    WeatherOther(const Vec2& pos, void* arc, const Vec2& size, s32 type);
+    virtual ~WeatherOther();
+    virtual void Reset();
+    virtual void Draw();
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual BOOL IsEmpty();
+
+    void SetupJP(void* arc);
+    void Setup(void* arc);
+    BOOL HasDataJP(CityForecast* forecast);
+    BOOL HasData(CityForecast* forecast);
+    void DrawJP(CityForecast* forecast, const s32& alpha);
+
+    ButtonGroup* mNoServiceLayout; // at 0xA0, life_no_service.brlyt
+    LayoutButton* mNoServiceText;  // at 0xA4
+    LayoutButton* mIconPane;       // at 0xA8
+    TextBox mBoxes[6];             // at 0xAC
+    HasDataFunc mHasData;          // at 0x184
+    s32 mDay;                      // at 0x190, 0 = today, 1 = tomorrow
+};
+
 // d_weather.cpp: the current weather panel, from short.bin
 class WeatherNow : public WeatherBaseDay {
 public:

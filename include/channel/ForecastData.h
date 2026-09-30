@@ -1,6 +1,7 @@
 #ifndef CHANNEL_FORECAST_DATA_H
 #define CHANNEL_FORECAST_DATA_H
 #include <types.h>
+#include <revolution/OS.h>
 
 struct WeatherInfo;
 
@@ -86,7 +87,8 @@ struct WeekForecast {
 // Long-range forecast of a city (size 0x80)
 struct ForecastEntry {
     u32 mId;               // at 0x0
-    u8 unk4[0xC - 0x4];    // at 0x4
+    u32 mTime;             // at 0x4, minutes since 2000
+    u8 unk8[0xC - 0x8];    // at 0x8
     u8 unkC;               // at 0xC
     u8 unkD[0x10 - 0xD];   // at 0xD
     DayForecast mDays[2];  // at 0x10
@@ -143,13 +145,26 @@ struct ShortEntry {
 };
 
 // A place with its long-range, summary and current-weather entries (size 0x14)
+// The forecast of a city for the current time
+struct CityForecast {
+    ForecastEntry* mEntry; // at 0x0
+    OSCalendarTime mTime;  // at 0x4
+    u32 mMinutes;          // at 0x2C
+};
+
+// A UV/laundry/pollen index and its description
+struct IndexInfo {
+    IndexText* mIndex;    // at 0x0
+    const wchar_t* mText; // at 0x4
+};
+
 class City {
 public:
     City(CityInfo* info);
     ~City();
 
     CityInfo* mInfo;   // at 0x0
-    void** mForecast;  // at 0x4
+    CityForecast* mForecast; // at 0x4
     void** mSummary;   // at 0x8
     ShortEntry** mNow; // at 0xC
     u8 mIsNight;       // at 0x10
@@ -166,6 +181,9 @@ public:
     s32 LoadShort(void* data);
     void** FindForecast(const u32& id);
     WeatherInfo* FindWeatherInfo(const u32& code);
+    IndexInfo* FindUVIndex(const u8& code);
+    IndexInfo* FindLaundryIndex(const u8& code);
+    IndexInfo* FindPollenIndex(const u8& code);
 
     u8 unk0[0x10];              // at 0x0
     WeatherInfo* mWeatherInfo; // at 0x10, one per weather type
