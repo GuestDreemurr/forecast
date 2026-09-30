@@ -390,19 +390,29 @@ WeatherNormal::WeatherNormal(void* arc)
 
 WeatherNormal::~WeatherNormal() {
     for (s32 i = 0; i < gForecastPageCount; i++) {
-        delete mPages[i];
+        if (mPages[i] != NULL) {
+            delete mPages[i];
+        }
     }
-    delete mTimeLayout;
-    delete mBeltLayout;
-    delete mBaseLayout;
-    delete mLayout;
+    if (mTimeLayout != NULL) {
+        delete mTimeLayout;
+    }
+    if (mBeltLayout != NULL) {
+        delete mBeltLayout;
+    }
+    if (mBaseLayout != NULL) {
+        delete mBaseLayout;
+    }
+    if (mLayout != NULL) {
+        delete mLayout;
+    }
 }
 
 #define SETUP_BOXES(names, scales, line)                                                                     \
     {                                                                                                        \
         s32 width = GetScreenWidth();                                                                        \
-        f32 centerY = 228.0f;                                                                                \
         f32 centerX = 0.5f * width;                                                                          \
+        f32 centerY = 228.0f;                                                                                \
         f32 scaleX = gWidescreen ? 1.3684211f : 1.0f;                                                        \
         TextBox* box = mBoxes;                                                                               \
         for (s32 i = 0; i < 8; i++, box++) {                                                                 \
@@ -414,11 +424,13 @@ WeatherNormal::~WeatherNormal() {
             }                                                                                                \
             Vec2F center = box->mPane->GetCenter();                                                          \
             box->mX = center.x;                                                                              \
+            box->mY = center.y;                                                                              \
             box->mX = centerX + box->mX * scaleX;                                                            \
-            box->mY = centerY - center.y;                                                                    \
+            box->mY = centerY - box->mY;                                                                     \
             LayoutButton* pane = box->mPane;                                                                 \
+            f32 w = pane->mRight - pane->mLeft;                                                              \
             f32 h = __fabsf(pane->mTop - pane->mBottom);                                                     \
-            box->mWidth = scaleX * (pane->mRight - pane->mLeft);                                             \
+            box->mWidth = scaleX * w;                                                                        \
             box->mHeight = h;                                                                                \
             box->mScaleX = scales[i];                                                                        \
             box->mScaleY = scales[i];                                                                        \
@@ -1155,259 +1167,459 @@ void WeatherNormal::DrawTimes() {
 
 // "00-06時"
 void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
+    DayForecast* d;
     switch (gForecastPage) {
-    case 2:
-        day++;
-    case 1: {
-        f32 small = 0.6f;
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawDateCentered, (icon & 0x7FFF) < 100 ? box->mScaleX : small * box->mScaleX);
-
-        SETUP_TIME_TEXT(0x111);
-        TextBox* box = &mBoxes[4];
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t* p = FormatNumber(hour, sTextBuf, 2, FALSE);
-            *p = L'-';
-            hour += 6;
-            WrapHourTo24(&hour);
-            FormatNumber(hour, p + 1, 2, FALSE);
-            wcscat(sTextBuf, L"\x6642"); // "o'clock"
-            PRINT_TIME(box, alpha, box->mX);
-        }
+    case 1:
+        d = day;
         break;
+    case 2:
+        d = day + 1;
+        break;
+    default:
+        return;
+    }
+
+    f32 small = 0.6f;
+    s32 alpha = 255.0f * mTimesAlpha;
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            f32 scale;
+            if ((icon & 0x7FFF) < 100) {
+                scale = box->mScaleX;
+            } else {
+                scale = small * box->mScaleX;
+            }
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, scale);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawDateCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor,
+                             &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x111);
+    s32 h = hour;
+    {
+    TextBox* box = &mBoxes[4];
+    for (s32 i = 0; i < 4; i++, box++) {
+        wchar_t* p = FormatNumber(h, sTextBuf, 2, FALSE);
+        *p = L'-';
+        h += 6;
+        WrapHourTo24(&h);
+        FormatNumber(h, p + 1, 2, FALSE);
+        wcscat(sTextBuf, L"\x6642"); // "o'clock"
+        PRINT_TIME(box, alpha, box->mX);
     }
     }
 }
 
 // "12:00 a.m.\n6:00 a.m."
 void WeatherNormal::DrawTimesUS(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    s32 alpha;
+    TextBox* box;
+    s32 i;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x122);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wcscpy(sTextBuf, sHours12[hour % 12]);
-            wcscat(sTextBuf, L":00 ");
-            if (hour < 12) {
-                wcscat(sTextBuf, gAmText);
-            } else {
-                wcscat(sTextBuf, gPmText);
-            }
-            wcscat(sTextBuf, L"\n");
-            hour = (hour + 6) % 24;
-            wcscat(sTextBuf, sHours12[hour % 12]);
-            wcscat(sTextBuf, L":00 ");
-            if (hour < 12) {
-                wcscat(sTextBuf, gAmText);
-            } else {
-                wcscat(sTextBuf, gPmText);
-            }
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX + half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x122);
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wcscpy(sTextBuf, sHours12[hour % 12]);
+        wcscat(sTextBuf, L":00 ");
+        if (hour < 12) {
+            wcscat(sTextBuf, gAmText);
+        } else {
+            wcscat(sTextBuf, gPmText);
+        }
+        wcscat(sTextBuf, L"\n");
+        hour += 6;
+        hour %= 24;
+        wcscat(sTextBuf, sHours12[hour % 12]);
+        wcscat(sTextBuf, L":00 ");
+        if (hour < 12) {
+            wcscat(sTextBuf, gAmText);
+        } else {
+            wcscat(sTextBuf, gPmText);
+        }
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX + offset);
     }
 }
 
 // "00:00\n06:00"
 void WeatherNormal::DrawTimesEU(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    TextBox* box;
+    s32 i;
+    s32 h;
+    s32 alpha;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x122);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t start[4];
-            wchar_t end[4];
-            FormatNumber(hour, start, 2, TRUE);
-            wcscpy(sTextBuf, start);
-            wcscat(sTextBuf, L":00 ");
-            wcscat(sTextBuf, L"\n");
-            hour += 6;
-            WrapHourTo24(&hour);
-            FormatNumber(hour, end, 2, TRUE);
-            wcscat(sTextBuf, end);
-            wcscat(sTextBuf, L":00 ");
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX + half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x122);
+    h = hour;
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wchar_t start[4];
+        wchar_t end[4];
+        FormatNumber(h, start, 2, TRUE);
+        wcscpy(sTextBuf, start);
+        wcscat(sTextBuf, L":00 ");
+        wcscat(sTextBuf, L"\n");
+        h += 6;
+        WrapHourTo24(&h);
+        FormatNumber(h, end, 2, TRUE);
+        wcscat(sTextBuf, end);
+        wcscat(sTextBuf, L":00 ");
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX + offset);
     }
 }
 
 // "00:00-\n06:00"
 void WeatherNormal::DrawTimesDE(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    TextBox* box;
+    s32 i;
+    s32 h;
+    s32 alpha;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x100);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t start[4];
-            wchar_t end[4];
-            FormatNumber(hour, start, 2, TRUE);
-            wcscpy(sTextBuf, start);
-            wcscat(sTextBuf, L":00-");
-            wcscat(sTextBuf, L"\n");
-            hour += 6;
-            WrapHourTo24(&hour);
-            FormatNumber(hour, end, 2, TRUE);
-            wcscat(sTextBuf, end);
-            wcscat(sTextBuf, L":00");
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX - half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x100);
+    h = hour;
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wchar_t start[4];
+        wchar_t end[4];
+        FormatNumber(h, start, 2, TRUE);
+        wcscpy(sTextBuf, start);
+        wcscat(sTextBuf, L":00-");
+        wcscat(sTextBuf, L"\n");
+        h += 6;
+        WrapHourTo24(&h);
+        FormatNumber(h, end, 2, TRUE);
+        wcscat(sTextBuf, end);
+        wcscat(sTextBuf, L":00");
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX - offset);
     }
 }
 
 // "De 00:00\n\xE0 06:00"
 void WeatherNormal::DrawTimesFR(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    s32 alpha;
+    TextBox* box;
+    s32 i;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x122);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wcscpy(sTextBuf, L"De ");
-            wcscat(sTextBuf, sHours24[hour]);
-            wcscat(sTextBuf, L":00");
-            wcscat(sTextBuf, L"\n");
-            hour += 6;
-            WrapHour(&hour);
-            wchar_t* p = &sTextBuf[wcslen(sTextBuf)];
-            p[0] = 0xE0;
-            p[1] = L' ';
-            p[2] = 0;
-            wcscat(sTextBuf, sHours24[hour]);
-            wcscat(sTextBuf, L":00");
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX + half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x122);
+    s32 h = hour;
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wcscpy(sTextBuf, L"De ");
+        wcscat(sTextBuf, sHours24[h]);
+        wcscat(sTextBuf, L":00");
+        wcscat(sTextBuf, L"\n");
+        h += 6;
+        WrapHour(&h);
+        wchar_t* p = &sTextBuf[wcslen(sTextBuf)];
+        p[0] = 0xE0;
+        p[1] = L' ';
+        p[2] = 0;
+        wcscat(sTextBuf, sHours24[h]);
+        wcscat(sTextBuf, L":00");
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX + offset);
     }
 }
 
 // "De 00:00\na 06:00"
 void WeatherNormal::DrawTimesES(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    s32 alpha;
+    TextBox* box;
+    s32 i;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x122);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t start[4];
-            wchar_t end[4];
-            FormatNumber(hour, start, 2, TRUE);
-            wcscpy(sTextBuf, L"De ");
-            wcscat(sTextBuf, start);
-            wcscat(sTextBuf, L":00");
-            wcscat(sTextBuf, L"\n");
-            hour += 6;
-            WrapHour(&hour);
-            FormatNumber(hour, end, 2, TRUE);
-            wcscat(sTextBuf, L"a ");
-            wcscat(sTextBuf, end);
-            wcscat(sTextBuf, L":00");
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX + half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x122);
+    s32 h = hour;
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wchar_t start[4];
+        wchar_t end[4];
+        FormatNumber(h, start, 2, TRUE);
+        wcscpy(sTextBuf, L"De ");
+        wcscat(sTextBuf, start);
+        wcscat(sTextBuf, L":00");
+        wcscat(sTextBuf, L"\n");
+        h += 6;
+        WrapHour(&h);
+        FormatNumber(h, end, 2, TRUE);
+        wcscat(sTextBuf, L"a ");
+        wcscat(sTextBuf, end);
+        wcscat(sTextBuf, L":00");
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX + offset);
     }
 }
 
 // "00:00\n06:00"
 void WeatherNormal::DrawTimesIT(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    s32 alpha;
+    TextBox* box;
+    s32 i;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x122);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t start[4];
-            wchar_t end[4];
-            FormatNumber(hour, start, 2, TRUE);
-            wcscpy(sTextBuf, start);
-            wcscat(sTextBuf, L":00");
-            wcscat(sTextBuf, L"\n");
-            hour += 6;
-            WrapHour(&hour);
-            FormatNumber(hour, end, 2, TRUE);
-            wcscat(sTextBuf, end);
-            wcscat(sTextBuf, L":00");
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX + half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x122);
+    s32 h = hour;
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wchar_t start[4];
+        wchar_t end[4];
+        FormatNumber(h, start, 2, TRUE);
+        wcscpy(sTextBuf, start);
+        wcscat(sTextBuf, L":00");
+        wcscat(sTextBuf, L"\n");
+        h += 6;
+        WrapHour(&h);
+        FormatNumber(h, end, 2, TRUE);
+        wcscat(sTextBuf, end);
+        wcscat(sTextBuf, L":00");
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX + offset);
     }
 }
 
 // "00:00 -\n06:00 uur"
 void WeatherNormal::DrawTimesNL(DayForecast* day, s32 hour) {
+    DayForecast* d;
+    s32 alpha;
+    TextBox* box;
+    s32 i;
     switch (gForecastPage) {
-    case 3:
-        day++;
-    case 2: {
-        s32 alpha = 255.0f * mTimesAlpha;
-        DRAW_ICONS(day, alpha, DrawTempCentered, box->mScaleX);
-
-        SETUP_TIME_TEXT(0x100);
-        TextBox* box = &mBoxes[4];
-        f32 half = 0.5f;
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t start[4];
-            wchar_t end[4];
-            FormatNumber(hour, start, 2, TRUE);
-            wcscpy(sTextBuf, start);
-            wcscat(sTextBuf, L":00 -");
-            wcscat(sTextBuf, L"\n");
-            hour += 6;
-            WrapHour(&hour);
-            FormatNumber(hour, end, 2, TRUE);
-            wcscat(sTextBuf, end);
-            wcscat(sTextBuf, L":00 uur");
-            f32 width = gTextWriter.CalcStringWidth(sTextBuf);
-            PRINT_TIME(box, alpha, box->mX - half * width);
-        }
+    case 2:
+        d = day;
         break;
+    case 3:
+        d = day + 1;
+        break;
+    default:
+        return;
     }
+
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        u32 code = d->mWeatherParts[i];
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
+            u16 icon = info->mType->mIcon;
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);
+        } else {
+            wcscpy(sTextBuf, L"--");
+            box->mColor.a = alpha;
+            box->mShadowColor.a = alpha;
+            SetDefaultGXState();
+            SetOrthoProjection();
+            DrawTempCentered(sTextBuf, (Vec2*)&box->mX, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        }
+    }
+
+    SETUP_TIME_TEXT(0x100);
+    s32 h = hour;
+    box = &mBoxes[4];
+    f32 half = 0.5f;
+    for (i = 0; i < 4; i++, box++) {
+        wchar_t start[4];
+        wchar_t end[4];
+        FormatNumber(h, start, 2, TRUE);
+        wcscpy(sTextBuf, start);
+        wcscat(sTextBuf, L":00 -");
+        wcscat(sTextBuf, L"\n");
+        h += 6;
+        WrapHour(&h);
+        FormatNumber(h, end, 2, TRUE);
+        wcscat(sTextBuf, end);
+        wcscat(sTextBuf, L":00 uur");
+        f32 offset = half * gTextWriter.CalcStringWidth(sTextBuf);
+        PRINT_TIME(box, alpha, box->mX - offset);
     }
 }
 
@@ -1905,30 +2117,32 @@ BOOL WeatherNormal::IsDetailPressed() {
     return FALSE;
 }
 
+static f32 sAroundPageX = 0.0f;
+static f32 sAroundUnk734 = 0.0f;
+static f32 sAroundUnk738 = 0.0f;
+static f32 sAroundUnk73C = 0.0f;
+
 BOOL WeatherNormal::StateToAround(s32 arg) {
-    static f32 sPageX = 0.0f;
-    static f32 sUnk734 = 0.0f;
-    static f32 sUnk738 = 0.0f;
-    static f32 sUnk73C = 0.0f;
     f32 halfWidth = 0.5f * GetScreenWidth();
+    f32 halfHeight = 228.0f;
 
     switch (mPhase) {
     case 0:
         if (gSimpleGlobe != NULL) {
             mPhase++;
-            mPageX = sPageX;
+            mPageX = sAroundPageX;
             mPageY = -456.0f;
-            unk734 = sUnk734;
-            unk738 = sUnk738;
-            unk73C = sUnk73C;
+            unk734 = sAroundUnk734;
+            unk738 = sAroundUnk738;
+            unk73C = sAroundUnk73C;
             mAlpha = 1.0f;
             mMoveX2 = halfWidth + mPagePos[gForecastPage].x;
-            mMoveY2 = 228.0f + mPagePos[gForecastPage].y;
+            mMoveY2 = halfHeight + mPagePos[gForecastPage].y;
             mMoveX = gCityPos.x - mMoveX2;
             mAnimTimer = 0;
             mMoveY = gCityPos.y - mMoveY2;
             for (s32 i = 0; i < gForecastPageCount; i++) {
-                mPageVisible[i] = gForecastPage == i;
+                mPageVisible[i] = i == gForecastPage;
             }
             mFlashX = mMoveX2;
             mFlash = TRUE;
