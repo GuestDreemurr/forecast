@@ -5,8 +5,19 @@
 #include <revolution/OS.h>
 #include <revolution/MTX.h>
 #include <nw4r/ut.h>
+#include <channel/DrawUtil.h>
+#include <channel/Vec2F.h>
+#include <channel/Vector2.h>
+#include <channel/WeatherBase.h>
 
 class ForecastData;
+class CityLabel;
+class GlobeDots;
+namespace nw4r {
+namespace lyt {
+class Pane;
+}
+}
 
 class ButtonGroup;
 class LayoutButton;
@@ -123,7 +134,7 @@ struct AddressEntry {
 // d_weather_address.cpp: area/city picker (size 0x160)
 class WeatherAddress {
 public:
-    typedef BOOL (WeatherAddress::*StateFunc)(s32 arg);
+    typedef void (WeatherAddress::*StateFunc)(s32 arg);
     typedef void (WeatherAddress::*DrawFunc)();
     typedef void (WeatherAddress::*ScrollFunc)();
 
@@ -145,10 +156,10 @@ public:
     void ChangeState(StateFunc state, s32 arg);
     BOOL UpdateCityList();
     BOOL UpdateAreaList();
-    BOOL StateCity(s32 arg);
-    BOOL StateArea(s32 arg);
-    BOOL StateConfirm(s32 arg);
-    BOOL StateClose(s32 arg);
+    void StateCity(s32 arg);
+    void StateArea(s32 arg);
+    void StateConfirm(s32 arg);
+    void StateClose(s32 arg);
     s32 HitTest(AddressEntry* entry);
 
     AddressEntry* mEntries;       // at 0x0
@@ -199,24 +210,142 @@ public:
 // d_weather_around.cpp: forecast of the surrounding cities on the globe (size 0x310)
 class WeatherAround {
 public:
-    typedef void (WeatherAround::*DrawFunc)();
+    typedef void (WeatherAround::*Func)();
+    typedef BOOL (WeatherAround::*StateFunc)();
+    typedef Vec2F (WeatherAround::*SizeFunc)(CityLabel* label);
+
+    // One page of the forecast shown on the labels
+    struct Page {
+        Func mDraw;         // at 0x0
+        SizeFunc mSize;     // at 0xC
+        s8 mDay;            // at 0x18
+    };
 
     WeatherAround(void* arc);
     virtual ~WeatherAround();
 
     void Reset();
-    void Calc();
-    void Draw();
     void Show();
-    void Open();
+    void UpdateButtonFade();
+    void UpdateZoomButtons();
+    void Calc();
+    void CalcActive();
+    void CalcGlobe();
     void DrawGlobe();
+    void Draw();
+    void DrawTitles();
+    void DrawLegend();
+    void DrawIcons();
+    void DrawTempsToday();
+    void DrawTempsTomorrow();
+    void DrawRain();
+    void DrawHigh();
+    void DrawDetails();
+    void UpdateLabels();
+    void ClearLists();
+    BOOL StateGlobe();
+    void UpdateDrag();
+    BOOL CheckOverlap(CityLabel* a, CityLabel* b);
+    void UpdateTouch();
+    void StatePage();
+    void SetupIconsJP();
+    void SetupTempDetailJP();
+    void SetupTempJP();
+    void SetupRainJP();
+    void SetupIcons2JP();
+    void SetupTemp2JP();
+    void SetupRain2JP();
+    void StateZoom();
+    void StateTilt();
+    void UpdateBlink();
+    void Open();
+    void PlayWeatherSound(CityLabel* label);
+    Vec2F GetLabelSize(CityLabel* label);
+    Vec2F GetIconSize(CityLabel* label);
+    Vec2F GetTempSize(CityLabel* label);
+    Vec2F GetTempSizeSmall(CityLabel* label);
+    Vec2F GetTempSizeLarge(CityLabel* label);
 
-    u8 unk4[0xA4 - 0x4];   // at 0x4
-    DrawFunc mDrawFunc;    // at 0xA4
-    u8 unkB0[0x24F - 0xB0];
-    u8 mActive;            // at 0x24F
-    u8 unk250;             // at 0x250
-    u8 unk251[0x310 - 0x251];
+    CityLabel** mLabels;             // at 0x4, one per city
+    CityLabel* mBackList;            // at 0x8, labels on the far side of the globe
+    CityLabel* mBackBuckets[11];     // at 0xC, the same by priority
+    CityLabel* mFrontList;           // at 0x38
+    CityLabel* mFrontBuckets[11];    // at 0x3C
+    CityLabel* mOverlapList;         // at 0x68
+    ButtonGroup* mLayout;            // at 0x6C, around.brlyt
+    ButtonGroup* mBeltLayout;        // at 0x70, around_belt.brlyt
+    LayoutButton* mResetButton;      // at 0x74
+    LayoutButton* mBelt;             // at 0x78
+    LayoutButton* mKion;             // at 0x7C
+    LayoutButton* mRain;             // at 0x80
+    LayoutButton* mHigh;             // at 0x84
+    LayoutButton* mNextButton;       // at 0x88
+    LayoutButton* mZoomInButton;     // at 0x8C
+    LayoutButton* mZoomOutButton;    // at 0x90
+    LayoutButton* mRotAButton;       // at 0x94
+    LayoutButton* mRotBButton;       // at 0x98
+    nw4r::lyt::Pane* mZoomOutI0;     // at 0x9C
+    nw4r::lyt::Pane* mZoomOutI1;     // at 0xA0
+    Func mCalcFunc;                  // at 0xA4
+    StateFunc mState;                // at 0xB0
+    Func mPageState;                 // at 0xBC
+    Func mDrawLabels;                // at 0xC8
+    Func mZoomState;                 // at 0xD4
+    Func mTiltState;                 // at 0xE0
+    Func unkEC;                      // at 0xEC
+    Func mDrawLegend;                // at 0xF8
+    SizeFunc mLabelSize;             // at 0x104
+    Rect mHitRect;                   // at 0x110
+    Rect mPressRect;                 // at 0x120
+    Rect mRects[6];                  // at 0x130
+    nw4r::ut::Color mZoomOutColors[4]; // at 0x190
+    TextBox mTitles[3];              // at 0x1A0
+    Vector2 mPressPos;               // at 0x20C
+    Vector2 mTouchPos[4];            // at 0x214
+    u8 unk234[0x23C - 0x234];        // at 0x234
+    Vec mTitlePos;                   // at 0x23C
+    u8 mInputActive;                 // at 0x248
+    u8 mHovering[4];                 // at 0x249
+    u8 mCanSelect;                   // at 0x24D
+    u8 mNextPressed;                 // at 0x24E
+    u8 mActive;                      // at 0x24F
+    u8 unk250;                       // at 0x250
+    u8 mShowLegend;                  // at 0x251
+    u8 mBlinking;                    // at 0x252
+    s32 mHitIndex;                   // at 0x254
+    s32 unk258;                      // at 0x258
+    s32 mSelected;                   // at 0x25C
+    s32 mPressIndex;                 // at 0x260
+    s32 mPressTimers[4];             // at 0x264
+    s32 mPointerIdle;                // at 0x274
+    s32 mIdleTimer;                  // at 0x278
+    s32 mHoverTimer;                 // at 0x27C
+    s32 unk280[4];                   // at 0x280
+    s32 mTempUnit;                   // at 0x290
+    s32 mZoomOutAlpha;               // at 0x294
+    f32 mLabelScale;                 // at 0x298
+    Vector2 mHome;                   // at 0x29C
+    f32 mFontScale;                  // at 0x2A4
+    u8 unk2A8[0x2AC - 0x2A8];        // at 0x2A8
+    f32 mSlideOffset;                // at 0x2AC
+    f32 mSlideMax;                   // at 0x2B0
+    f32 mBlink;                      // at 0x2B4
+    f32 mRotateAmount;               // at 0x2B8
+    s32 mFrame;                      // at 0x2BC
+    wchar_t mLegendText[3][10];      // at 0x2C0
+    s16 unk2FC;                      // at 0x2FC
+    s16 unk2FE;                      // at 0x2FE
+    s8 mDay;                         // at 0x300
+    s8 mPhase;                       // at 0x301
+    s8 mZoomLevel;                   // at 0x302
+    s8 mPagePhase;                   // at 0x303
+    s8 mZoomPhase;                   // at 0x304
+    s8 mTiltPhase;                   // at 0x305
+    u8 unk306;                       // at 0x306
+    u8 mBlinkOn;                     // at 0x307
+    s8 mAnimFrame;                   // at 0x308
+    s8 mBlinkDir;                    // at 0x309
+    GlobeDots* mDots;                // at 0x30C
 };
 
 // d_weather_normal.cpp: the main forecast display (size 0x964)

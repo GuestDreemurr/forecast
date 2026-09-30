@@ -9,22 +9,12 @@
 #include <channel/Sound.h>
 #include <channel/System.h>
 #include <channel/Vec3.h>
+#include <channel/Vector2.h>
 #include <channel/WeatherSetting.h>
 #include <channel/WeatherViews.h>
 
 #include <revolution/OS.h>
 #include <revolution/TPL.h>
-
-// A Vec2 with a (non-inline) destructor
-class Vector2 : public Vec2 {
-public:
-    Vector2() {}
-    Vector2(f32 x, f32 y) {
-        this->x = x;
-        this->y = y;
-    }
-    ~Vector2();
-};
 
 extern TPLPalette* gCommonTpl;
 extern u32 gSceneFrameCount;
@@ -900,7 +890,7 @@ BOOL WeatherScene::StateAround() {
             case 6:
                 mStatePhase++;
                 gSettingResult = 2;
-                mAround->mDrawFunc = &WeatherAround::DrawGlobe;
+                mAround->mCalcFunc = &WeatherAround::DrawGlobe;
                 gFade2->SetBaseColor(0, 0, 0, 255);
                 gFade2->FadeOut(12);
                 gShowAmbientSound = TRUE;
@@ -912,7 +902,7 @@ BOOL WeatherScene::StateAround() {
                 UpdateForecastPage();
                 ClearHoveredButtons();
                 mAround->unk250 = TRUE;
-                mAround->mDrawFunc = &WeatherAround::DrawGlobe;
+                mAround->mCalcFunc = &WeatherAround::DrawGlobe;
                 mNormal->ChangeState(&WeatherNormal::StateCloseAround, 0);
                 ChangeState(&WeatherScene::StateNormal);
                 return TRUE;

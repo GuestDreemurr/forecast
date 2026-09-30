@@ -130,7 +130,8 @@ struct PlaceEntry {
     u32 mNameOffset;       // at 0x4
     u32 mRegionOffset;     // at 0x8
     u32 mCountryOffset;    // at 0xC
-    u8 unk10[0x14 - 0x10]; // at 0x10
+    u16 mLongitude;        // at 0x10
+    u16 mLatitude;         // at 0x12
     u8 unk14;              // at 0x14
     u8 unk15;              // at 0x15
     u8 unk16[2];           // at 0x16
@@ -192,6 +193,7 @@ public:
     s32 LoadShort(void* data);
     void** FindForecast(const u32& id);
     WeatherInfo* FindWeatherInfo(const u32& code);
+    u16 GetWeatherIcon(const u32& code);
     IndexInfo* FindUVIndex(const u8& code);
     IndexInfo* FindLaundryIndex(const u8& code);
     IndexInfo* FindPollenIndex(const u8& code);

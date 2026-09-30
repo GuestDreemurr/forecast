@@ -11,6 +11,9 @@ public:
         this->b = b;
         this->a = a;
     }
+    Color(u32 rgba) {
+        *(u32*)this = rgba;
+    }
     ~Color();
 
     u8 r; // at 0x0

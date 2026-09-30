@@ -767,7 +767,7 @@ BOOL WeatherAddress::UpdateAreaList() {
     return FALSE;
 }
 
-BOOL WeatherAddress::StateCity(s32 arg) {
+void WeatherAddress::StateCity(s32 arg) {
     switch (mPhase) {
     case 0:
         mPhase++;
@@ -821,7 +821,7 @@ BOOL WeatherAddress::StateCity(s32 arg) {
     }
 }
 
-BOOL WeatherAddress::StateArea(s32 arg) {
+void WeatherAddress::StateArea(s32 arg) {
     s32 index;
 
     switch (mPhase) {
@@ -878,7 +878,7 @@ BOOL WeatherAddress::StateArea(s32 arg) {
     }
 }
 
-BOOL WeatherAddress::StateConfirm(s32 arg) {
+void WeatherAddress::StateConfirm(s32 arg) {
     switch (mPhase) {
     case 0:
         mPhase++;
@@ -943,7 +943,7 @@ BOOL WeatherAddress::StateConfirm(s32 arg) {
     }
 }
 
-BOOL WeatherAddress::StateClose(s32 arg) {
+void WeatherAddress::StateClose(s32 arg) {
     switch (mPhase) {
     case 0:
         mPhase++;
