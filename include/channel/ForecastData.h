@@ -7,9 +7,12 @@ struct WeatherInfo;
 
 // One place entry of forecast.bin (size 0x18)
 struct CityInfo {
-    u32* mId;        // at 0x0
-    wchar_t* mName;  // at 0x4
-    u8 unk8[0x18 - 0x8];
+    u32* mId;          // at 0x0, points at the PlaceEntry
+    wchar_t* mName;    // at 0x4
+    u8 unk8[0xC - 0x8]; // at 0x8
+    wchar_t* mCountry; // at 0xC
+    wchar_t* mRegion;  // at 0x10
+    s32 mIndex;        // at 0x14
 };
 
 // forecast.bin header (size 0x58)

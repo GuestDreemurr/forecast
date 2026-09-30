@@ -3,10 +3,13 @@
 #include <types.h>
 #include <nw4r/snd/snd_SoundHandle.h>
 #include <revolution/OS.h>
+#include <revolution/MTX.h>
+#include <nw4r/ut.h>
 
 class ForecastData;
 
 class ButtonGroup;
+class LayoutButton;
 class Fade;
 
 // Connect.cpp: downloads forecast.bin/short.bin through WiiConnect24 and shows the "connecting" screen
@@ -51,6 +54,7 @@ public:
 };
 
 class ButtonGroup;
+class LayoutButton;
 class Fade;
 
 // The dialog shown for connection and save errors (size 0x18)
@@ -87,22 +91,109 @@ void SetSaveDataBuffer(SaveData* buf, u32 size);
 s32 ReadSaveData();
 s32 WriteSaveData(SaveData* data);
 
+struct CityInfo;
+
+// A row of the area/city list (size 0x48)
+struct AddressEntry {
+    AddressEntry() : mLeft(0.0f), mTop(0.0f), mRight(0.0f), mBottom(0.0f) {}
+    ~AddressEntry() {}
+
+    AddressEntry* mPrev;  // at 0x0
+    AddressEntry* mNext;  // at 0x4
+    CityInfo* mPlace;     // at 0x8, NULL for "other regions"
+    wchar_t* mName;       // at 0xC
+    const wchar_t* mLabel; // at 0x10
+    f32 mX;               // at 0x14
+    f32 mY;               // at 0x18
+    f32 mWidth;           // at 0x1C
+    f32 mHeight;          // at 0x20
+    f32 mNameScaleX;      // at 0x24
+    f32 mNameScaleY;      // at 0x28
+    f32 mLabelScaleX;     // at 0x2C
+    f32 mLabelScaleY;     // at 0x30
+    f32 mLeft;            // at 0x34
+    f32 mTop;             // at 0x38
+    f32 mRight;           // at 0x3C
+    f32 mBottom;          // at 0x40
+    u8 mHovered;          // at 0x44
+    u8 mWasHovered;       // at 0x45
+    u8 mHidden;           // at 0x46
+};
+
 // d_weather_address.cpp: area/city picker (size 0x160)
 class WeatherAddress {
 public:
     typedef BOOL (WeatherAddress::*StateFunc)(s32 arg);
+    typedef void (WeatherAddress::*DrawFunc)();
+    typedef void (WeatherAddress::*ScrollFunc)();
 
     WeatherAddress(void* arc);
     ~WeatherAddress();
 
-    void Calc();
     void Reset();
     void Draw();
+    void Calc();
     void SelectCurrentCity();
+    void UpdateInput();
+    s32 BuildCityList();
+    s32 BuildAreaList();
+    void DrawCityList();
+    void DrawAreaList();
+    void DrawConfirm();
+    void ScrollNormal();
+    void ScrollDrag();
     void ChangeState(StateFunc state, s32 arg);
+    BOOL UpdateCityList();
+    BOOL UpdateAreaList();
+    BOOL StateCity(s32 arg);
+    BOOL StateArea(s32 arg);
+    BOOL StateConfirm(s32 arg);
     BOOL StateClose(s32 arg);
+    s32 HitTest(AddressEntry* entry);
 
-    u8 unk0[0x160];
+    AddressEntry* mEntries;       // at 0x0
+    AddressEntry* mSelected;      // at 0x4
+    AddressEntry* mListHead;      // at 0x8
+    ButtonGroup* mActiveLayout;   // at 0xC
+    ButtonGroup* mBaseLayout;     // at 0x10, base.brlyt
+    ButtonGroup* mListLayout;     // at 0x14, set_area1.brlyt
+    ButtonGroup* mConfirmLayout;  // at 0x18, set_area2.brlyt
+    LayoutButton* mUpButton;      // at 0x1C
+    LayoutButton* mDownButton;    // at 0x20
+    LayoutButton* mBackButton;    // at 0x24
+    LayoutButton* mTitle;         // at 0x28
+    StateFunc mState;             // at 0x2C
+    DrawFunc mDrawFunc;           // at 0x38
+    ScrollFunc mScrollState;      // at 0x44
+    nw4r::ut::TextWriterBase<wchar_t> mWriter; // at 0x50
+    AddressEntry mOtherEntry;     // at 0xB0
+    f32 mListX;                   // at 0xF8
+    f32 mScroll;                  // at 0xFC
+    Vec mUpArrowPos;              // at 0x100
+    Vec mDownArrowPos;            // at 0x10C
+    f32 mListTop;                 // at 0x118
+    f32 mRowHeight;               // at 0x11C
+    f32 mClipTop;                 // at 0x120
+    f32 mClipBottom;              // at 0x124
+    f32 mScrollTarget;            // at 0x128
+    f32 mScrollMax;               // at 0x12C
+    f32 mScrollMin;               // at 0x130
+    f32 mScrollSpeed;             // at 0x134
+    u32 mAreaId;                  // at 0x138
+    s32 mNumPlaces;               // at 0x13C
+    s32 mNumEntries;              // at 0x140
+    s32 mNumPages;                // at 0x144
+    s32 mTopIndex;                // at 0x148
+    s32 mPhase;                   // at 0x14C
+    s32 mScrollPhase;             // at 0x150
+    s32 mTimer;                   // at 0x154
+    u8 mUp;                       // at 0x158
+    u8 mDown;                     // at 0x159
+    u8 mDragging;                 // at 0x15A
+    u8 mYes;                      // at 0x15B
+    u8 mNo;                       // at 0x15C
+    u8 mCanGoBack;                // at 0x15D
+    u8 mShowArrows;               // at 0x15E
 };
 
 // d_weather_around.cpp: forecast of the surrounding cities on the globe (size 0x310)
