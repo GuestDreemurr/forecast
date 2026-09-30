@@ -13,6 +13,14 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+ErrorWindow.cpp:
+	.text       start:0x8000BAC8 end:0x8000C734
+	.rodata     start:0x80179388 end:0x801793A0
+	.data       start:0x80199018 end:0x80199310
+	.sdata      start:0x8032F580 end:0x8032F5A0
+	.sbss       start:0x803309A8 end:0x803309B0
+	.sdata2     start:0x803319E0 end:0x80331A00
+
 WeatherText.cpp:
 	.data       start:0x80199310 end:0x801996B8
 	.sdata      start:0x8032F5A0 end:0x8032F928

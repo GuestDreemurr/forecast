@@ -87,6 +87,7 @@ public:
 
     int VSNPrintf(T* buffer, u32 count, const T* pStr, std::va_list args);
     f32 VPrintf(const T* pStr, std::va_list args);
+    f32 Printf(const T* pStr, ...);
     f32 Print(const T* pStr, int len);
     f32 Print(const T* pStr);
 

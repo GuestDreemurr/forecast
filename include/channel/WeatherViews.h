@@ -2,6 +2,7 @@
 #define CHANNEL_WEATHER_VIEWS_H
 #include <types.h>
 #include <nw4r/snd/snd_SoundHandle.h>
+#include <revolution/OS.h>
 
 class ForecastData;
 
@@ -20,7 +21,10 @@ public:
     u8 unk0[0x460];
 };
 
-// The window that shows connection and save errors (size 0x18)
+class ButtonGroup;
+class Fade;
+
+// The dialog shown for connection and save errors (size 0x18)
 class ErrorWindow {
 public:
     ErrorWindow(void* arc);
@@ -30,10 +34,15 @@ public:
     void Calc();
     void Draw();
 
-    u8 unk0[0x10];  // at 0x0
-    s32 mState;     // at 0x10
-    u8 unk14[0x4];  // at 0x14
+    Fade* mFade;               // at 0x0
+    ButtonGroup* mYesNoLayout; // at 0x4, error3.brlyt
+    ButtonGroup* mSaveLayout;  // at 0x8, error4.brlyt
+    ButtonGroup* mFatalLayout; // at 0xC, error2.brlyt
+    s32 mState;                // at 0x10
+    s32 mMessage;              // at 0x14
 };
+
+void FormatTime(wchar_t* buf, size_t size, s64 time, s32 region, u8 language);
 
 // noerase/savedata.dat (size 0x20)
 struct SaveData {
