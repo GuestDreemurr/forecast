@@ -84,6 +84,16 @@ WeatherTomorrow.cpp:
 	.sbss       start:0x80330A60 end:0x80330A68
 	.sdata2     start:0x80331AE0 end:0x80331B00
 
+WeatherWeek.cpp:
+	.text       start:0x8001312C end:0x80014B40
+	.ctors      start:0x8017925C end:0x80179260
+	.rodata     start:0x80179658 end:0x80179AA8
+	.data       start:0x8019A268 end:0x8019A980
+	.bss        start:0x801D7190 end:0x801D71C0
+	.sdata      start:0x8032FD30 end:0x8032FD98
+	.sbss       start:0x80330A68 end:0x80330A78
+	.sdata2     start:0x80331B00 end:0x80331B28
+
 WeatherBase.cpp:
 	.text       start:0x8001C334 end:0x8001CA80
 	.data       start:0x8019AC70 end:0x8019AC90

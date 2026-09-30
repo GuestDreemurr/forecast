@@ -152,6 +152,33 @@ public:
     DrawFunc mDrawFunc; // at 0x380
 };
 
+// d_weather_a_week.cpp: the weekly forecast panel (size 0x730)
+class WeatherWeek : public WeatherBase {
+public:
+    typedef BOOL (WeatherWeek::*HasDataFunc)(CityForecast* forecast);
+    typedef void (WeatherWeek::*DrawFunc)(const s32& alpha);
+
+    WeatherWeek(const Vec2& pos, void* arc, const Vec2& size, s32 type);
+    virtual ~WeatherWeek();
+    virtual void Reset();
+    virtual void Draw();
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+
+    void SetupJP(void* arc);
+    void Setup(void* arc);
+    BOOL HasDataJP(CityForecast* forecast);
+    BOOL HasData(CityForecast* forecast);
+    void DrawWeekJP(const s32& alpha);
+    void DrawWeek(const s32& alpha);
+
+    ButtonGroup* mNoServiceLayout; // at 0xA0, life_no_service.brlyt
+    LayoutButton* mDayPanes[7];    // at 0xA4
+    LayoutButton* mNoServiceText;  // at 0xC0
+    TextBox mBoxes[45];            // at 0xC4
+    HasDataFunc mHasData;          // at 0x718
+    DrawFunc mDrawFunc;            // at 0x724
+};
+
 // d_weather.cpp: the current weather panel, from short.bin
 class WeatherNow : public WeatherBaseDay {
 public:

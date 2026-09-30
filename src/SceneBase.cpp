@@ -27,12 +27,6 @@ extern "C" void ShutdownDownloader(s32 event);
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void WrapHour(s32* pHour);
 
-struct GlyphTexture {
-    u32 texture; // at 0x0
-    f32 width;   // at 0x4
-    f32 height;  // at 0x8
-};
-
 struct DragScroll {
     DragScroll();
     ~DragScroll() {}

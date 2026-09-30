@@ -4,6 +4,7 @@
 #include <cstring>
 #include <revolution/GX.h>
 #include <nw4r/math/math_types.h>
+#include <nw4r/ut/ut_Color.h>
 #include <channel/Vec2F.h>
 
 namespace nw4r {
@@ -45,6 +46,7 @@ public:
     void SetState(s32 state);
     void SetText(const wchar_t* text);
     Vec2F GetCenter();
+    void SetPaneColor(const char* name, const nw4r::ut::Color& color, BOOL recursive);
     void Hide();
 
     void SetParams(s32 a, s32 b, s32 c) {

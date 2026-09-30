@@ -107,6 +107,15 @@ extern u8 gPointerOverMenu;
 extern u8 gMenuVisible;
 extern f32 gMenuBrightness;
 
+// A texture from TPLCommon.tpl used as a glyph of the date/number fonts
+struct GlyphTexture {
+    u32 texture; // at 0x0
+    f32 width;   // at 0x4
+    f32 height;  // at 0x8
+};
+
+extern GlyphTexture sGlyphTextures[89];
+
 u32 GetLanguageTexture();
 BOOL LoadSysFont();
 void FreeSysFonts();

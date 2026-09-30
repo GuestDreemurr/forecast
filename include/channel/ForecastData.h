@@ -79,7 +79,10 @@ struct DayForecast {
 // One day of the week-long outlook (size 0x8)
 struct WeekForecast {
     u16 mWeather;          // at 0x0
-    u8 unk2[0x6 - 0x2];    // at 0x2
+    s8 mMaxC;              // at 0x2
+    s8 mMinC;              // at 0x3
+    s8 mMaxF;              // at 0x4
+    s8 mMinF;              // at 0x5
     u8 mPercent;           // at 0x6
     u8 unk7;               // at 0x7
 };
