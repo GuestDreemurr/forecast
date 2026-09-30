@@ -56,6 +56,10 @@ struct WeatherType;
 
 // A forecast's weather icon and its description
 struct WeatherInfo {
+    WeatherInfo();
+    ~WeatherInfo();
+    s32 Setup(void* base, WeatherType* type);
+
     WeatherType* mType;   // at 0x0
     const wchar_t* mText; // at 0x4
 };

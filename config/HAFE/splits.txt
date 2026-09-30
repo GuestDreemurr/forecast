@@ -128,6 +128,13 @@ WeatherBaseDay.cpp:
 	.sbss       start:0x80330A98 end:0x80330AA0
 	.sdata2     start:0x80331C50 end:0x80331C80
 
+ForecastData.cpp:
+	.text       start:0x8001F720 end:0x80020F9C
+	.rodata     start:0x8017A038 end:0x8017B358
+	.data       start:0x8019AF48 end:0x8019B148
+	.sdata      start:0x8032FEE0 end:0x8032FEE8
+	.sdata2     start:0x80331C80 end:0x80331CA8
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274

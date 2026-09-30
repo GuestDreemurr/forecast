@@ -4,9 +4,19 @@
 #include <revolution/OS.h>
 
 struct WeatherInfo;
+struct PlaceEntry;
+struct ShortEntry;
 
 // One place entry of forecast.bin (size 0x18)
 struct CityInfo {
+    CityInfo();
+    ~CityInfo();
+    s32 Setup(void* base, PlaceEntry* entry, u32 index);
+
+    u32 GetId() const {
+        return *mId;
+    }
+
     u32* mId;          // at 0x0, points at the PlaceEntry
     wchar_t* mName;    // at 0x4
     u8 unk8[0xC - 0x8]; // at 0x8
@@ -94,7 +104,7 @@ struct WeekForecast {
 struct ForecastEntry {
     u32 mId;               // at 0x0
     u32 mTime;             // at 0x4, minutes since 2000
-    u8 unk8[0xC - 0x8];    // at 0x8
+    u32 mOffset;           // at 0x8, subtracted from mTime
     u8 unkC;               // at 0xC
     u8 unkD[0x10 - 0xD];   // at 0xD
     DayForecast mDays[2];  // at 0x10
@@ -104,7 +114,8 @@ struct ForecastEntry {
 // Today/tomorrow summary of a city (size 0x48)
 struct SummaryEntry {
     u32 mId;               // at 0x0
-    u8 unk4[0xC - 0x4];    // at 0x4
+    u32 mTime;             // at 0x4
+    u8 unk8[0xC - 0x8];    // at 0x8
     u8 unkC;               // at 0xC
     u8 unkD[0x10 - 0xD];   // at 0xD
     DayForecast mDays[2];  // at 0x10
@@ -140,7 +151,8 @@ struct PlaceEntry {
 // Current weather of a city from short.bin (size 0x18)
 struct ShortEntry {
     u32 mId;               // at 0x0
-    u8 unk4[0xC - 0x4];    // at 0x4
+    u32 mTime;             // at 0x4
+    u8 unk8[0xC - 0x8];    // at 0x8
     u16 mWeather;          // at 0xC
     u8 unkE;               // at 0xE
     s8 mTempC;             // at 0xF
@@ -154,6 +166,10 @@ struct ShortEntry {
 // A place with its long-range, summary and current-weather entries (size 0x14)
 // The forecast of a city for the current time
 struct CityForecast {
+    CityForecast();
+    ~CityForecast();
+    void Setup(void* base, ForecastEntry* entry);
+
     ForecastEntry* mEntry; // at 0x0
     OSCalendarTime mTime;  // at 0x4
     u32 mMinutes;          // at 0x2C
@@ -161,13 +177,53 @@ struct CityForecast {
 
 // The today/tomorrow summary of a city
 struct CitySummary {
+    CitySummary();
+    ~CitySummary();
+    void Setup(void* base, SummaryEntry* entry);
+
     SummaryEntry* mEntry; // at 0x0
+};
+
+// The current weather of a city
+struct CityNow {
+    CityNow();
+    ~CityNow();
+    void Setup(void* base, ShortEntry* entry);
+
+    ShortEntry* mEntry; // at 0x0
 };
 
 // A UV/laundry/pollen index and its description
 struct IndexInfo {
     IndexText* mIndex;    // at 0x0
     const wchar_t* mText; // at 0x4
+};
+
+struct UVIndexInfo : public IndexInfo {
+    UVIndexInfo() {
+        mIndex = NULL;
+        mText = NULL;
+    }
+    ~UVIndexInfo() {}
+    s32 Setup(void* base, IndexText* entry);
+};
+
+struct LaundryIndexInfo : public IndexInfo {
+    LaundryIndexInfo() {
+        mIndex = NULL;
+        mText = NULL;
+    }
+    ~LaundryIndexInfo() {}
+    s32 Setup(void* base, IndexText* entry);
+};
+
+struct PollenIndexInfo : public IndexInfo {
+    PollenIndexInfo() {
+        mIndex = NULL;
+        mText = NULL;
+    }
+    ~PollenIndexInfo() {}
+    s32 Setup(void* base, IndexText* entry);
 };
 
 class City {
@@ -178,7 +234,7 @@ public:
     CityInfo* mInfo;   // at 0x0
     CityForecast* mForecast; // at 0x4
     CitySummary* mSummary; // at 0x8
-    ShortEntry** mNow; // at 0xC
+    CityNow* mNow;     // at 0xC
     u8 mIsNight;       // at 0x10
     u8 mIsDay;         // at 0x11
 };
@@ -191,20 +247,36 @@ public:
 
     s32 LoadForecast(void* data);
     s32 LoadShort(void* data);
-    void** FindForecast(const u32& id);
+    CityForecast* FindForecast(const u32& id);
+    CitySummary* FindSummary(const u32& id);
+    CityNow* FindNow(const u32& id);
     WeatherInfo* FindWeatherInfo(const u32& code);
     u16 GetWeatherIcon(const u32& code);
     IndexInfo* FindUVIndex(const u8& code);
     IndexInfo* FindLaundryIndex(const u8& code);
     IndexInfo* FindPollenIndex(const u8& code);
 
-    u8 unk0[0x10];              // at 0x0
-    WeatherInfo* mWeatherInfo; // at 0x10, one per weather type
-    u8 unk14[0x20 - 0x14];      // at 0x14
-    CityInfo* mPlaces;          // at 0x20
-    u8 unk24[0x28 - 0x24];      // at 0x24
-    ForecastHeader* mHeader;    // at 0x28
-    u8 unk2C[0x54 - 0x2C];      // at 0x2C
+    void* mForecastBin;                  // at 0x0
+    void* mShortBin;                     // at 0x4
+    CityForecast* mForecasts;            // at 0x8
+    CitySummary* mSummaries;             // at 0xC
+    WeatherInfo* mWeatherInfo;           // at 0x10, one per weather type
+    UVIndexInfo* mUVIndices;             // at 0x14
+    LaundryIndexInfo* mLaundryIndices;   // at 0x18
+    PollenIndexInfo* mPollenIndices;     // at 0x1C
+    CityInfo* mPlaces;                   // at 0x20
+    CityNow* mNow;                       // at 0x24
+    ForecastHeader* mHeader;             // at 0x28
+    ShortHeader* mShortHeader;           // at 0x2C
+    ForecastEntry* mForecastEntries;     // at 0x30
+    SummaryEntry* mSummaryEntries;       // at 0x34
+    WeatherType* mWeatherTypes;          // at 0x38
+    IndexText* mUVTexts;                 // at 0x3C
+    IndexText* mLaundryTexts;            // at 0x40
+    IndexText* mPollenTexts;             // at 0x44
+    PlaceEntry* mPlaceEntries;           // at 0x48
+    ShortEntry* mShortEntries;           // at 0x4C
+    const wchar_t* mMessage;             // at 0x50
 };
 
 extern ForecastData* gForecastData;

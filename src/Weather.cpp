@@ -53,12 +53,12 @@ void WeatherNow::SetPosition(const Vec2& pos, const f32& scale, const u8& visibl
 
 BOOL WeatherNow::IsEmpty() {
     if (gCurrentCity != NULL) {
-        ShortEntry** now = gCurrentCity->mNow;
+        CityNow* now = gCurrentCity->mNow;
         CityInfo* info = gCurrentCity->mInfo;
         if (now != NULL && info != NULL) {
-            u32 code = (*now)->mWeather;
+            u32 code = now->mEntry->mWeather;
             WeatherInfo* weather = gForecastData->FindWeatherInfo(code);
-            if ((*now)->mWeather != 0xFFFF && weather != NULL) {
+            if (now->mEntry->mWeather != 0xFFFF && weather != NULL) {
                 return FALSE;
             }
         }
@@ -68,12 +68,12 @@ BOOL WeatherNow::IsEmpty() {
 }
 
 void WeatherNow::DrawNow(const s32& alpha) {
-    ShortEntry** now = gCurrentCity->mNow;
+    CityNow* now = gCurrentCity->mNow;
     if (gCurrentCity->mInfo == NULL) {
         return;
     }
 
-    u32 code = (*now)->mWeather;
+    u32 code = now->mEntry->mWeather;
     WeatherInfo* info = gForecastData->FindWeatherInfo(code);
     if (info == NULL) {
         return;
@@ -95,9 +95,9 @@ void WeatherNow::DrawNow(const s32& alpha) {
     mWriter.SetupGX();
     DrawText(&mBoxes[0], info->mText, alpha);
 
-    u8 dir = (*now)->mWindDirection;
+    u8 dir = now->mEntry->mWindDirection;
     if (dir != 0xFF) {
-        u8 speed = gWindUnit == 0 ? (*now)->mWindSpeedMph : (*now)->mWindSpeedKmh;
+        u8 speed = gWindUnit == 0 ? now->mEntry->mWindSpeedMph : now->mEntry->mWindSpeedKmh;
         FormatWind(dir, speed);
         DrawTextFit(&mBoxes[1], sTextBuf, alpha);
     }
@@ -106,8 +106,8 @@ void WeatherNow::DrawNow(const s32& alpha) {
     SetOrthoProjection();
     GXSetTevColorIn(GX_TEVSTAGE0, (GXTevColorArg)4, (GXTevColorArg)8, (GXTevColorArg)2, (GXTevColorArg)4);
     if (gTempUnit == 0) {
-        DrawTempC((*now)->mTempC, alpha);
+        DrawTempC(now->mEntry->mTempC, alpha);
     } else {
-        DrawTemp((*now)->mTempF, alpha);
+        DrawTemp(now->mEntry->mTempF, alpha);
     }
 }

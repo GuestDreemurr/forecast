@@ -1212,6 +1212,7 @@ config.libs = [
                 Object(NonMatching, "WeatherAround.cpp"),
                 Object(NonMatching, "WeatherBase.cpp"),
                 Object(NonMatching, "WeatherBaseDay.cpp"),
+                Object(NonMatching, "ForecastData.cpp"),
                 Object(NonMatching, "WeatherText.cpp"),
                 Object(NonMatching, "WeatherTextUS.cpp"),
                 Object(NonMatching, "WeatherScene.cpp"),
