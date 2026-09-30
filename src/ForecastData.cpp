@@ -5,6 +5,7 @@
 #include <channel/System.h>
 #include <channel/WeatherBase.h>
 
+#include <nw4r/math.h>
 #include <revolution/GX.h>
 #include <revolution/OS.h>
 #include <wstring.h>
@@ -342,7 +343,15 @@ WeatherInfo* ForecastData::FindWeatherInfo(const u32& code) {
 }
 
 u16 ForecastData::GetWeatherIcon(const u32& code) {
-    WeatherInfo* info = FindWeatherInfo(code);
+    WeatherInfo* info = mWeatherInfo;
+    u32 i;
+    for (i = 0; i < mHeader->mNumWeatherTypes; i++, info++) {
+        if (code == info->mType->mCode) {
+            goto found;
+        }
+    }
+    info = NULL;
+found:
     if (info != NULL) {
         return info->mType->mIcon;
     }
@@ -391,6 +400,8 @@ void CityForecast::Setup(void* base, ForecastEntry* entry) {
     MinutesToCalendarTime(mMinutes, &mTime);
 }
 
+#define WEATHER_TPL ((TPLPalette*)gUnk80330B74)
+
 // One texture of a weather icon
 struct IconLayer {
     u32 mTexture;   // at 0x0, 0xFFFFFFFF ends the list
@@ -400,386 +411,65 @@ struct IconLayer {
     GXColor mShadowColor; // at 0x14
 };
 
-static const IconLayer sIcon1[] = {
-    {4, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon2[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon3[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {2, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon4[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {3, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon5[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {5, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon6[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon7[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {2, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon8[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {3, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon9[] = {
-    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {5, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon10[] = {
-    {0, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon11[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {4, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon12[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {2, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon13[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {3, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon14[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {5, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon15[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {4, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon16[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {2, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon17[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {3, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon18[] = {
-    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {5, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon19[] = {
-    {2, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon20[] = {
-    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {4, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon21[] = {
-    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon22[] = {
-    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {3, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon23[] = {
-    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {4, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon24[] = {
-    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon25[] = {
-    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {3, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon26[] = {
-    {3, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon27[] = {
-    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {4, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon28[] = {
-    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon29[] = {
-    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {4, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon30[] = {
-    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon31[] = {
-    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {2, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon32[] = {
-    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {2, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon33[] = {
-    {5, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon101[] = {
-    {15, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon102[] = {
-    {15, {-24.0f, 8.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {6, {4.0f, 28.0f}, 1.2f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon103[] = {
-    {15, {-15.0f, -23.0f}, 0.8f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon104[] = {
-    {15, {-15.0f, -23.0f}, 0.8f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon105[] = {
-    {15, {-15.0f, -23.0f}, 0.8f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {12, {-41.0f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {52.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon106[] = {
-    {6, {0.0f, 7.0f}, 1.2f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon107[] = {
-    {15, {0.0f, 9.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {6, {29.0f, 27.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {8, {-55.5f, -16.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon108[] = {
-    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {6, {-49.0f, -25.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon109[] = {
-    {6, {-49.0f, -25.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon110[] = {
-    {12, {-41.0f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {6, {-49.0f, -25.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {52.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon111[] = {
-    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon112[] = {
-    {15, {-25.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon113[] = {
-    {12, {-4.0f, 37.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -20.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {6, {47.0f, 14.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon114[] = {
-    {12, {-41.0f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {52.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon115[] = {
-    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {13, {13.5f, 48.5f}, 1.0f, {210, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon116[] = {
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon117[] = {
-    {15, {-25.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon118[] = {
-    {7, {0.0f, -20.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {-39.0f, 35.0f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {6, {47.0f, 14.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon119[] = {
-    {12, {33.5f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {-39.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon120[] = {
-    {12, {33.5f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {14, {-39.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {13, {72.0f, 51.5f}, 0.9f, {210, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon121[] = {
-    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {13, {13.5f, 48.5f}, 1.0f, {210, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon122[] = {
-    {9, {0.0f, 0.0f}, 1.0f, {230, 190, 70, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon123[] = {
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {17, {26.0f, 36.0f}, 1.0f, {255, 255, 255, 120}, {0, 0, 0, 255}},
-    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon124[] = {
-    {9, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon125[] = {
-    {12, {4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {16, {2.5f, 54.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
-
-static const IconLayer sIcon126[] = {
-    {12, {4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {10, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
-    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
-};
+extern const IconLayer sIcon1[];
+extern const IconLayer sIcon2[];
+extern const IconLayer sIcon3[];
+extern const IconLayer sIcon4[];
+extern const IconLayer sIcon5[];
+extern const IconLayer sIcon6[];
+extern const IconLayer sIcon7[];
+extern const IconLayer sIcon8[];
+extern const IconLayer sIcon9[];
+extern const IconLayer sIcon10[];
+extern const IconLayer sIcon11[];
+extern const IconLayer sIcon12[];
+extern const IconLayer sIcon13[];
+extern const IconLayer sIcon14[];
+extern const IconLayer sIcon15[];
+extern const IconLayer sIcon16[];
+extern const IconLayer sIcon17[];
+extern const IconLayer sIcon18[];
+extern const IconLayer sIcon19[];
+extern const IconLayer sIcon20[];
+extern const IconLayer sIcon21[];
+extern const IconLayer sIcon22[];
+extern const IconLayer sIcon23[];
+extern const IconLayer sIcon24[];
+extern const IconLayer sIcon25[];
+extern const IconLayer sIcon26[];
+extern const IconLayer sIcon27[];
+extern const IconLayer sIcon28[];
+extern const IconLayer sIcon29[];
+extern const IconLayer sIcon30[];
+extern const IconLayer sIcon31[];
+extern const IconLayer sIcon32[];
+extern const IconLayer sIcon33[];
+extern const IconLayer sIcon101[];
+extern const IconLayer sIcon102[];
+extern const IconLayer sIcon103[];
+extern const IconLayer sIcon104[];
+extern const IconLayer sIcon105[];
+extern const IconLayer sIcon106[];
+extern const IconLayer sIcon107[];
+extern const IconLayer sIcon108[];
+extern const IconLayer sIcon109[];
+extern const IconLayer sIcon110[];
+extern const IconLayer sIcon111[];
+extern const IconLayer sIcon112[];
+extern const IconLayer sIcon113[];
+extern const IconLayer sIcon114[];
+extern const IconLayer sIcon115[];
+extern const IconLayer sIcon116[];
+extern const IconLayer sIcon117[];
+extern const IconLayer sIcon118[];
+extern const IconLayer sIcon119[];
+extern const IconLayer sIcon120[];
+extern const IconLayer sIcon121[];
+extern const IconLayer sIcon122[];
+extern const IconLayer sIcon123[];
+extern const IconLayer sIcon124[];
+extern const IconLayer sIcon125[];
+extern const IconLayer sIcon126[];
 
 static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale);
 static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale);
@@ -1004,23 +694,33 @@ static inline u32 GetNightTexture(u32 texture, BOOL night) {
 
 static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale) {
     f32 fade = alpha / 255.0f;
-    GXColor color = {255, 255, 255, alpha};
+    GXColor color;
+    color.r = 255;
+    color.g = 255;
+    color.b = 255;
+    color.a = alpha;
     for (; layers->mTexture != 0xFFFFFFFF; layers++) {
-        color.r = layers->mColor.r;
-        color.g = layers->mColor.g;
-        color.b = layers->mColor.b;
         color.a = layers->mColor.a * fade;
-        Vec2 layerPos;
-        layerPos.x = pos->x + layers->mOffset.x * scale;
-        layerPos.y = pos->y + layers->mOffset.y * scale;
-        DrawIconTexture(GetNightTexture(layers->mTexture, night), &layerPos, color, layers->mScale * scale);
+        color.g = layers->mColor.g;
+        color.r = layers->mColor.r;
+        color.b = layers->mColor.b;
+        nw4r::math::VEC2 layerPos(pos->x + layers->mOffset.x * scale, pos->y + layers->mOffset.y * scale);
+        DrawIconTexture(GetNightTexture(layers->mTexture, night), (Vec2*)&layerPos, color, layers->mScale * scale);
     }
 }
 
 static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale) {
-    GXColor color = {255, 255, 255, alpha};
+    GXColor color;
+    GXColor shadow;
     f32 fade = alpha / 255.0f;
-    GXColor shadow = {255, 255, 255, alpha};
+    color.r = 255;
+    color.g = 255;
+    color.b = 255;
+    color.a = alpha;
+    shadow.r = 255;
+    shadow.g = 255;
+    shadow.b = 255;
+    shadow.a = alpha;
     for (; layers->mTexture != 0xFFFFFFFF; layers++) {
         color.a = layers->mColor.a * fade;
         color.r = layers->mColor.r;
@@ -1030,18 +730,15 @@ static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 a
         shadow.r = layers->mShadowColor.r;
         shadow.g = layers->mShadowColor.g;
         shadow.b = layers->mShadowColor.b;
-        Vec2 layerPos;
-        layerPos.x = pos->x + layers->mOffset.x * scale;
-        layerPos.y = pos->y + layers->mOffset.y * scale;
-        DrawIconTextureShadow(GetNightTexture(layers->mTexture, night), &layerPos, color, shadow,
+        nw4r::math::VEC2 layerPos(pos->x + layers->mOffset.x * scale, pos->y + layers->mOffset.y * scale);
+        DrawIconTextureShadow(GetNightTexture(layers->mTexture, night), (Vec2*)&layerPos, color, shadow,
                               layers->mScale * scale);
     }
 }
 
 static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, GXColor shadow, f32 scale) {
-    TPLPalette* tpl = (TPLPalette*)gUnk80330B74;
-    f32 halfW = scale * (0.5f * GetTexWidth(tpl, texture));
-    f32 halfH = scale * (0.5f * GetTexHeight(tpl, texture));
+    f32 halfW = scale * (0.5f * GetTexWidth(WEATHER_TPL, texture));
+    f32 halfH = scale * (0.5f * GetTexHeight(WEATHER_TPL, texture));
     Vec corner;
     corner.x = pos->x - halfW;
     corner.y = pos->y - halfH;
@@ -1051,21 +748,20 @@ static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, G
     shadowPos.y = 2.0f + corner.y;
     shadowPos.z = 0.0f;
     GXSetTevColor(GX_TEVREG0, shadow);
-    DrawTextureAt(tpl, texture, scale, scale, &shadowPos);
+    DrawTextureAt(WEATHER_TPL, texture, scale, scale, &shadowPos);
     GXSetTevColor(GX_TEVREG0, color);
-    DrawTextureAt(tpl, texture, scale, scale, &corner);
+    DrawTextureAt(WEATHER_TPL, texture, scale, scale, &corner);
 }
 
 static void DrawIconTexture(u32 texture, const Vec2* pos, GXColor color, f32 scale) {
-    TPLPalette* tpl = (TPLPalette*)gUnk80330B74;
-    f32 halfW = scale * (0.5f * GetTexWidth(tpl, texture));
-    f32 halfH = scale * (0.5f * GetTexHeight(tpl, texture));
+    f32 halfW = scale * (0.5f * GetTexWidth(WEATHER_TPL, texture));
+    f32 halfH = scale * (0.5f * GetTexHeight(WEATHER_TPL, texture));
     Vec corner;
     corner.x = pos->x - halfW;
     corner.y = pos->y - halfH;
     corner.z = 0.0f;
     GXSetTevColor(GX_TEVREG0, color);
-    DrawTextureAt(tpl, texture, scale, scale, &corner);
+    DrawTextureAt(WEATHER_TPL, texture, scale, scale, &corner);
 }
 
 s32 LaundryIndexInfo::Setup(void* base, IndexText* entry) {
@@ -1076,3 +772,384 @@ s32 LaundryIndexInfo::Setup(void* base, IndexText* entry) {
     mText = (const wchar_t*)((u8*)base + entry->mTextOffset);
     return 0x18;
 }
+
+const IconLayer sIcon1[] = {
+    {4, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon2[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon3[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {2, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon4[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {3, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon5[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {5, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon6[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon7[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {2, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon8[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {3, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon9[] = {
+    {4, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {5, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon10[] = {
+    {0, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon11[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {4, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon12[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {2, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon13[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {3, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon14[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {5, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon15[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {4, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon16[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {2, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon17[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {3, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon18[] = {
+    {0, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {5, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon19[] = {
+    {2, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon20[] = {
+    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {4, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon21[] = {
+    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon22[] = {
+    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {3, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon23[] = {
+    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {4, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon24[] = {
+    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon25[] = {
+    {2, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {3, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon26[] = {
+    {3, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon27[] = {
+    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {4, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon28[] = {
+    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon29[] = {
+    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {4, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon30[] = {
+    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon31[] = {
+    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {2, {28.0f, 12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon32[] = {
+    {3, {-28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {2, {28.0f, -12.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {18, {0.0f, 23.0f}, 1.0f, {255, 192, 0, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon33[] = {
+    {5, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon101[] = {
+    {15, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon102[] = {
+    {15, {-24.0f, 8.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {6, {4.0f, 28.0f}, 1.2f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon103[] = {
+    {15, {-15.0f, -23.0f}, 0.8f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon104[] = {
+    {15, {-15.0f, -23.0f}, 0.8f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon105[] = {
+    {15, {-15.0f, -23.0f}, 0.8f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {12, {-41.0f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {52.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon106[] = {
+    {6, {0.0f, 7.0f}, 1.2f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon107[] = {
+    {15, {0.0f, 9.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {6, {29.0f, 27.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {8, {-55.5f, -16.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon108[] = {
+    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {6, {-49.0f, -25.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon109[] = {
+    {6, {-49.0f, -25.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon110[] = {
+    {12, {-41.0f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {6, {-49.0f, -25.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {52.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon111[] = {
+    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon112[] = {
+    {15, {-25.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon113[] = {
+    {12, {-4.0f, 37.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -20.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {6, {47.0f, 14.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon114[] = {
+    {12, {-41.0f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {52.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon115[] = {
+    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {13, {13.5f, 48.5f}, 1.0f, {210, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon116[] = {
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon117[] = {
+    {15, {-25.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon118[] = {
+    {7, {0.0f, -20.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {-39.0f, 35.0f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {6, {47.0f, 14.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon119[] = {
+    {12, {33.5f, 50.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {-39.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon120[] = {
+    {12, {33.5f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {14, {-39.0f, 48.5f}, 0.9f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {13, {72.0f, 51.5f}, 0.9f, {210, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon121[] = {
+    {12, {-4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {13, {13.5f, 48.5f}, 1.0f, {210, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon122[] = {
+    {9, {0.0f, 0.0f}, 1.0f, {230, 190, 70, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon123[] = {
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {17, {26.0f, 36.0f}, 1.0f, {255, 255, 255, 120}, {0, 0, 0, 255}},
+    {14, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon124[] = {
+    {9, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon125[] = {
+    {12, {4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {16, {2.5f, 54.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
+
+const IconLayer sIcon126[] = {
+    {12, {4.0f, 50.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {7, {0.0f, -7.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {10, {13.5f, 48.5f}, 1.0f, {255, 255, 255, 255}, {0, 0, 0, 255}},
+    {0xFFFFFFFF, {0.0f, 0.0f}, 1.0f, {0, 0, 0, 0}, {0, 0, 0, 0}},
+};
