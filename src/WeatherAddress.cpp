@@ -488,7 +488,7 @@ void WeatherAddress::DrawCityList() {
 
     mWriter.SetDrawFlag(0x111);
     mWriter.SetupGX();
-    mWriter.SetTextColor(*(nw4r::ut::Color*)&sTextColor);
+    mWriter.SetTextColor(nw4r::ut::Color(*(GXColor*)&sTextColor));
     for (entry = mListHead; entry != NULL; entry = entry->mNext) {
         if (!entry->mHidden) {
             mWriter.SetScale(entry->mNameScaleX, entry->mNameScaleY);
@@ -537,7 +537,7 @@ void WeatherAddress::DrawAreaList() {
 
     mWriter.SetDrawFlag(0x111);
     mWriter.SetupGX();
-    mWriter.SetTextColor(*(nw4r::ut::Color*)&sTextColor);
+    mWriter.SetTextColor(nw4r::ut::Color(*(GXColor*)&sTextColor));
     for (entry = mListHead; entry != NULL; entry = entry->mNext) {
         if (!entry->mHidden) {
             mWriter.SetScale(entry->mLabelScaleX, entry->mLabelScaleY);
@@ -550,7 +550,7 @@ void WeatherAddress::DrawAreaList() {
 }
 
 void WeatherAddress::DrawConfirm() {
-    GXColor color = {255, 255, 255, 64};
+    nw4r::ut::Color color(255, 255, 255, 64);
     Vec2 pos;
     Vec quad[4];
 
@@ -563,19 +563,19 @@ void WeatherAddress::DrawConfirm() {
     quad[1].x = 0.0f;
     quad[0].x = 0.0f;
     f32 right = GetScreenWidth();
-    quad[0].y = pos.y - 20.0f;
+    quad[3].y = pos.y - 20.0f;
     quad[3].x = right;
     quad[2].x = right;
-    quad[3].y = pos.y - 20.0f;
-    quad[1].y = 20.0f + pos.y;
+    quad[0].y = pos.y - 20.0f;
     quad[2].y = 20.0f + pos.y;
+    quad[1].y = 20.0f + pos.y;
     DrawQuad(quad, (GXColor*)&sListColor);
 
     SetDefaultGXState();
     SetOrthoProjection();
     mWriter.SetDrawFlag(0x111);
     mWriter.SetupGX();
-    mWriter.SetTextColor(*(nw4r::ut::Color*)&sTextColor);
+    mWriter.SetTextColor(nw4r::ut::Color(*(GXColor*)&sTextColor));
     mWriter.SetScale(mSelected->mNameScaleX, mSelected->mNameScaleY);
     mWriter.SetCursor(pos.x, pos.y);
     mWriter.Print(mSelected->mName);
@@ -715,13 +715,15 @@ void WeatherAddress::ChangeState(StateFunc state, s32 arg) {
 
 #define UPDATE_ENTRIES()                                                                                     \
     {                                                                                                        \
-        s32 right = GetScreenWidth();                                                                        \
-        for (AddressEntry* entry = mListHead; entry != NULL; entry = entry->mNext) {                         \
+        AddressEntry* entry = mListHead;                                                                     \
+        f32 offset = (mScroll + mListTop) - 20.0f;                                                           \
+        f32 right = GetScreenWidth();                                                                        \
+        for (; entry != NULL; entry = entry->mNext) {                                                        \
             BOOL hidden = FALSE;                                                                             \
             entry->mWasHovered = entry->mHovered;                                                            \
             entry->mHovered = FALSE;                                                                         \
             entry->mLeft = 0.0f;                                                                             \
-            entry->mTop = entry->mY + ((mScroll + mListTop) - 20.0f);                                        \
+            entry->mTop = entry->mY + offset;                                                                \
             entry->mRight = right;                                                                           \
             entry->mBottom = 40.0f + entry->mTop;                                                            \
             if (entry->mBottom < 0.0f || entry->mTop > mClipBottom) {                                        \
