@@ -37,7 +37,8 @@ void MinutesToCalendarTime(u32 minutes, OSCalendarTime* cal);
 void WrapHour(s32* pHour);
 void WrapHourTo24(s32* pHour);
 void RequestWeatherSounds(u32 type, f32 volume);
-f32 EaseCos(u16 t);
+// Declared returning double here (the calls are followed by frsp), unlike in d_weather_around
+double EaseCos(u16 t);
 f32 SmoothApproach(f32* value, f32 target, f32 rate, f32 maxStep, f32 minStep);
 
 // Zero-initialized statics live in .sdata here, not .sbss
@@ -102,21 +103,21 @@ static const wchar_t* sHours24[24] = {
         }                                                                                                    \
     }
 
-#define CHANGE_SCROLL(state)                                                                                 \
-    {                                                                                                        \
-        Func newState = state;                                                                               \
-        if (mScrollState != newState) {                                                                      \
-            if (mScrollState) {                                                                              \
-                mScrollPhase = -1;                                                                           \
-                (this->*mScrollState)();                                                                     \
-            }                                                                                                \
-            mScrollPhase = 0;                                                                                \
-            mScrollState = newState;                                                                         \
-            if (mScrollState) {                                                                              \
-                (this->*mScrollState)();                                                                     \
-            }                                                                                                \
-        }                                                                                                    \
+#define CHANGE_SCROLL(state) ChangeScroll(state)
+
+inline void WeatherNormal::ChangeScroll(Func state) {
+    if (!IsScrollState(state)) {
+        if (mScrollState) {
+            mScrollPhase = -1;
+            (this->*mScrollState)();
+        }
+        mScrollPhase = 0;
+        mScrollState = state;
+        if (mScrollState) {
+            (this->*mScrollState)();
+        }
     }
+}
 
 static inline s32 GetSideMargin() {
     return gWidescreen ? 36 : 28;
@@ -656,8 +657,9 @@ void WeatherNormal::SetCity(s32 arg) {
 #define FIT_DATE(scaleX, scaleY)                                                                             \
     mDateScaleX = scaleX;                                                                                    \
     mDateScaleY = scaleY;                                                                                    \
-    gTextWriter.SetScale(scaleX, scaleY);                                                                    \
-    gTextWriter.SetCharSpace(mDateScaleX * gUnkSceneFloat);                                                  \
+    gTextWriter.SetScale(mDateScaleX, mDateScaleY);                                                          \
+    f32 space = gUnkSceneFloat;                                                                              \
+    gTextWriter.SetCharSpace(mDateScaleX * space);                                                           \
     {                                                                                                        \
         f32 width = gTextWriter.CalcStringWidth(mDateText);                                                  \
         if (width > mDateWidth) {                                                                            \
@@ -665,16 +667,17 @@ void WeatherNormal::SetCity(s32 arg) {
         }                                                                                                    \
     }
 
+static f32 sDateScaleXJP = 0.6f;
+static f32 sDateScaleYJP = 0.6f;
+
 void WeatherNormal::SetupDateJP() {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
 
     if (gCurrentCity != NULL) {
         CityForecast* forecast = gCurrentCity->mForecast;
         CitySummary* summary = gCurrentCity->mSummary;
         u32 time;
-        u32 today;
-        u32 tomorrow;
+        u16 today;
+        u16 tomorrow;
 
         if (forecast != NULL) {
             mDateType = 0;
@@ -711,7 +714,7 @@ void WeatherNormal::SetupDateJP() {
             p[1] = L' ';
             FormatNumber(cal.hour, p + 2, 2, FALSE);
             wcscat(mDateText, L"\x6642\x767A\x8868"); // "o'clock announcement"
-            FIT_DATE(sScaleX, sScaleY);
+            FIT_DATE(sDateScaleXJP, sDateScaleYJP);
         } else {
             mDateText[0] = 0;
         }
@@ -722,12 +725,15 @@ void WeatherNormal::SetupDateJP() {
 
 void WeatherNormal::SetupDate() {
     if (gCurrentCity != NULL) {
+        CityForecast* forecast;
+        CitySummary* summary;
         CityNow* now = gCurrentCity->mNow;
-        CityForecast* forecast = gCurrentCity->mForecast;
-        CitySummary* summary = gCurrentCity->mSummary;
-        u32 nowWeather;
-        u32 today;
-        u32 tomorrow;
+        forecast = gCurrentCity->mForecast;
+        summary = gCurrentCity->mSummary;
+        u32 time;
+        u16 nowWeather;
+        u16 today;
+        u16 tomorrow;
         OSCalendarTime cal;
 
         if (now != NULL) {
@@ -740,7 +746,7 @@ void WeatherNormal::SetupDate() {
         if (forecast != NULL) {
             mDateType = 0;
             ForecastEntry* entry = forecast->mEntry;
-            u32 time = entry->mTime;
+            time = entry->mTime;
             today = entry->mDays[0].mWeather;
             tomorrow = entry->mDays[1].mWeather;
             MinutesToCalendarTime(time, &cal);
@@ -750,7 +756,7 @@ void WeatherNormal::SetupDate() {
         } else if (summary != NULL) {
             mDateType = 1;
             SummaryEntry* entry = summary->mEntry;
-            u32 time = entry->mTime;
+            time = entry->mTime;
             today = entry->mDays[0].mWeather;
             tomorrow = entry->mDays[1].mWeather;
             MinutesToCalendarTime(time, &cal);
@@ -772,12 +778,12 @@ void WeatherNormal::SetupDate() {
             mTomorrowIcon = info->mType->mIcon;
         }
 
-        u32 time;
         if (gForecastPage == 1) {
-            if (now == NULL) {
+            if (now != NULL) {
+                time = now->mEntry->mTime;
+            } else {
                 return;
             }
-            time = now->mEntry->mTime;
         } else if (forecast != NULL) {
             time = forecast->mEntry->mTime;
         } else if (summary != NULL) {
@@ -797,10 +803,11 @@ void WeatherNormal::SetupDate() {
     }
 }
 
+static f32 sDateScaleXUS = 0.6f;
+static f32 sDateScaleYUS = 0.6f;
+
 // "Updated 3:05 p.m., 06/21"
 void WeatherNormal::FormatDateUS(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
 
@@ -825,15 +832,17 @@ void WeatherNormal::FormatDateUS(u32 minutes) {
     p = FormatNumber(cal.month + 1, mDateText + wcslen(mDateText), 2, TRUE);
     *p = L'/';
     FormatNumber(cal.mday, p + 1, 2, TRUE);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXUS, sDateScaleYUS);
 }
+
+static f32 sDateScaleXEU = 0.6f;
+static f32 sDateScaleYEU = 0.6f;
 
 // "Last Updated: 21/06/2008 15:05"
 void WeatherNormal::FormatDateEU(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
+    s32 hour = cal.hour;
 
     wcscpy(mDateText, gLastUpdatedPrefixes[gLanguage]);
     wchar_t* p = FormatNumber(cal.mday, mDateText + wcslen(mDateText), 2, TRUE);
@@ -842,18 +851,20 @@ void WeatherNormal::FormatDateEU(u32 minutes) {
     *p = L'/';
     p = FormatNumber(cal.year, p + 1, 4, FALSE);
     *p = L' ';
-    p = FormatNumber(cal.hour, p + 1, 2, TRUE);
+    p = FormatNumber(hour, p + 1, 2, TRUE);
     *p = L':';
     FormatNumber(cal.min, p + 1, 2, TRUE);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXEU, sDateScaleYEU);
 }
+
+static f32 sDateScaleXDE = 0.6f;
+static f32 sDateScaleYDE = 0.6f;
 
 // "Stand: 21.06.2008 - 15:05"
 void WeatherNormal::FormatDateDE(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
+    s32 hour = cal.hour;
 
     wcscpy(mDateText, gLastUpdatedPrefixes[gLanguage]);
     wchar_t* p = FormatNumber(cal.mday, mDateText + wcslen(mDateText), 2, TRUE);
@@ -864,30 +875,33 @@ void WeatherNormal::FormatDateDE(u32 minutes) {
     p[0] = L' ';
     p[1] = L'-';
     p[2] = L' ';
-    p = FormatNumber(cal.hour, p + 3, 2, TRUE);
+    p = FormatNumber(hour, p + 3, 2, TRUE);
     *p = L':';
     FormatNumber(cal.min, p + 1, 2, TRUE);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXDE, sDateScaleYDE);
 }
+
+static f32 sDateScaleXCA = 0.6f;
+static f32 sDateScaleYCA = 0.6f;
 
 // "Le 06-21 \xE0 15:05" (Canadian French)
 void WeatherNormal::FormatDateCA(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
 
     swprintf(mDateText, 0x80, L"%ls%02d-%02d %lc %02d:%02d", gUpdatedPrefixes[gLanguage], cal.month + 1, cal.mday,
              0xE0, cal.hour, cal.min);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXCA, sDateScaleYCA);
 }
+
+static f32 sDateScaleXFR = 0.6f;
+static f32 sDateScaleYFR = 0.6f;
 
 // "Le 21/06 \xE0 15:05"
 void WeatherNormal::FormatDateFR(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
+    s32 hour = cal.hour;
 
     wcscpy(mDateText, gLastUpdatedPrefixes[gLanguage]);
     wchar_t* p = FormatNumber(cal.mday, mDateText + wcslen(mDateText), 2, TRUE);
@@ -896,18 +910,20 @@ void WeatherNormal::FormatDateFR(u32 minutes) {
     p[0] = L' ';
     p[1] = 0xE0;
     p[2] = L' ';
-    p = FormatNumber(cal.hour, p + 3, 2, TRUE);
+    p = FormatNumber(hour, p + 3, 2, TRUE);
     *p = L':';
     FormatNumber(cal.min, p + 1, 2, TRUE);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXFR, sDateScaleYFR);
 }
+
+static f32 sDateScaleXES = 0.6f;
+static f32 sDateScaleYES = 0.6f;
 
 // "21-06-2008 15:05"
 void WeatherNormal::FormatDateES(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
+    s32 hour = cal.hour;
 
     wchar_t* p = FormatNumber(cal.mday, mDateText, 2, TRUE);
     *p = L'-';
@@ -915,18 +931,20 @@ void WeatherNormal::FormatDateES(u32 minutes) {
     *p = L'-';
     p = FormatNumber(cal.year, p + 1, 4, FALSE);
     *p = L' ';
-    p = FormatNumber(cal.hour, p + 1, 2, TRUE);
+    p = FormatNumber(hour, p + 1, 2, TRUE);
     *p = L':';
     FormatNumber(cal.min, p + 1, 2, TRUE);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXES, sDateScaleYES);
 }
+
+static f32 sDateScaleXIT = 0.6f;
+static f32 sDateScaleYIT = 0.6f;
 
 // "Aggiornato il 21/06/2008 15:05"
 void WeatherNormal::FormatDateIT(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
+    s32 hour = cal.hour;
 
     wcscpy(mDateText, gLastUpdatedPrefixes[gLanguage]);
     wchar_t* p = FormatNumber(cal.mday, mDateText + wcslen(mDateText), 2, TRUE);
@@ -935,18 +953,20 @@ void WeatherNormal::FormatDateIT(u32 minutes) {
     *p = L'/';
     p = FormatNumber(cal.year, p + 1, 4, FALSE);
     *p = L' ';
-    p = FormatNumber(cal.hour, p + 1, 2, TRUE);
+    p = FormatNumber(hour, p + 1, 2, TRUE);
     *p = L':';
     FormatNumber(cal.min, p + 1, 2, TRUE);
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXIT, sDateScaleYIT);
 }
+
+static f32 sDateScaleXNL = 0.6f;
+static f32 sDateScaleYNL = 0.6f;
 
 // "21-06-2008 (15:05 uur)"
 void WeatherNormal::FormatDateNL(u32 minutes) {
-    static f32 sScaleX = 0.6f;
-    static f32 sScaleY = 0.6f;
     OSCalendarTime cal;
     MinutesToCalendarTime(minutes, &cal);
+    s32 hour = cal.hour;
 
     wchar_t* p = FormatNumber(cal.mday, mDateText, 2, TRUE);
     *p = L'-';
@@ -955,11 +975,11 @@ void WeatherNormal::FormatDateNL(u32 minutes) {
     p = FormatNumber(cal.year, p + 1, 4, FALSE);
     p[0] = L' ';
     p[1] = L'(';
-    p = FormatNumber(cal.hour, p + 2, 2, TRUE);
+    p = FormatNumber(hour, p + 2, 2, TRUE);
     *p = L':';
     FormatNumber(cal.min, p + 1, 2, TRUE);
     wcscat(mDateText, L" uur)");
-    FIT_DATE(sScaleX, sScaleY);
+    FIT_DATE(sDateScaleXNL, sDateScaleYNL);
 }
 
 void WeatherNormal::Draw() {
@@ -1078,10 +1098,13 @@ void WeatherNormal::DrawTimes() {
         CityForecast* forecast = gCurrentCity->mForecast;
         CitySummary* summary = gCurrentCity->mSummary;
         DayForecast* day;
+        s32 hour;
         if (forecast != NULL) {
             day = forecast->mEntry->mDays;
+            hour = 0;
         } else if (summary != NULL) {
             day = summary->mEntry->mDays;
+            hour = 0;
         } else {
             return;
         }
@@ -1089,7 +1112,7 @@ void WeatherNormal::DrawTimes() {
         mTimeLayout->SetPaneAlpha(255.0f * mTimesAlpha);
         mTimeLayout->Draw();
         if (mDrawTimes) {
-            (this->*mDrawTimes)(day, 0);
+            (this->*mDrawTimes)(day, hour);
         }
     }
 }
@@ -1556,8 +1579,8 @@ BOOL WeatherNormal::StateScroll(s32 arg) {
         Vec2F iconPos = ((WeatherBaseDay*)page)->GetIconPos();                                               \
         mZoomX = iconPos.x;                                                                                  \
         mZoomY = iconPos.y;                                                                                  \
-        mMoveX = -iconPos.x;                                                                                 \
-        mMoveY = -iconPos.y;                                                                                 \
+        mMoveX = -mZoomX;                                                                                    \
+        mMoveY = -mZoomY;                                                                                    \
     }
 
 #define UPDATE_ZOOM_ANIM()                                                                                   \
@@ -1587,7 +1610,7 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
             (this->*mSetupBelt)();
         }
 
-        if (mScrollState == &WeatherNormal::ScrollNames) {
+        if (IsScrollState(&WeatherNormal::ScrollNames)) {
             mScrollPhase = 2;
             mNameIndex = 0;
             mScrollTimer = 240;
@@ -1606,86 +1629,88 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
     }
     case -1:
         break;
-    case 1:
-        if (IsDetailPressed()) {
-            WeatherBase* page = mPages[gForecastPage];
-            mPhase++;
-            mAnimTimer = 0;
-            mZoomed = TRUE;
-            mShowZoom = TRUE;
-            f32 t = EaseCos(0);
-            mTimesAlpha = t;
-            mZoomAlpha = 40.0f * t;
-            START_ZOOM_ANIM();
-            s32 width = GetScreenWidth();
-            mZoomRect.right = mZoomX;
-            mZoomRect.left = mZoomX;
-            mMoveY2 = 456.0f - mZoomY;
-            mMoveX2 = width - mZoomX;
-            mZoomRect.bottom = mZoomY;
-            mZoomRect.top = mZoomY;
-            PlaySE(42);
-        } else if (mDownPressed) {
-            if (gForecastPage < gForecastPageCount - 1) {
-                gForecastPage++;
-                PlaySE(41);
-                CHANGE_STATE(&WeatherNormal::StateScroll);
-                return TRUE;
-            }
-        } else if (mUpPressed) {
-            if (gForecastPage != 0) {
-                gForecastPage--;
-                PlaySE(41);
-                CHANGE_STATE(&WeatherNormal::StateScroll);
-                return TRUE;
-            }
-        } else if (!gShowAmbientSound && IsBackPressed()) {
-            PlaySE(38);
-            gSettingResult = 3;
-            CHANGE_STATE(&WeatherNormal::StateToAround);
-            return TRUE;
-        }
-        goto update;
-    case 2:
-        mAnimTimer += 0x800;
-        if (mAnimTimer >= 0x8000) {
-            mAnimTimer = 0x8000;
-            mPhase++;
-            mShowZoom = FALSE;
-        } else {
-            UPDATE_ZOOM_ANIM();
-        }
-        goto update;
-    case 3:
-        if (gTrigAll & WPAD_BUTTON_A) {
-            WeatherBase* page = mPages[gForecastPage];
-            mPhase++;
-            mAnimTimer = 0x8000;
-            mShowZoom = TRUE;
-            f32 t = EaseCos(0x8000);
-            mTimesAlpha = t;
-            mZoomAlpha = 40.0f * t;
-            START_ZOOM_ANIM();
-            mZoomRect.left = 0.0f;
-            mZoomRect.top = 0.0f;
-            mMoveX2 = GetScreenWidth() - mZoomX;
-            mMoveY2 = 456.0f - mZoomY;
-            mZoomRect.bottom = 456.0f;
-            mZoomRect.right = GetScreenWidth();
-            PlaySE(43);
-        }
-        goto update;
     default:
-        mAnimTimer -= 0x800;
-        if (mAnimTimer <= 0) {
-            mPhase = 1;
-            mAnimTimer = 0;
-            mShowZoom = FALSE;
-            mZoomed = FALSE;
-        } else {
-            UPDATE_ZOOM_ANIM();
+        switch (mPhase) {
+        case 1:
+            if (IsDetailPressed()) {
+                WeatherBase* page = mPages[gForecastPage];
+                mPhase++;
+                mAnimTimer = 0;
+                mZoomed = TRUE;
+                mShowZoom = TRUE;
+                mTimesAlpha = EaseCos(0);
+                mZoomAlpha = 40.0f * mTimesAlpha;
+                START_ZOOM_ANIM();
+                s32 width = GetScreenWidth();
+                mZoomRect.right = mZoomX;
+                mZoomRect.left = mZoomX;
+                mMoveY2 = 456.0f - mZoomY;
+                mMoveX2 = width - mZoomX;
+                mZoomRect.bottom = mZoomY;
+                mZoomRect.top = mZoomY;
+                PlaySE(42);
+            } else if (mDownPressed) {
+                if (gForecastPage < gForecastPageCount - 1) {
+                    gForecastPage++;
+                    PlaySE(41);
+                    CHANGE_STATE(&WeatherNormal::StateScroll);
+                    return TRUE;
+                }
+            } else if (mUpPressed) {
+                if (gForecastPage != 0) {
+                    gForecastPage--;
+                    PlaySE(41);
+                    CHANGE_STATE(&WeatherNormal::StateScroll);
+                    return TRUE;
+                }
+            } else if (!gShowAmbientSound && IsBackPressed()) {
+                PlaySE(38);
+                gSettingResult = 3;
+                CHANGE_STATE(&WeatherNormal::StateToAround);
+                return TRUE;
+            }
+            break;
+        case 2:
+            mAnimTimer += 0x800;
+            if (mAnimTimer >= 0x8000) {
+                mAnimTimer = 0x8000;
+                mPhase++;
+                mShowZoom = FALSE;
+            } else {
+                UPDATE_ZOOM_ANIM();
+            }
+            break;
+        case 3:
+            if (gTrigAll & WPAD_BUTTON_A) {
+                WeatherBase* page = mPages[gForecastPage];
+                mPhase++;
+                mAnimTimer = 0x8000;
+                mShowZoom = TRUE;
+                mTimesAlpha = EaseCos(0x8000);
+                mZoomAlpha = 40.0f * mTimesAlpha;
+                START_ZOOM_ANIM();
+                mZoomRect.left = 0.0f;
+                mZoomRect.top = 0.0f;
+                mMoveX2 = GetScreenWidth() - mZoomX;
+                mMoveY2 = 456.0f - mZoomY;
+                mZoomRect.bottom = 456.0f;
+                mZoomRect.right = GetScreenWidth();
+                PlaySE(43);
+            }
+            break;
+        case 4:
+        default:
+            mAnimTimer -= 0x800;
+            if (mAnimTimer <= 0) {
+                mPhase = 1;
+                mAnimTimer = 0;
+                mShowZoom = FALSE;
+                mZoomed = FALSE;
+            } else {
+                UPDATE_ZOOM_ANIM();
+            }
+            break;
         }
-    update:
         UpdateArrows();
         if (mUpdateBeltText) {
             (this->*mUpdateBeltText)();
@@ -1811,6 +1836,7 @@ void WeatherNormal::CycleBelt(s32 state) {
                 mBeltTarget = 0;
             }
             break;
+        case 4:
         default:
             if (mBeltAlpha == 0) {
                 mBeltPhase = 1;
@@ -1967,24 +1993,23 @@ BOOL WeatherNormal::StateCloseAround(s32 arg) {
         break;
     case 0: {
         mLayout->Reset();
-        s32 width = GetScreenWidth();
         mUpButton->mToggle = TRUE;
         mDownButton->mToggle = TRUE;
+        f32 centerX = 0.5f * GetScreenWidth();
         mPhase++;
         f32 centerY = 228.0f;
         WeatherBase* page = mPages[gForecastPage];
         mPageY = page->mSize.y;
-        f32 centerX = 0.5f * width;
         SET_BELT_STATE(page->mType);
         LAYOUT_PAGES();
         mMoveX2 = gCityPos.x;
         mMoveY2 = gCityPos.y;
-        mMoveX = centerX - gCityPos.x;
-        mMoveY = centerY - gCityPos.y;
+        mMoveX = centerX - mMoveX2;
+        mMoveY = centerY - mMoveY2;
         mAlpha = 0.0f;
         mAnimTimer = 0;
         for (s32 i = 0; i < gForecastPageCount; i++) {
-            mPageVisible[i] = gForecastPage == i;
+            mPageVisible[i] = i == gForecastPage;
         }
         mFlashX = mMoveX2;
         mFlash = TRUE;
@@ -2019,13 +2044,11 @@ void WeatherNormal::UpdateBeltHover() {
         if (gKPADLatest[i] >= 0) {
             f32 x = gCursorX[i];
             f32 y = gCursorY[i];
-            if (x > mBelt[0].mRect.left && x < mBelt[0].mRect.right && y > mBelt[0].mRect.top &&
-                y < mBelt[0].mRect.bottom) {
-                mBelt[0].mHovered = TRUE;
-            }
-            BeltText* belt = &mBelt[1];
-            if (x > belt->mRect.left && x < belt->mRect.right && y > belt->mRect.top && y < belt->mRect.bottom) {
-                belt->mHovered = TRUE;
+            for (s32 j = 0; j < 2; j++) {
+                BeltText* belt = &mBelt[j];
+                if (x > belt->mRect.left && x < belt->mRect.right && y > belt->mRect.top && y < belt->mRect.bottom) {
+                    belt->mHovered = TRUE;
+                }
             }
         }
     }
@@ -2126,7 +2149,7 @@ void WeatherNormal::ScrollNames() {
 }
 
 BOOL WeatherNormal::IsBackPressed() {
-    s32 width = GetScreenWidth();
+    f32 width = GetScreenWidth();
     for (s32 i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         if (IsPointerValid(i)) {
             f32 x = gCursorX[i];

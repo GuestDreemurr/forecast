@@ -442,6 +442,10 @@ public:
     void SetupBelt();
     void StopScroll();
     void ScrollNames();
+    BOOL IsScrollState(Func state) {
+        return mScrollState == state;
+    }
+    void ChangeScroll(Func state);
     BOOL IsBackPressed();
 
     ButtonGroup* mLayout;          // at 0x0, forecast.brlyt
@@ -498,7 +502,7 @@ public:
     f32 mMoveY;                    // at 0x7E4
     f32 mMoveX2;                   // at 0x7E8
     f32 mMoveY2;                   // at 0x7EC
-    u8 mPageVisible[5];            // at 0x7F0
+    bool mPageVisible[5];          // at 0x7F0
     u8 mFlash;                     // at 0x7F5
     u8 mShowZoom;                  // at 0x7F6
     u8 mUpPressed;                 // at 0x7F7

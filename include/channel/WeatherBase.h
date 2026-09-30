@@ -28,7 +28,7 @@ public:
     virtual ~WeatherBase() {}
     virtual void Reset() = 0;
     virtual void Draw() = 0;
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
     virtual BOOL IsEmpty() {
         return FALSE;
     }
@@ -69,7 +69,7 @@ class WeatherBaseDay : public WeatherBase {
 public:
     WeatherBaseDay(const Vec2& pos, void* arc, const Vec2& size, s32 type);
     virtual ~WeatherBaseDay();
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
 
     void SetupJP(void* arc);
     void Setup(void* arc);
@@ -103,7 +103,7 @@ public:
     virtual ~WeatherOther();
     virtual void Reset();
     virtual void Draw();
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
     virtual BOOL IsEmpty();
 
     void SetupJP(void* arc);
@@ -129,7 +129,7 @@ public:
     virtual ~WeatherToday() {}
     virtual void Reset();
     virtual void Draw();
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
     virtual BOOL IsEmpty();
 
     void DrawForecast(const s32& alpha);
@@ -147,7 +147,7 @@ public:
     virtual ~WeatherTomorrow() {}
     virtual void Reset();
     virtual void Draw();
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
     virtual BOOL IsEmpty();
 
     void DrawForecast(const s32& alpha);
@@ -166,7 +166,7 @@ public:
     virtual ~WeatherWeek();
     virtual void Reset();
     virtual void Draw();
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
 
     void SetupJP(void* arc);
     void Setup(void* arc);
@@ -190,7 +190,7 @@ public:
     virtual ~WeatherNow() {}
     virtual void Reset();
     virtual void Draw();
-    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
     virtual BOOL IsEmpty();
 
     void DrawNow(const s32& alpha);

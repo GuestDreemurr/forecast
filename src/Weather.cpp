@@ -42,7 +42,7 @@ void WeatherNow::Draw() {
     DrawNow(alpha);
 }
 
-void WeatherNow::SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover) {
+void WeatherNow::SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover) {
     WeatherBaseDay::SetPosition(pos, scale, visible, FALSE);
     mLayout->Calc();
     nw4r::math::VEC3 trans(mPos.x, mPos.y, 0.0f);

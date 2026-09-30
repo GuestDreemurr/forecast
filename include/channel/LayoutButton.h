@@ -44,7 +44,7 @@ public:
     void Update();
     void Draw();
     BOOL Contains(f32 x, f32 y);
-    void SetPaneAlpha(u8 alpha);
+    void SetPaneAlpha(s32 alpha);
     void SetState(s32 state);
     void SetText(const wchar_t* text);
     Vec2F GetCenter();
@@ -162,7 +162,7 @@ public:
     void SlideIn(s32 frames);
     void FadeIn(s32 frames);
     void SetButtonParams(s32 a, s32 b, s32 c);
-    void SetPaneAlpha(u8 alpha);
+    void SetPaneAlpha(s32 alpha);
     void SetViewMtx(const nw4r::math::MTX34& mtx);
     void SetSlideOffset(f32 offset);
 

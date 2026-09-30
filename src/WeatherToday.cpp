@@ -50,7 +50,7 @@ void WeatherToday::Draw() {
     }
 }
 
-void WeatherToday::SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover) {
+void WeatherToday::SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover) {
     WeatherBaseDay::SetPosition(pos, scale, visible, checkHover);
     mLayout->Calc();
 

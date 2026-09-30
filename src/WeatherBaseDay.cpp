@@ -213,7 +213,7 @@ void WeatherBaseDay::Setup(void* arc) {
     mBoxes[4].mHeight = sIconHeight;
 }
 
-void WeatherBaseDay::SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover) {
+void WeatherBaseDay::SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover) {
     WeatherBase::SetPosition(pos, scale, visible, checkHover);
 
     City* city = gCurrentCity;

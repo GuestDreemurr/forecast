@@ -225,7 +225,7 @@ void WeatherOther::Draw() {
     }
 }
 
-void WeatherOther::SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover) {
+void WeatherOther::SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover) {
     WeatherBase::SetPosition(pos, scale, visible, checkHover);
     UPDATE_DAY();
     mLayout->Calc();
