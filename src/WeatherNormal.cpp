@@ -78,17 +78,6 @@ static const char* sBoxNames[8] = {
     "icon_a", "icon_b", "icon_c", "icon_d", "text_icon_aUSA", "text_icon_bUSA", "text_icon_cUSA", "text_icon_dUSA",
 };
 
-// The 12-hour clock labels
-static const wchar_t* sHours12[12] = {
-    L"12", L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", L"10", L"11",
-};
-
-// The 24-hour clock labels
-static const wchar_t* sHours24[24] = {
-    L"00", L"01", L"02", L"03", L"04", L"05", L"06", L"07", L"08", L"09", L"10", L"11",
-    L"12", L"13", L"14", L"15", L"16", L"17", L"18", L"19", L"20", L"21", L"22", L"23",
-};
-
 #define CHANGE_STATE(state)                                                                                  \
     {                                                                                                        \
         StateFunc newState = state;                                                                          \
@@ -161,8 +150,8 @@ WeatherNormal::WeatherNormal(void* arc)
     {
         s32 width = GetScreenWidth();
         f32 height = 456.0f;
-        Vec2 offset;
         Vec2 pos;
+        Vec2 offset;
         offset.x = 0.0f;
         pos.y = 0.5f * height;
         offset.y = 0.0f;
@@ -230,18 +219,18 @@ WeatherNormal::WeatherNormal(void* arc)
         f32 w = city->mRight - city->mLeft;
         f32 h = __fabsf(city->mTop - city->mBottom);
         Vec2F center = city->GetCenter();
-        w *= scaleX;
+        f32 scaledW = w * scaleX;
         center.x *= scaleX;
-        mCityRect.left = (centerX + center.x) - 0.5f * w;
-        mCityRect.right = mCityRect.left + w;
+        mCityRect.left = (centerX + center.x) - 0.5f * scaledW;
+        mCityRect.right = mCityRect.left + scaledW;
         mCityRect.top = (centerY - center.y) - 0.5f * h;
         mCityRect.bottom = mCityRect.top + h;
     }
 
-    if (gLanguage != 0) {
-        strcpy(sNameBuf, "timeWW");
-    } else {
+    if (gLanguage == 0) {
         strcpy(sNameBuf, "timeJP");
+    } else {
+        strcpy(sNameBuf, "timeWW");
     }
     LayoutButton* time = mBeltLayout->FindButton(sNameBuf);
     if (time != NULL) {
@@ -304,8 +293,8 @@ WeatherNormal::WeatherNormal(void* arc)
         mBelt[0].mRect.bottom = bottom;
         mBelt[0].mX = 0.5f * (mBelt[0].mRect.right - mBelt[0].mRect.left) + mBelt[0].mRect.left;
         mBelt[0].mY = halfHeight + top;
-        mBelt[0].mMaxHeight = 2.0f * (halfHeight - 8.0f);
         mBelt[0].mMaxWidth = (mBelt[0].mRect.right - GetSideMargin()) - 8.0f;
+        mBelt[0].mMaxHeight = 2.0f * (halfHeight - 8.0f);
 
         halfHeight = 0.5f * (mBelt[1].mRect.bottom - mBelt[1].mRect.top);
         mBelt[1].mY = halfHeight + mBelt[1].mRect.top;
@@ -603,8 +592,9 @@ void WeatherNormal::DrawCity() {
 #define FIT_NAME(line)                                                                                       \
     (line).mScale = 1.0f;                                                                                    \
     gTextWriter.SetScale(1.0f);                                                                              \
-    gTextWriter.SetCharSpace((line).mScale * gUnkSceneFloat);                                                \
     {                                                                                                        \
+        f32 space = gUnkSceneFloat;                                                                          \
+        gTextWriter.SetCharSpace((line).mScale * space);                                                     \
         f32 width = gTextWriter.CalcStringWidth((line).mText);                                               \
         if (width > maxWidth) {                                                                              \
             (line).mScale *= maxWidth / width;                                                               \
@@ -612,14 +602,15 @@ void WeatherNormal::DrawCity() {
     }
 
 void WeatherNormal::SetCity(s32 arg) {
+    City* city = gCurrentCity;
     mDateText[0] = 0;
     mDateType = 0;
     mNowIcon = 0xFFFF;
     mTodayIcon = 0xFFFF;
     mTomorrowIcon = 0xFFFF;
 
-    if (gCurrentCity != NULL) {
-        CityInfo* info = gCurrentCity->mInfo;
+    if (city != NULL) {
+        CityInfo* info = city->mInfo;
         gTextWriter.SetFont(*gSysFont);
         if (mSetupDate) {
             (this->*mSetupDate)();
@@ -1021,7 +1012,11 @@ void WeatherNormal::Draw() {
         nw4r::ut::Rect rect(mFlashX - halfWidth, mFlashY - halfHeight, mFlashX + halfWidth, mFlashY + halfHeight);
         SetDefaultGXState();
         SetOrthoProjection();
-        GXColor color = {255, 255, 255, mFlashAlpha};
+        GXColor color;
+        color.r = 255;
+        color.g = 255;
+        color.b = 255;
+        color.a = mFlashAlpha;
         DrawRect((Rect*)&rect, &color);
     }
 
@@ -1221,6 +1216,11 @@ void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
     }
 }
 
+// The 12-hour clock labels
+static const wchar_t* sHours12[12] = {
+    L"12", L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", L"10", L"11",
+};
+
 // "12:00 a.m.\n6:00 a.m."
 void WeatherNormal::DrawTimesUS(DayForecast* day, s32 hour) {
     DayForecast* d;
@@ -1395,6 +1395,12 @@ void WeatherNormal::DrawTimesDE(DayForecast* day, s32 hour) {
         PRINT_TIME(box, alpha, box->mX - offset);
     }
 }
+
+// The 24-hour clock labels
+static const wchar_t* sHours24[24] = {
+    L"00", L"01", L"02", L"03", L"04", L"05", L"06", L"07", L"08", L"09", L"10", L"11",
+    L"12", L"13", L"14", L"15", L"16", L"17", L"18", L"19", L"20", L"21", L"22", L"23",
+};
 
 // "De 00:00\n\xE0 06:00"
 void WeatherNormal::DrawTimesFR(DayForecast* day, s32 hour) {
