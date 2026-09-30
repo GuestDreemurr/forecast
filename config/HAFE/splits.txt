@@ -68,6 +68,22 @@ WeatherOther.cpp:
 	.sbss       start:0x80330A50 end:0x80330A58
 	.sdata2     start:0x80331A98 end:0x80331AC0
 
+WeatherToday.cpp:
+	.text       start:0x8001230C end:0x80012A1C
+	.ctors      start:0x80179254 end:0x80179258
+	.data       start:0x8019A1F8 end:0x8019A230
+	.bss        start:0x801D7170 end:0x801D7180
+	.sbss       start:0x80330A58 end:0x80330A60
+	.sdata2     start:0x80331AC0 end:0x80331AE0
+
+WeatherTomorrow.cpp:
+	.text       start:0x80012A1C end:0x8001312C
+	.ctors      start:0x80179258 end:0x8017925C
+	.data       start:0x8019A230 end:0x8019A268
+	.bss        start:0x801D7180 end:0x801D7190
+	.sbss       start:0x80330A60 end:0x80330A68
+	.sdata2     start:0x80331AE0 end:0x80331B00
+
 WeatherBase.cpp:
 	.text       start:0x8001C334 end:0x8001CA80
 	.data       start:0x8019AC70 end:0x8019AC90

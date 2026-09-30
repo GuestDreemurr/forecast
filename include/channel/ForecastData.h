@@ -152,6 +152,11 @@ struct CityForecast {
     u32 mMinutes;          // at 0x2C
 };
 
+// The today/tomorrow summary of a city
+struct CitySummary {
+    SummaryEntry* mEntry; // at 0x0
+};
+
 // A UV/laundry/pollen index and its description
 struct IndexInfo {
     IndexText* mIndex;    // at 0x0
@@ -165,7 +170,7 @@ public:
 
     CityInfo* mInfo;   // at 0x0
     CityForecast* mForecast; // at 0x4
-    void** mSummary;   // at 0x8
+    CitySummary* mSummary; // at 0x8
     ShortEntry** mNow; // at 0xC
     u8 mIsNight;       // at 0x10
     u8 mIsDay;         // at 0x11

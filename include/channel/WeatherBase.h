@@ -116,6 +116,42 @@ public:
     s32 mDay;                      // at 0x190, 0 = today, 1 = tomorrow
 };
 
+// d_weather_a_today.cpp: today's forecast panel (size 0x38C)
+class WeatherToday : public WeatherBaseDay {
+public:
+    typedef void (WeatherToday::*DrawFunc)(const s32& alpha);
+
+    WeatherToday(const Vec2& pos, void* arc, const Vec2& size, s32 type);
+    virtual ~WeatherToday() {}
+    virtual void Reset();
+    virtual void Draw();
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual BOOL IsEmpty();
+
+    void DrawForecast(const s32& alpha);
+    void DrawSummary(const s32& alpha);
+
+    DrawFunc mDrawFunc; // at 0x380
+};
+
+// d_weather_a_tomorrow.cpp: tomorrow's forecast panel (size 0x38C)
+class WeatherTomorrow : public WeatherBaseDay {
+public:
+    typedef void (WeatherTomorrow::*DrawFunc)(const s32& alpha);
+
+    WeatherTomorrow(const Vec2& pos, void* arc, const Vec2& size, s32 type);
+    virtual ~WeatherTomorrow() {}
+    virtual void Reset();
+    virtual void Draw();
+    virtual void SetPosition(const Vec2& pos, const f32& scale, const u8& visible, BOOL checkHover);
+    virtual BOOL IsEmpty();
+
+    void DrawForecast(const s32& alpha);
+    void DrawSummary(const s32& alpha);
+
+    DrawFunc mDrawFunc; // at 0x380
+};
+
 // d_weather.cpp: the current weather panel, from short.bin
 class WeatherNow : public WeatherBaseDay {
 public:
