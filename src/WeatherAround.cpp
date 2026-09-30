@@ -146,14 +146,10 @@ WeatherAround::WeatherAround(void* arc)
       mPageState(NULL), mDrawLabels(NULL), mZoomState(NULL), mTiltState(NULL), unkEC(NULL), mDrawLegend(NULL),
       mLabelSize(NULL), mPressPos(0.0f, 0.0f), mTitlePos(0.0f, 68.0f, 0.0f), mInputActive(FALSE), mNextPressed(FALSE), mActive(FALSE),
       mShowLegend(FALSE), mBlinking(TRUE), mHitIndex(-1), unk258(0x105), mSelected(-1), mPressIndex(-1),
-      mPointerIdle(0), mIdleTimer(0), mHoverTimer(0), mTempUnit(gTempUnit), mZoomOutAlpha(0), mHome(34.8f, 135.4f),
+      mPointerIdle(0), mIdleTimer(0), mHoverTimer(0), unk280(0), unk284(0), unk288(0), unk28C(0), mTempUnit(gTempUnit), mZoomOutAlpha(0), mHome(34.8f, 135.4f),
       mFontScale(3.0f), mSlideOffset(0.0f), mSlideMax(0.0f), mBlink(0.0f), mRotateAmount(0.0f), mFrame(0),
       unk2FC(0), unk2FE(0), mDay(0), mPhase(0), mZoomLevel(0), mPagePhase(0), mBlinkOn(FALSE), mAnimFrame(0),
       mBlinkDir(0), mDots(NULL) {
-    unk280[0] = 0;
-    unk280[1] = 0;
-    unk280[2] = 0;
-    unk280[3] = 0;
 
     for (s32 i = 0; i < 11; i++) {
         mBackBuckets[i] = NULL;
@@ -170,8 +166,7 @@ WeatherAround::WeatherAround(void* arc)
     GetTevColors(mZoomOutI0, &mZoomOutI0Color0, &mZoomOutI0Color1);
     mZoomOutI1 = mZoomOutButton->FindPane("zoom_outI1");
     GetTevColors(mZoomOutI1, &mZoomOutI1Color0, &mZoomOutI1Color1);
-    mZoomOutButton->mCalcCallback = ZoomOutCalcCallback;
-    mZoomOutButton->mCallbackArg = this;
+    mZoomOutButton->SetCalcCallback(ZoomOutCalcCallback, this);
     mRotAButton = mLayout->FindButton("rot_a");
     mRotBButton = mLayout->FindButton("rot_b");
     mResetButton = mLayout->FindButton("reset");
@@ -205,17 +200,19 @@ WeatherAround::WeatherAround(void* arc)
         TextBox* box = mTitles;
         const char** name = sTitleNames;
         const f32* titleScale = sTitleScales;
-        for (s32 i = 0; i < 3; i++, box++, name++, titleScale++) {
+        for (s32 i = 0; i < 3; i++, titleScale++, box++, name++) {
             box->mPane = mBeltLayout->FindButton(*name);
             if (box->mPane != NULL) {
                 Vec2F center = box->mPane->GetCenter();
                 box->mX = center.x;
-                box->mX = centerX + center.x * scaleX;
-                box->mY = centerY - center.y;
+                box->mY = center.y;
+                box->mX = centerX + box->mX * scaleX;
+                box->mY = centerY - box->mY;
                 LayoutButton* pane = box->mPane;
-                f32 h = __fabsf(pane->mTop - pane->mBottom);
-                box->mWidth = pane->mRight - pane->mLeft;
-                box->mHeight = h;
+                f32 h = pane->mTop - pane->mBottom;
+                f32 w = pane->mRight - pane->mLeft;
+                box->mWidth = w;
+                box->mHeight = __fabsf(h);
                 box->mScaleX = *titleScale;
                 box->mScaleY = *titleScale;
                 SET_COLOR(box->mColor, gColorWhite);

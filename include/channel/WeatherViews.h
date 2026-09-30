@@ -326,7 +326,10 @@ public:
     s32 mPointerIdle;                // at 0x274
     s32 mIdleTimer;                  // at 0x278
     s32 mHoverTimer;                 // at 0x27C
-    s32 unk280[4];                   // at 0x280
+    s32 unk280;                      // at 0x280
+    s32 unk284;                      // at 0x284
+    s32 unk288;                      // at 0x288
+    s32 unk28C;                      // at 0x28C
     s32 mTempUnit;                   // at 0x290
     s32 mZoomOutAlpha;               // at 0x294
     f32 mLabelScale;                 // at 0x298

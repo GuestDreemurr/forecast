@@ -79,6 +79,11 @@ public:
         return std::strcmp(mPane->mName, name) == 0;
     }
 
+    void SetCalcCallback(void (*callback)(void* arg), void* arg) {
+        mCalcCallback = callback;
+        mCallbackArg = arg;
+    }
+
     // Locked buttons ignore the pointer
     void Lock() {
         mLocked = TRUE;
@@ -130,7 +135,7 @@ public:
 // Material TEV colors 0 and 1 of the pane's own material
 void GetTevColors(nw4r::lyt::Pane* pane, GXColor* color0, GXColor* color1);
 void SetTevColors(nw4r::lyt::Pane* pane, const GXColor* color0, const GXColor* color1);
-u8 GetTevColor1Alpha(nw4r::lyt::Pane* pane);
+s16 GetTevColor1Alpha(nw4r::lyt::Pane* pane);
 
 // Linear interpolation from a to b as t goes from 0 to n
 s32 Lerp(s32 a, s32 b, s32 t, s32 n);
