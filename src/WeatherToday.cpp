@@ -54,11 +54,12 @@ void WeatherToday::SetPosition(const Vec2& pos, const f32& scale, const u8& visi
     WeatherBaseDay::SetPosition(pos, scale, visible, checkHover);
     mLayout->Calc();
 
+    City* city = gCurrentCity;
     mDrawFunc = NULL;
-    if (gCurrentCity != NULL) {
-        if (gCurrentCity->mForecast != NULL) {
+    if (city != NULL) {
+        if (city->mForecast != NULL) {
             mDrawFunc = &WeatherToday::DrawForecast;
-        } else if (gCurrentCity->mSummary != NULL) {
+        } else if (city->mSummary != NULL) {
             mDrawFunc = &WeatherToday::DrawSummary;
         }
     }
@@ -97,60 +98,52 @@ BOOL WeatherToday::IsEmpty() {
 
 void WeatherToday::DrawForecast(const s32& alpha) {
     CityForecast* forecast = gCurrentCity->mForecast;
-    if (gCurrentCity->mInfo == NULL || forecast == NULL) {
-        return;
-    }
+    if (gCurrentCity->mInfo != NULL && forecast != NULL) {
+        u32 code = forecast->mEntry->mDays[0].mWeather;
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (info != NULL) {
+            f32 scale = 1.0f;
+            Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
+            SetDefaultGXState();
+            SetOrthoProjection();
+            mWriter.SetFont(*gSysFont);
+            mWriter.SetDrawFlag(0x100);
+            mWriter.SetScale(scale);
+            mWriter.SetCharSpace(scale * gUnkSceneFloat);
+            mWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
+            mWriter.SetupGX();
 
-    u32 code = forecast->mEntry->mDays[0].mWeather;
-    WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-    if (info == NULL) {
-        return;
-    }
-
-    f32 scale = 1.0f;
-    Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
-    SetDefaultGXState();
-    SetOrthoProjection();
-    mWriter.SetFont(*gSysFont);
-    mWriter.SetDrawFlag(0x100);
-    mWriter.SetScale(scale);
-    mWriter.SetCharSpace(scale * gUnkSceneFloat);
-    mWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
-    mWriter.SetupGX();
-
-    if (gLanguage == 0) {
-        DrawDayJP(&forecast->mEntry->mDays[0], info, alpha, scale);
-    } else {
-        DrawDay(&forecast->mEntry->mDays[0], info, alpha, scale);
+            if (gLanguage == 0) {
+                DrawDayJP(&forecast->mEntry->mDays[0], info, alpha, scale);
+            } else {
+                DrawDay(&forecast->mEntry->mDays[0], info, alpha, scale);
+            }
+        }
     }
 }
 
 void WeatherToday::DrawSummary(const s32& alpha) {
     CitySummary* summary = gCurrentCity->mSummary;
-    if (gCurrentCity->mInfo == NULL || summary == NULL) {
-        return;
-    }
+    if (gCurrentCity->mInfo != NULL && summary != NULL) {
+        u32 code = summary->mEntry->mDays[0].mWeather;
+        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        if (info != NULL) {
+            f32 scale = 1.0f;
+            Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
+            SetDefaultGXState();
+            SetOrthoProjection();
+            mWriter.SetFont(*gSysFont);
+            mWriter.SetDrawFlag(0x100);
+            mWriter.SetScale(scale);
+            mWriter.SetCharSpace(scale * gUnkSceneFloat);
+            mWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
+            mWriter.SetupGX();
 
-    u32 code = summary->mEntry->mDays[0].mWeather;
-    WeatherInfo* info = gForecastData->FindWeatherInfo(code);
-    if (info == NULL) {
-        return;
-    }
-
-    f32 scale = 1.0f;
-    Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
-    SetDefaultGXState();
-    SetOrthoProjection();
-    mWriter.SetFont(*gSysFont);
-    mWriter.SetDrawFlag(0x100);
-    mWriter.SetScale(scale);
-    mWriter.SetCharSpace(scale * gUnkSceneFloat);
-    mWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
-    mWriter.SetupGX();
-
-    if (gLanguage == 0) {
-        DrawDayJP(&summary->mEntry->mDays[0], info, alpha, scale);
-    } else {
-        DrawDay(&summary->mEntry->mDays[0], info, alpha, scale);
+            if (gLanguage == 0) {
+                DrawDayJP(&summary->mEntry->mDays[0], info, alpha, scale);
+            } else {
+                DrawDay(&summary->mEntry->mDays[0], info, alpha, scale);
+            }
+        }
     }
 }
