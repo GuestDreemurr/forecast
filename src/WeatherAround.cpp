@@ -448,7 +448,8 @@ void WeatherAround::Calc() {
     UpdateBlink();
 }
 
-static Vec2 sBackSpeed = {0.0f, 0.0f};
+static f32 sBackSpeedX = 0.0f;
+static f32 sBackSpeedY = 0.0f;
 
 void WeatherAround::CalcActive() {
     mInputActive = TRUE;
@@ -478,7 +479,9 @@ void WeatherAround::CalcActive() {
 
     if (CheckButtonPressed("back", WPAD_BUTTON_A) >= 0) {
         PlaySE(38);
-        gSimpleGlobe->mSpeed = sBackSpeed;
+        SimpleGlobe* globe = gSimpleGlobe;
+        globe->mSpeed.x = sBackSpeedX;
+        globe->mSpeed.y = sBackSpeedY;
         gSimpleGlobe->mSpinning = FALSE;
         gSettingResult = 6;
         gCurrentCity = FindCity(gCurrentCityId);
@@ -832,7 +835,8 @@ static inline f32 DistSq(const A& a, const B& b) {
     return d.x * d.x + d.y * d.y;
 }
 
-static Vec2 sSelectSpeed = {0.0f, 0.0f};
+static f32 sSelectSpeedX = 0.0f;
+static f32 sSelectSpeedY = 0.0f;
 
 // The pointer that just let go of A near where it was pressed
 inline s32 WeatherAround::FindReleasedTouch() {
@@ -955,7 +959,9 @@ void WeatherAround::UpdateLabels() {
             mCanSelect = FALSE;
             if (gLastSettingResult == 3) {
                 PlaySE(37);
-                gSimpleGlobe->mSpeed = sSelectSpeed;
+                SimpleGlobe* globe = gSimpleGlobe;
+                globe->mSpeed.x = sSelectSpeedX;
+                globe->mSpeed.y = sSelectSpeedY;
                 gSimpleGlobe->mSpinning = FALSE;
                 gSettingResult = 2;
                 gCityPos.x = (*label)->mPos.x;
