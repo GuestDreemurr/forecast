@@ -80,8 +80,6 @@ public:
     Vec2F GetIconPos();
 
     void PrintBox(TextBox* box, const wchar_t* text, u8 alpha);
-    void DrawTempCInline(s32 temp, u8 alpha);
-    void FormatWindInline(u8 dir, u8 speed);
 
     ButtonGroup* mNoServiceLayout;  // at 0xA0, life_no_service.brlyt
     LayoutButton* mNoServiceText;   // at 0xA4

@@ -207,7 +207,7 @@ void WeatherBaseDay::Setup(void* arc) {
         SetColor(box->mShadowColor, gColorDarkGray);
     }
 
-    f32 margin = gWidescreen ? 36 : 28;
+    s32 margin = gWidescreen ? 36 : 28;
     mIconBox = &mBoxes[4];
     mBoxes[1].mX = GetScreenWidth() - margin;
     mBoxes[1].mWidth = mBoxes[1].mX - (20.0f + (mBoxes[0].mX + 0.5f * mBoxes[0].mWidth));
@@ -271,24 +271,25 @@ static inline void FormatTemp(s32 temp) {
     }
 }
 
-inline void WeatherBaseDay::DrawTempCInline(s32 temp, u8 alpha) {
-    wchar_t* buf = sTextBuf;
-    if (temp <= -128) {
-        wcscpy(buf, L"--");
-    } else {
-        FormatNumber(temp, buf, 4, FALSE);
+#define DRAW_TEMP_C(temp, alpha) \
+    { \
+        wchar_t* buf = sTextBuf; \
+        if (temp <= -128) { \
+            wcscpy(buf, L"--"); \
+        } else { \
+            FormatNumber(temp, buf, 4, FALSE); \
+        } \
+     \
+        wcscat(sTextBuf, L"\xFF9F" L"C"); \
+        Vec2F pos(mBoxes[2].mX + mPos.x, mBoxes[2].mY - mPos.y); \
+        mBoxes[2].mColor.a = alpha; \
+        mBoxes[2].mShadowColor.a = alpha; \
+        DrawTempCentered(sTextBuf, &pos, mBoxes[2].mScaleX, mBoxes[2].mScaleY, &mBoxes[2].mColor, \
+                         &mBoxes[2].mShadowColor); \
     }
 
-    wcscat(sTextBuf, L"\xFF9F" L"C");
-    Vec2F pos(mBoxes[2].mX + mPos.x, mBoxes[2].mY - mPos.y);
-    mBoxes[2].mColor.a = alpha;
-    mBoxes[2].mShadowColor.a = alpha;
-    DrawTempCentered(sTextBuf, &pos, mBoxes[2].mScaleX, mBoxes[2].mScaleY, &mBoxes[2].mColor,
-                     &mBoxes[2].mShadowColor);
-}
-
 void WeatherBaseDay::DrawTempC(s32 temp, u8 alpha) {
-    DrawTempCInline(temp, alpha);
+    DRAW_TEMP_C(temp, alpha);
 }
 
 void WeatherBaseDay::DrawTemp(s32 temp, u8 alpha) {
@@ -528,91 +529,92 @@ void WeatherBaseDay::DrawJP(DayForecast* day, WeatherInfo* weather, u8 alpha, f3
     }
 }
 
-inline void WeatherBaseDay::FormatWindInline(u8 dir, u8 speed) {
-    wchar_t* p;
-
-    switch (gLanguage) {
-    case 6:
-        wcscpy(sTextBuf, GetWindDirName(dir));
-        if (dir != 0) {
-            wcscat(sTextBuf, L", ");
-            p = &sTextBuf[wcslen(sTextBuf)];
-            if (speed != 0xFF) {
-                FormatNumber(speed, p, 4, FALSE);
-            } else {
-                wcscat(sTextBuf, L"--");
-            }
-            wcscat(sTextBuf, L" ");
-            wcscat(sTextBuf, GetWindUnitName());
-        }
-        break;
-    case 5:
-        if (dir == 0) {
-            wcscpy(sTextBuf, GetWindDirName(dir));
-        } else {
-            wcscpy(sTextBuf, L"Vento da ");
-            wcscat(sTextBuf, GetWindDirName(dir));
-            wcscat(sTextBuf, L", ");
-            p = &sTextBuf[wcslen(sTextBuf)];
-            if (speed != 0xFF) {
-                FormatNumber(speed, p, 4, FALSE);
-            } else {
-                wcscat(sTextBuf, L"--");
-            }
-            wcscat(sTextBuf, L" ");
-            wcscat(sTextBuf, GetWindUnitName());
-        }
-        break;
-    case 4:
-        wcscpy(sTextBuf, GetWindDirName(dir));
-        if (dir != 0) {
-            wcscat(sTextBuf, L", ");
-            p = &sTextBuf[wcslen(sTextBuf)];
-            if (speed != 0xFF) {
-                FormatNumber(speed, p, 4, FALSE);
-            } else {
-                wcscat(sTextBuf, L"--");
-            }
-            wcscat(sTextBuf, L" ");
-            wcscat(sTextBuf, GetWindUnitName());
-        }
-        break;
-    case 3:
-        wcscpy(sTextBuf, GetWindDirName(dir));
-        if (dir != 0) {
-            wcscat(sTextBuf, L", ");
-            p = &sTextBuf[wcslen(sTextBuf)];
-            if (speed != 0xFF) {
-                FormatNumber(speed, p, 4, FALSE);
-            } else {
-                wcscat(sTextBuf, L"--");
-            }
-            wcscat(sTextBuf, L" ");
-            wcscat(sTextBuf, GetWindUnitName());
-        }
-        break;
-    case 2:
-        if (dir == 0) {
-            wcscpy(sTextBuf, GetWindDirName(dir));
-        } else {
-            wcscpy(sTextBuf, L"Wind aus ");
-            wcscat(sTextBuf, GetWindDirName(dir));
-            wcscat(sTextBuf, L", ");
-            p = &sTextBuf[wcslen(sTextBuf)];
-            if (speed != 0xFF) {
-                FormatNumber(speed, p, 4, FALSE);
-            } else {
-                wcscat(sTextBuf, L"--");
-            }
-            wcscat(sTextBuf, L" ");
-            wcscat(sTextBuf, GetWindUnitName());
-        }
-        break;
-    default:
-        FormatWindDefault(dir, speed);
-        break;
+#define FORMAT_WIND(dir, speed) \
+    { \
+        wchar_t* p; \
+     \
+        switch (gLanguage) { \
+        case 6: \
+            wcscpy(sTextBuf, GetWindDirName(dir)); \
+            if (dir != 0) { \
+                wcscat(sTextBuf, L", "); \
+                p = &sTextBuf[wcslen(sTextBuf)]; \
+                if (speed != 0xFF) { \
+                    FormatNumber(speed, p, 4, FALSE); \
+                } else { \
+                    wcscat(sTextBuf, L"--"); \
+                } \
+                wcscat(sTextBuf, L" "); \
+                wcscat(sTextBuf, GetWindUnitName()); \
+            } \
+            break; \
+        case 5: \
+            if (dir == 0) { \
+                wcscpy(sTextBuf, GetWindDirName(dir)); \
+            } else { \
+                wcscpy(sTextBuf, L"Vento da "); \
+                wcscat(sTextBuf, GetWindDirName(dir)); \
+                wcscat(sTextBuf, L", "); \
+                p = &sTextBuf[wcslen(sTextBuf)]; \
+                if (speed != 0xFF) { \
+                    FormatNumber(speed, p, 4, FALSE); \
+                } else { \
+                    wcscat(sTextBuf, L"--"); \
+                } \
+                wcscat(sTextBuf, L" "); \
+                wcscat(sTextBuf, GetWindUnitName()); \
+            } \
+            break; \
+        case 4: \
+            wcscpy(sTextBuf, GetWindDirName(dir)); \
+            if (dir != 0) { \
+                wcscat(sTextBuf, L", "); \
+                p = &sTextBuf[wcslen(sTextBuf)]; \
+                if (speed != 0xFF) { \
+                    FormatNumber(speed, p, 4, FALSE); \
+                } else { \
+                    wcscat(sTextBuf, L"--"); \
+                } \
+                wcscat(sTextBuf, L" "); \
+                wcscat(sTextBuf, GetWindUnitName()); \
+            } \
+            break; \
+        case 3: \
+            wcscpy(sTextBuf, GetWindDirName(dir)); \
+            if (dir != 0) { \
+                wcscat(sTextBuf, L", "); \
+                p = &sTextBuf[wcslen(sTextBuf)]; \
+                if (speed != 0xFF) { \
+                    FormatNumber(speed, p, 4, FALSE); \
+                } else { \
+                    wcscat(sTextBuf, L"--"); \
+                } \
+                wcscat(sTextBuf, L" "); \
+                wcscat(sTextBuf, GetWindUnitName()); \
+            } \
+            break; \
+        case 2: \
+            if (dir == 0) { \
+                wcscpy(sTextBuf, GetWindDirName(dir)); \
+            } else { \
+                wcscpy(sTextBuf, L"Wind aus "); \
+                wcscat(sTextBuf, GetWindDirName(dir)); \
+                wcscat(sTextBuf, L", "); \
+                p = &sTextBuf[wcslen(sTextBuf)]; \
+                if (speed != 0xFF) { \
+                    FormatNumber(speed, p, 4, FALSE); \
+                } else { \
+                    wcscat(sTextBuf, L"--"); \
+                } \
+                wcscat(sTextBuf, L" "); \
+                wcscat(sTextBuf, GetWindUnitName()); \
+            } \
+            break; \
+        default: \
+            FormatWindDefault(dir, speed); \
+            break; \
+        } \
     }
-}
 
 void WeatherBaseDay::Draw(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 scale) {
     Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
@@ -631,7 +633,7 @@ void WeatherBaseDay::Draw(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 
     u8 dir = day->mWindDirection;
     if (dir != 0xFF) {
         u8 speed = gWindUnit == 0 ? day->mWindSpeedMph : day->mWindSpeedKmh;
-        FormatWindInline(dir, speed);
+        FORMAT_WIND(dir, speed);
         DrawTextFit(&mBoxes[1], sTextBuf, alpha);
     }
 
@@ -639,14 +641,14 @@ void WeatherBaseDay::Draw(DayForecast* day, WeatherInfo* weather, u8 alpha, f32 
     SetOrthoProjection();
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_C2, GX_CC_TEXC, GX_CC_C1, GX_CC_C2);
     if (gTempUnit == 0) {
-        DrawTempCInline(day->mMaxC, alpha);
+        DRAW_TEMP_C(day->mMaxC, alpha);
     } else {
         DrawTemp(day->mMaxF, alpha);
     }
 }
 
 void WeatherBaseDay::FormatWind(u8 dir, u8 speed) {
-    FormatWindInline(dir, speed);
+    FORMAT_WIND(dir, speed);
 }
 
 void WeatherBaseDay::FormatWindDefault(u8 dir, u8 speed) {
