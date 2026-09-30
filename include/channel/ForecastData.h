@@ -11,7 +11,7 @@ struct ShortEntry;
 struct CityInfo {
     CityInfo();
     ~CityInfo();
-    s32 Setup(void* base, PlaceEntry* entry, u32 index);
+    void Setup(void* base, PlaceEntry* entry, u32 index);
 
     u32 GetId() const {
         return *mId;

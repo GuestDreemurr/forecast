@@ -145,6 +145,9 @@ WeatherNormal.cpp:
 	.sbss       start:0x80330AA0 end:0x80330AA8
 	.sdata2     start:0x80331CA8 end:0x80331D20
 
+ForecastNow.cpp:
+	.text       start:0x80027C84 end:0x80027DA8
+
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274
@@ -153,6 +156,9 @@ WeatherSetting.cpp:
 	.sdata      start:0x803300E0 end:0x803300F8
 	.sbss       start:0x80330AA8 end:0x80330AB8
 	.sdata2     start:0x80331D20 end:0x80331D38
+
+ForecastSummary.cpp:
+	.text       start:0x800289AC end:0x80028AA0
 
 Region.cpp:
 	.text       start:0x8002C0CC end:0x8002C164
