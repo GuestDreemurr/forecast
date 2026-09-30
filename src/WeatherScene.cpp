@@ -703,7 +703,7 @@ BOOL WeatherScene::StateNormal() {
             case 5:
                 mStatePhase = 4;
                 gSettingResult = 3;
-                mNormal->mDrawFunc = &WeatherNormal::DrawCity;
+                mNormal->mCalcFunc = &WeatherNormal::DrawCity;
                 gFade2->SetBaseColor(0, 0, 0, 255);
                 gFade2->FadeOut(20);
                 mLogoAlphaStep = 12;
@@ -713,12 +713,12 @@ BOOL WeatherScene::StateNormal() {
             case 4:
                 mStatePhase = 3;
                 gFade->FadeOut(25);
-                mNormal->mDrawFunc = &WeatherNormal::DrawCity;
+                mNormal->mCalcFunc = &WeatherNormal::DrawCity;
                 break;
             case 3:
                 mWait = 12;
                 mStatePhase++;
-                mNormal->mDrawFunc = &WeatherNormal::DrawCity;
+                mNormal->mCalcFunc = &WeatherNormal::DrawCity;
                 StartAroundSounds();
                 break;
             }

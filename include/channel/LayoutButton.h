@@ -29,6 +29,8 @@ struct ButtonPane {
     f32 mTransZ;              // at 0x34
     u8 unk38[0xB4 - 0x38];    // at 0x38
     char mName[17];           // at 0xB4
+    u8 unkC5[0xCF - 0xC5];    // at 0xC5
+    u8 mFlag;                 // at 0xCF, bit 2: scale the position on widescreen
 };
 
 // A clickable layout pane
@@ -49,6 +51,8 @@ public:
     void SetPaneColor(const char* name, const nw4r::ut::Color& color, BOOL recursive);
     void Hide();
     void SetChildVisible(const char* name, u8 visible);
+    void SetChildAlpha(const char* name, u8 alpha);
+    void SetChildAlphaRecursive(nw4r::lyt::Pane* pane, u8 alpha);
     nw4r::lyt::Pane* FindPane(const char* name);
     void ShowLanguagePane(const char* prefix);
 

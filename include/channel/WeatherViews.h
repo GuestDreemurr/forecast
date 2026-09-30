@@ -9,6 +9,7 @@
 #include <channel/Vec2F.h>
 #include <channel/Vector2.h>
 #include <channel/WeatherBase.h>
+#include <channel/Color.h>
 
 class ForecastData;
 class CityLabel;
@@ -358,30 +359,181 @@ public:
 };
 
 // d_weather_normal.cpp: the main forecast display (size 0x964)
+struct DayForecast;
+
+// The date shown on one of the two belts at the top of the screen (size 0x12C)
+struct BeltText {
+    wchar_t mText[0x80];        // at 0x0
+    nw4r::ut::Rect mRect;       // at 0x100
+    u8 mHovered;                // at 0x110
+    f32 mMaxWidth;              // at 0x114
+    f32 mMaxHeight;             // at 0x118
+    f32 mX;                     // at 0x11C
+    f32 mY;                     // at 0x120
+    f32 mScaleX;                // at 0x124
+    f32 mScaleY;                // at 0x128
+
+    BeltText() {
+        mHovered = FALSE;
+    }
+};
+
+// One line of the city name (size 0x104)
+struct CityNameLine {
+    f32 mScale;                 // at 0x0
+    wchar_t mText[0x80];        // at 0x4
+};
+
 class WeatherNormal {
 public:
-    typedef void (WeatherNormal::*DrawFunc)();
+    typedef void (WeatherNormal::*Func)();
     typedef BOOL (WeatherNormal::*StateFunc)(s32 arg);
+    typedef void (WeatherNormal::*DateFunc)(u32 minutes);
+    typedef void (WeatherNormal::*TimesFunc)(DayForecast* day, s32 hour);
 
     WeatherNormal(void* arc);
     ~WeatherNormal();
 
+    void SetupBoxesJP();
+    void SetupBoxes();
     void Reset();
     void Calc();
-    void Draw();
-    void SetCity(s32 arg);
     void Open();
     void Show();
-    BOOL ChangeState(StateFunc state, s32 arg);
+    void CalcActive();
     void DrawCity();
+    void SetCity(s32 arg);
+    void SetupDateJP();
+    void SetupDate();
+    void FormatDateUS(u32 minutes);
+    void FormatDateEU(u32 minutes);
+    void FormatDateDE(u32 minutes);
+    void FormatDateCA(u32 minutes);
+    void FormatDateFR(u32 minutes);
+    void FormatDateES(u32 minutes);
+    void FormatDateIT(u32 minutes);
+    void FormatDateNL(u32 minutes);
+    void Draw();
+    void DrawTimes();
+    void DrawTimesJP(DayForecast* day, s32 hour);
+    void DrawTimesUS(DayForecast* day, s32 hour);
+    void DrawTimesEU(DayForecast* day, s32 hour);
+    void DrawTimesDE(DayForecast* day, s32 hour);
+    void DrawTimesFR(DayForecast* day, s32 hour);
+    void DrawTimesES(DayForecast* day, s32 hour);
+    void DrawTimesIT(DayForecast* day, s32 hour);
+    void DrawTimesNL(DayForecast* day, s32 hour);
+    void UpdateArrows();
+    void UpdateBelt();
+    BOOL ChangeState(StateFunc state, s32 arg);
+    BOOL StateScroll(s32 arg);
+    BOOL StateNormal(s32 arg);
+    void UpdateBeltTextJP();
+    void UpdateBeltText();
+    void CycleBelt(s32 state);
+    void UpdateWeatherSound();
+    BOOL IsDetailPressed();
+    BOOL StateToAround(s32 arg);
+    BOOL StateAroundWait(s32 arg);
     BOOL StateOpenAround(s32 arg);
     BOOL StateCloseAround(s32 arg);
+    void UpdateBeltHover();
+    void SetupBeltJP();
+    void SetupBelt();
+    void StopScroll();
+    void ScrollNames();
+    BOOL IsBackPressed();
 
-    u8 unk0[0x15C];        // at 0x0
-    DrawFunc mDrawFunc;    // at 0x15C
-    u8 unk168[0x7F9 - 0x168];
-    u8 mActive;            // at 0x7F9
-    u8 unk7FA[0x964 - 0x7FA];
+    ButtonGroup* mLayout;          // at 0x0, forecast.brlyt
+    ButtonGroup* mBaseLayout;      // at 0x4, base.brlyt
+    ButtonGroup* mBeltLayout;      // at 0x8, base_belt.brlyt
+    ButtonGroup* mTimeLayout;      // at 0xC, day_6h_nJP/nWW.brlyt
+    LayoutButton* mAroundButton;   // at 0x10
+    LayoutButton* mSetButton;      // at 0x14
+    LayoutButton* mBackButton;     // at 0x18
+    LayoutButton* mUpButton;       // at 0x1C
+    LayoutButton* mDownButton;     // at 0x20
+    WeatherBase* mPages[5];        // at 0x24
+    u8 unk38[0x3C - 0x38];         // at 0x38
+    TextBox mBoxes[8];             // at 0x3C, the 6-hour forecast icons and times
+    Func mCalcFunc;                // at 0x15C
+    StateFunc mState;              // at 0x168
+    Func unk174;                   // at 0x174
+    Func mSetupDate;               // at 0x180
+    Func mSetupBelt;               // at 0x18C
+    Func mUpdateBeltText;          // at 0x198
+    DateFunc mFormatDate;          // at 0x1A4
+    Func mScrollState;             // at 0x1B0
+    TimesFunc mDrawTimes;          // at 0x1BC
+    BeltText mBelt[2];             // at 0x1C8
+    CityNameLine mNames[3];        // at 0x420
+    f32 mPageX;                    // at 0x72C
+    f32 mPageY;                    // at 0x730
+    f32 unk734;                    // at 0x734
+    f32 unk738;                    // at 0x738
+    f32 unk73C;                    // at 0x73C
+    Vector2 mPagePos[5];           // at 0x740
+    f32 mFlashX;                   // at 0x768
+    f32 mFlashY;                   // at 0x76C
+    f32 mZoomX;                    // at 0x770
+    f32 mZoomY;                    // at 0x774
+    f32 mDateX;                    // at 0x778
+    f32 mDateY;                    // at 0x77C
+    f32 mDateWidth;                // at 0x780
+    f32 mDateHeight;               // at 0x784
+    f32 mDateScaleX;               // at 0x788
+    f32 mDateScaleY;               // at 0x78C
+    nw4r::ut::Rect mCityRect;      // at 0x790
+    nw4r::ut::Rect mZoomRect;      // at 0x7A0
+    Color mZoomColors[4];          // at 0x7B0
+    f32 mWideOffset;               // at 0x7C0
+    f32 unk7C4;                    // at 0x7C4
+    f32 unk7C8;                    // at 0x7C8
+    f32 unk7CC;                    // at 0x7CC
+    f32 mAlpha;                    // at 0x7D0
+    f32 mNameScaleY;               // at 0x7D4
+    f32 mNameScroll;               // at 0x7D8
+    f32 mTimesAlpha;               // at 0x7DC
+    f32 mMoveX;                    // at 0x7E0
+    f32 mMoveY;                    // at 0x7E4
+    f32 mMoveX2;                   // at 0x7E8
+    f32 mMoveY2;                   // at 0x7EC
+    u8 mPageVisible[5];            // at 0x7F0
+    u8 mFlash;                     // at 0x7F5
+    u8 mShowZoom;                  // at 0x7F6
+    u8 mUpPressed;                 // at 0x7F7
+    u8 mDownPressed;               // at 0x7F8
+    u8 mActive;                    // at 0x7F9
+    u8 mZoomed;                    // at 0x7FA
+    u8 mSoundEnabled;              // at 0x7FB
+    u8 unk7FC;                     // at 0x7FC
+    s32 mPhase;                    // at 0x800
+    s32 mFlashAlpha;               // at 0x804
+    s32 mZoomAlpha;                // at 0x808
+    s32 mDateType;                 // at 0x80C, 0 = forecast, 1 = summary
+    s32 mBeltAlpha;                // at 0x810
+    s32 mBeltTarget;               // at 0x814
+    s32 unk818;                    // at 0x818
+    s32 mDateAlpha;                // at 0x81C
+    s32 mDateTarget;               // at 0x820
+    s32 mBeltTimer;                // at 0x824
+    s32 mBeltPhase;                // at 0x828
+    s32 mBeltState;                // at 0x82C
+    s32 mTodayDay;                 // at 0x830
+    s32 mTomorrowDay;              // at 0x834
+    s32 mNowDay;                   // at 0x838
+    s32 mForecastDay;              // at 0x83C
+    s32 mForecastDay2;             // at 0x840
+    s32 mNumNames;                 // at 0x844
+    s32 mScrollPhase;              // at 0x848
+    s32 mNameIndex;                // at 0x84C
+    s32 mScrollTimer;              // at 0x850
+    s32 mAnimTimer;                // at 0x854
+    s32 unk858;                    // at 0x858
+    wchar_t mDateText[0x80];       // at 0x85C
+    u16 mNowIcon;                  // at 0x95C
+    u16 mTodayIcon;                // at 0x95E
+    u16 mTomorrowIcon;             // at 0x960
 };
 
 #endif
