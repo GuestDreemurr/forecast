@@ -22,8 +22,8 @@ struct GlobeView {
     u8 unkA0[0xA4 - 0xA0];     // at 0xA0
     f32 mRotation;             // at 0xA4
     u8 unkA8[0xC0 - 0xA8];     // at 0xA8
-    s32 mResetting;            // at 0xC0
-    u8 unkC4[0xD4 - 0xC4];     // at 0xC4
+    u8 mResetting;             // at 0xC0
+    u8 unkC1[0xD4 - 0xC1];     // at 0xC1
     f32 mZoom;                 // at 0xD4
 };
 

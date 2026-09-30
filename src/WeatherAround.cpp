@@ -245,15 +245,15 @@ WeatherAround::WeatherAround(void* arc)
         (this->*mState)();
     }
     {
-        Func state = &WeatherAround::StatePage;
+        PageStateFunc state = &WeatherAround::StatePage;
         if (mPageState) {
             mPagePhase = -1;
-            (this->*mPageState)();
+            (this->*mPageState)(0);
         }
         mPageState = state;
         mPagePhase = 0;
         if (mPageState) {
-            (this->*mPageState)();
+            (this->*mPageState)(0);
         }
     }
 
@@ -485,7 +485,9 @@ void WeatherAround::CalcActive() {
         gSimpleGlobe->mSpinning = FALSE;
         gSettingResult = 6;
         gCurrentCity = FindCity(gCurrentCityId);
-        mLayout->FindButton("back")->mPressed = TRUE;
+        LayoutButton* back = mLayout->FindButton("back");
+        back->mPressed = TRUE;
+        return;
     }
 
     if (CheckButtonHeld("zoom_out", WPAD_BUTTON_A) >= 0) {
@@ -538,18 +540,22 @@ void WeatherAround::CalcActive() {
     }
 
     if (mPageState) {
-        (this->*mPageState)();
+        (this->*mPageState)(0);
     }
     if (!reset && mState) {
         (this->*mState)();
     }
 
-    gSimpleGlobe->UpdateRotation(mHitIndex >= 0 ? FALSE : TRUE);
+    gSimpleGlobe->UpdateRotation(mHitIndex >= 0);
     CalcGlobe();
 
+    f32 y;
+    f32 x;
+    f32 top = 63.0f;
+    f32 bottom = 393.0f;
     for (s32 i = 0; i < 4; i++) {
-        f32 x = gCursorX[i];
-        f32 y = gCursorY[i];
+        y = gCursorY[i];
+        x = gCursorX[i];
         if (InRect(mHitIndex, mHitRect, x, y)) {
             mHovering[i] = TRUE;
         }
@@ -558,7 +564,7 @@ void WeatherAround::CalcActive() {
             gCursorState[i] = 2;
         } else if (mHovering[i] == TRUE) {
             gCursorState[i] = 3;
-        } else if (pointerY <= 63.0f || pointerY > 393.0f) {
+        } else if (pointerY <= top || pointerY > bottom) {
             gCursorState[i] = 0;
         } else {
             gCursorState[i] = 1;
@@ -1253,7 +1259,7 @@ void WeatherAround::UpdateTouch() {
         mLabelSize = p->mSize;                                                                               \
     }
 
-void WeatherAround::StatePage() {
+void WeatherAround::StatePage(s32 arg) {
     switch (mPagePhase) {
     case 0:
         mPagePhase++;

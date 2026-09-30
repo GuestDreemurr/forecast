@@ -212,6 +212,7 @@ class WeatherAround {
 public:
     typedef void (WeatherAround::*Func)();
     typedef BOOL (WeatherAround::*StateFunc)();
+    typedef void (WeatherAround::*PageStateFunc)(s32 arg);
     typedef Vec2F (WeatherAround::*SizeFunc)(CityLabel* label);
 
     // One page of the forecast shown on the labels
@@ -249,7 +250,7 @@ public:
     void UpdateDrag();
     BOOL CheckOverlap(CityLabel* a, CityLabel* b);
     void UpdateTouch();
-    void StatePage();
+    void StatePage(s32 arg);
     void SetupIconsJP();
     void SetupTempDetailJP();
     void SetupTempJP();
@@ -290,7 +291,7 @@ public:
     nw4r::lyt::Pane* mZoomOutI1;     // at 0xA0
     Func mCalcFunc;                  // at 0xA4
     StateFunc mState;                // at 0xB0
-    Func mPageState;                 // at 0xBC
+    PageStateFunc mPageState;        // at 0xBC
     Func mDrawLabels;                // at 0xC8
     Func mZoomState;                 // at 0xD4
     Func mTiltState;                 // at 0xE0
