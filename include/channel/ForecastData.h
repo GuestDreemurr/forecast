@@ -26,17 +26,19 @@ struct CityInfo {
 };
 
 // forecast.bin header (size 0x58)
+// credits: https://github.com/RiiConnect24/Kaitai-Files/blob/master/Kaitais/forecast_file.ksy
 struct ForecastHeader {
     u32 mVersion;             // at 0x0
     u32 mSize;                // at 0x4
     u32 mCRC;                 // at 0x8, over everything after this field
-    u8 unkC[0x10 - 0xC];      // at 0xC
-    u32 mTime;                // at 0x10, minutes since 2000
-    u32 unk14;                // at 0x14
+    u32 mOpenTime;            // at 0xC, minutes since 2000
+    u32 mTime;                // at 0x10, closing time, minutes since 2000
+    u8 mCountry;              // at 0x14
+    u8 unk15[0x18 - 0x15];    // at 0x15
     u8 mLanguage;             // at 0x18
-    u8 mUnitType;             // at 0x19, 1 = metric, 2 = imperial
+    u8 mUnitType;             // at 0x19, 0 = Japan, 1 = Fahrenheit, 2 = Celsius
     u8 unk1A;                 // at 0x1A
-    u8 unk1B;                 // at 0x1B
+    u8 mPadding;              // at 0x1B
     u32 mMessageOffset;       // at 0x1C
     u32 mNumForecasts;        // at 0x20
     u32 mForecastOffset;      // at 0x24
@@ -55,13 +57,14 @@ struct ForecastHeader {
 };
 
 // short.bin header
+// credits: https://github.com/RiiConnect24/Kaitai-Files/blob/master/Kaitais/forecast_file_short.ksy
 struct ShortHeader {
     u32 mVersion;          // at 0x0
     u32 mSize;             // at 0x4
     u32 mCRC;              // at 0x8
-    u8 unkC[0x10 - 0xC];   // at 0xC
+    u8 mOpenTime;          // at 0xC
     u32 mTime;             // at 0x10
-    u32 unk14;             // at 0x14
+    u32 mCountry;          // at 0x14
     u8 mLanguage;          // at 0x18
     u8 unk19[0x1C - 0x19]; // at 0x19
     u32 mNumEntries;       // at 0x1C
