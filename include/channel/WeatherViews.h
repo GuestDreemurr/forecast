@@ -135,7 +135,8 @@ struct AddressEntry {
 // d_weather_address.cpp: area/city picker (size 0x160)
 class WeatherAddress {
 public:
-    typedef void (WeatherAddress::*StateFunc)(s32 arg);
+    // The state functions return nothing, but the pointer type returns BOOL (mangled _il)
+    typedef BOOL (WeatherAddress::*StateFunc)(s32 arg);
     typedef void (WeatherAddress::*DrawFunc)();
     typedef void (WeatherAddress::*ScrollFunc)();
 
@@ -155,6 +156,11 @@ public:
     void ScrollNormal();
     void ScrollDrag();
     void ChangeState(StateFunc state, s32 arg);
+
+    void Close() {
+        ChangeState((StateFunc)&WeatherAddress::StateClose, 0);
+    }
+
     BOOL UpdateCityList();
     BOOL UpdateAreaList();
     void StateCity(s32 arg);
@@ -426,6 +432,15 @@ public:
     void UpdateArrows();
     void UpdateBelt();
     BOOL ChangeState(StateFunc state, s32 arg);
+
+    void OpenAround() {
+        ChangeState(&WeatherNormal::StateOpenAround, 0);
+    }
+
+    void CloseAround() {
+        ChangeState(&WeatherNormal::StateCloseAround, 0);
+    }
+
     void SetState(StateFunc state);
     BOOL StateScroll(s32 arg);
     BOOL StateNormal(s32 arg);

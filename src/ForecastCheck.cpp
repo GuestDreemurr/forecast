@@ -41,15 +41,19 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
     OSCalendarTime time;
 
     if (header != NULL) {
-        if ((u32)header & 3) {
-            *forecastResult = -1;
-            *shortResult = 0;
-            return FALSE;
+        if (((u32)header & 3) == 0) {
+            goto headerAligned;
         }
+
+        *forecastResult = -1;
+        *shortResult = 0;
+        return FALSE;
+
+    headerAligned:
 
         forecasts = (ForecastEntry*)((u8*)header + header->mForecastOffset);
         if (((u32)forecasts & 3) == 0) {
-            forecasts = forecasts;
+            forecasts = (ForecastEntry*)((u8*)header + header->mForecastOffset);
         }
         if ((s32)forecasts & 3) {
             err = -1;
@@ -70,11 +74,15 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
     }
 
     if (shortHeader != NULL) {
-        if ((u32)shortHeader & 3) {
-            *forecastResult = err;
-            *shortResult = -1;
-            return FALSE;
+        if (((u32)shortHeader & 3) == 0) {
+            goto shortAligned;
         }
+
+        *forecastResult = err;
+        *shortResult = -1;
+        return FALSE;
+
+    shortAligned:
 
         GET_TABLE(shorts, ShortEntry, shortHeader, shortHeader->mEntryOffset, shortErr);
     }
@@ -417,7 +425,7 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
         return FALSE;
     }
 
-    for (s32 i = 0; i < shortHeader->mNumEntries; i++) {
+    for (s32 i = 0; i < *(u32*)&shortHeader->mNumEntries; i++) {
         s32 count = 0;
         for (u32 j = 0; j < header->mNumPlaces; j++) {
             if (shorts[i].mId == places[j].mId) {
@@ -432,7 +440,7 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
         if (shorts[i].mWeather != 0xFFFF) {
             BOOL found = FALSE;
             for (u32 j = 0; j < header->mNumWeatherTypes; j++) {
-                if (shorts[i].mWeather == weatherTypes[j].mCode) {
+                if (*(u16*)&shorts[i].mWeather == weatherTypes[j].mCode) {
                     found = TRUE;
                     break;
                 }
@@ -513,7 +521,7 @@ s32 CheckDayForecast(ForecastHeader* header, u32 id, s32 day, DayForecast* forec
     if (forecast->mUVIndex != 0xFF) {
         found = FALSE;
         for (j = 0; j < header->mNumUVIndices; j++) {
-            if (forecast->mUVIndex == ((IndexText*)((u8*)header + header->mUVIndexOffset))[j].mCode) {
+            if (*(u8*)&forecast->mUVIndex == ((IndexText*)((u8*)header + header->mUVIndexOffset))[j].mCode) {
                 found = TRUE;
                 break;
             }
@@ -527,7 +535,7 @@ s32 CheckDayForecast(ForecastHeader* header, u32 id, s32 day, DayForecast* forec
     if (forecast->mLaundryIndex != 0xFF && gRegion == 0) {
         found = FALSE;
         for (j = 0; j < header->mNumLaundryIndices; j++) {
-            if (forecast->mLaundryIndex == ((IndexText*)((u8*)header + header->mLaundryIndexOffset))[j].mCode) {
+            if (*(u8*)&forecast->mLaundryIndex == ((IndexText*)((u8*)header + header->mLaundryIndexOffset))[j].mCode) {
                 found = TRUE;
                 break;
             }
@@ -541,7 +549,7 @@ s32 CheckDayForecast(ForecastHeader* header, u32 id, s32 day, DayForecast* forec
     if (forecast->mPollenIndex != 0xFF && gRegion == 0) {
         found = FALSE;
         for (j = 0; j < header->mNumPollenIndices; j++) {
-            if (forecast->mPollenIndex == ((IndexText*)((u8*)header + header->mPollenIndexOffset))[j].mCode) {
+            if (*(u8*)&forecast->mPollenIndex == ((IndexText*)((u8*)header + header->mPollenIndexOffset))[j].mCode) {
                 found = TRUE;
                 break;
             }

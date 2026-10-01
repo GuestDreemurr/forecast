@@ -21,8 +21,6 @@ static const s32 sProgressIcons[2][6] = {
     {15, 15, 15, 15, 15, 15},
 };
 
-static const GXColor sProgressColor = {255, 255, 255, 0};
-
 Connect::Connect(void* arc, ForecastData* data) {
     mData = data;
     mForecastBuf = MEM2Alloc(0x32000, 0);
@@ -65,6 +63,25 @@ void Connect::Start() {
     button->mPressed = TRUE;
 }
 
+static inline wchar_t* GetServerMessage(void* data, const u32& size) {
+    u8* buf = (u8*)data;
+    u32 offset = *(u32*)(buf + 0x1C);
+    if (offset == 0) {
+        return NULL;
+    }
+
+    u8* end = buf + size;
+    wchar_t* message = (wchar_t*)(buf + offset);
+    wchar_t* p = message;
+    for (int i = 0; (u8*)p < end && i < 0x200; p++, i++) {
+        if (*p == 0) {
+            return message;
+        }
+    }
+
+    return NULL;
+}
+
 void Connect::Calc() {
     s32 prevState = mState;
 
@@ -102,27 +119,30 @@ void Connect::Calc() {
         mTaskState = task->mState;
         if (mTaskState == 0) {
             mTaskResult = task->mResult;
-            if (mTaskResult == 0) {
-                OSGetTick();
-                if (CheckForecastData(mForecastBuf, mForecastSize, &mForecastCheck, mShortBuf, mShortSize,
-                                      &mShortCheck)) {
-                    mTask = CWiiConnect24::setWeather(mForecastUrl, mShortUrl, 0x32000, 0, 0);
-                    if (mTask < 0) {
-                        OSPanic("Connect.cpp", 196, "CWiiConnect24::setWeather() failed.\n");
+            switch (mTaskResult) {
+            case 0:
+                    OSGetTick();
+                    if (CheckForecastData(mForecastBuf, mForecastSize, &mForecastCheck, mShortBuf, mShortSize,
+                                          &mShortCheck)) {
+                        mTask = CWiiConnect24::setWeather(mForecastUrl, mShortUrl, 0x32000, 0, 0);
+                        if (mTask < 0) {
+                            OSPanic("Connect.cpp", 196, "CWiiConnect24::setWeather() failed.\n");
+                        }
+                        mState = 5;
+                    } else if (mForecastCheck == -3 || mShortCheck == -3) {
+                        mState = 7;
+                    } else {
+                        mTask = CWiiConnect24::downloadWeatherForecast(mForecastBuf, &mForecastTime, &mForecastSize,
+                                                                       0x32000);
+                        if (mTask < 0) {
+                            OSPanic("Connect.cpp", 211, "CWiiConnect24::downloadWeatherForecast");
+                        }
+                        mState = 3;
                     }
-                    mState = 5;
-                } else if (mForecastCheck == -3 || mShortCheck == -3) {
-                    mState = 7;
-                } else {
-                    mTask = CWiiConnect24::downloadWeatherForecast(mForecastBuf, &mForecastTime, &mForecastSize,
-                                                                   0x32000);
-                    if (mTask < 0) {
-                        OSPanic("Connect.cpp", 211, "CWiiConnect24::downloadWeatherForecast");
-                    }
-                    mState = 3;
-                }
-            } else {
+                break;
+            default:
                 mState = 7;
+                break;
             }
         }
         break;
@@ -132,14 +152,17 @@ void Connect::Calc() {
         mTaskState = task->mState;
         if (mTaskState == 0) {
             mTaskResult = task->mResult;
-            if (mTaskResult == 0) {
-                mTask = CWiiConnect24::downloadWeatherShort(mShortBuf, &mShortTime, &mShortSize, 0x5000);
-                if (mTask < 0) {
-                    OSPanic("Connect.cpp", 237, "CWiiConnect24::downloadWeatherShort");
-                }
-                mState = 4;
-            } else {
+            switch (mTaskResult) {
+            case 0:
+                    mTask = CWiiConnect24::downloadWeatherShort(mShortBuf, &mShortTime, &mShortSize, 0x5000);
+                    if (mTask < 0) {
+                        OSPanic("Connect.cpp", 237, "CWiiConnect24::downloadWeatherShort");
+                    }
+                    mState = 4;
+                break;
+            default:
                 mState = 7;
+                break;
             }
         }
         break;
@@ -149,20 +172,23 @@ void Connect::Calc() {
         mTaskState = task->mState;
         if (mTaskState == 0) {
             mTaskResult = task->mResult;
-            if (mTaskResult == 0) {
-                OSGetTick();
-                if (CheckForecastData(mForecastBuf, mForecastSize, &mForecastCheck, mShortBuf, mShortSize,
-                                      &mShortCheck)) {
-                    mTask = CWiiConnect24::setWeather(mForecastUrl, mShortUrl, 0x32000, 0, 0);
-                    if (mTask < 0) {
-                        OSPanic("Connect.cpp", 269, "CWiiConnect24::setWeather() failed.\n");
+            switch (mTaskResult) {
+            case 0:
+                    OSGetTick();
+                    if (CheckForecastData(mForecastBuf, mForecastSize, &mForecastCheck, mShortBuf, mShortSize,
+                                          &mShortCheck)) {
+                        mTask = CWiiConnect24::setWeather(mForecastUrl, mShortUrl, 0x32000, 0, 0);
+                        if (mTask < 0) {
+                            OSPanic("Connect.cpp", 269, "CWiiConnect24::setWeather() failed.\n");
+                        }
+                        mState = 5;
+                    } else {
+                        mState = 7;
                     }
-                    mState = 5;
-                } else {
-                    mState = 7;
-                }
-            } else {
+                break;
+            default:
                 mState = 7;
+                break;
             }
         }
         break;
@@ -172,10 +198,13 @@ void Connect::Calc() {
         mTaskState = task->mState;
         if (mTaskState == 0) {
             mTaskResult = task->mResult;
-            if (mTaskResult == 0) {
-                mState = 6;
-            } else {
+            switch (mTaskResult) {
+            case 0:
+                    mState = 6;
+                break;
+            default:
                 mState = 7;
+                break;
             }
         }
         break;
@@ -186,27 +215,7 @@ void Connect::Calc() {
     }
 
     if (mState == 6 && prevState != mState) {
-        u8* buf = (u8*)mForecastBuf;
-        u32 offset = *(u32*)(buf + 0x1C);
-        wchar_t* message;
-        if (offset == 0) {
-            message = NULL;
-        } else {
-            message = (wchar_t*)(buf + offset);
-            wchar_t* p = message;
-            u8* end = buf + mForecastSize;
-            int i = 0;
-            for (; (u8*)p < end && i < 0x200; p++, i++) {
-                if (*p == 0) {
-                    goto found;
-                }
-            }
-
-            message = NULL;
-        found:;
-        }
-
-        mServerMessage = message;
+        mServerMessage = GetServerMessage(mForecastBuf, mForecastSize);
         if (mServerMessage != NULL) {
             mState = 7;
         }
@@ -275,10 +284,14 @@ void Connect::Calc() {
         break;
     }
 
-    if (mDisplayState < 5 && mDisplayState >= 2) {
+    switch (mDisplayState) {
+    case 2:
+    case 3:
+    case 4:
         if (++mProgressFrame > 72) {
             mProgressFrame = 0;
         }
+        break;
     }
 
     if (mDisplayState == 2) {
@@ -305,8 +318,9 @@ void Connect::Draw() {
         DrawProgress();
         break;
     case 5: {
+        LayoutButton* text;
         s32 message = 0;
-        LayoutButton* text = mErrorLayout->FindButton("text");
+        text = mErrorLayout->FindButton("text");
         switch (mTaskResult) {
         case -11:
             text->SetState(0);
@@ -329,7 +343,8 @@ void Connect::Draw() {
             break;
         case 0:
             if (mServerMessage != NULL) {
-                mErrorLayout->FindButton("error_server")->SetText(mServerMessage);
+                LayoutButton* server = mErrorLayout->FindButton("error_server");
+                server->SetText(mServerMessage);
                 text->SetState(-1);
             } else {
                 message = 6;
@@ -381,6 +396,11 @@ void Connect::PauseSound(bool pause) {
     }
 }
 
+static inline void SetProgressColor(u8 alpha) {
+    GXColor color = {255, 255, 255, alpha};
+    GXSetTevColor(GX_TEVREG0, color);
+}
+
 void Connect::DrawProgress() {
     SetDefaultGXState();
     SetOrthoProjection();
@@ -391,7 +411,8 @@ void Connect::DrawProgress() {
     for (int i = 0; i < 6; i++) {
         u8 alpha;
         if (i == current) {
-            alpha = 255.0f * nw4r::math::SinRad(1.5707964f * (frame + 1) / 12.0f);
+            f32 rad = 1.5707964f * (frame + 1) / 12.0f;
+            alpha = 255.0f * nw4r::math::SinRad(rad);
         } else {
             s32 behind = current - i;
             if (behind < 0) {
@@ -406,13 +427,13 @@ void Connect::DrawProgress() {
             alpha = 255.0f * t / 72.0f;
         }
 
-        GXColor color = {sProgressColor.r, sProgressColor.g, sProgressColor.b, alpha};
-        GXSetTevColor(GX_TEVREG0, color);
+        SetProgressColor(alpha);
 
         u32 icon = sProgressIcons[gRegion != 0][i];
+        f32 y = 280.0f - 0.5f * (0.6f * GetTexHeight((TPLPalette*)gUnk80330B74, icon));
         Vec pos;
-        pos.y = 280.0f - 0.5f * (0.6f * GetTexHeight((TPLPalette*)gUnk80330B74, icon));
         pos.x = x - 0.5f * (0.6f * GetTexWidth((TPLPalette*)gUnk80330B74, icon));
+        pos.y = y;
         pos.z = 0.0f;
         DrawTextureAt((TPLPalette*)gUnk80330B74, icon, 0.6f, 0.6f, &pos);
         x += 40.0f;
@@ -422,6 +443,7 @@ void Connect::DrawProgress() {
 void Connect::SetErrorCode(s32 wc24Code, s32 localCode) {
     s32 code;
     const wchar_t* prefix;
+    LayoutButton* button;
     const wchar_t* label;
 
     if (wc24Code != 0) {
@@ -434,7 +456,9 @@ void Connect::SetErrorCode(s32 wc24Code, s32 localCode) {
         return;
     }
 
-    code = __abs(code);
+    if (code < 0) {
+        code = -code;
+    }
     switch (gLanguage) {
     case 0:
         label = L"\x30A8\x30E9\x30FC\x30B3\x30FC\x30C9\xFF1A";
@@ -459,7 +483,7 @@ void Connect::SetErrorCode(s32 wc24Code, s32 localCode) {
         break;
     }
 
-    LayoutButton* button = mErrorLayout->FindButton("error_code");
+    button = mErrorLayout->FindButton("error_code");
     wchar_t buf[0x80];
     swprintf(buf, 0x80, L"%ls %ls%06d", label, prefix, code);
     button->SetText(buf);

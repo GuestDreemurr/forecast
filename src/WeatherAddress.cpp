@@ -28,7 +28,7 @@ static Color sTextColor(255, 255, 255, 255);
 
 #define CHANGE_STATE(state, arg)                                                                             \
     {                                                                                                        \
-        StateFunc newState = state;                                                                          \
+        StateFunc newState = (StateFunc)state;                                                                          \
         if (mState) {                                                                                        \
             mPhase = -1;                                                                                     \
             (this->*mState)(arg);                                                                            \

@@ -50,19 +50,19 @@ s32 ReadSaveData() {
         end = (u32*)((u8*)sSaveBuffer + sSaveSize);
         if (end[-1] != NETCalcCRC32(sSaveBuffer, sSaveSize - 4)) {
             OSReport("NAND data broken.\n");
-        } else if (sSaveMagic[0] != ((char*)sSaveBuffer)[0]) {
-            OSReport("NAND data invalid label.\n");
-        } else if (sSaveMagic[1] != ((char*)sSaveBuffer)[1]) {
-            OSReport("NAND data invalid label.\n");
-        } else if (sSaveMagic[2] != ((char*)sSaveBuffer)[2]) {
-            OSReport("NAND data invalid label.\n");
-        } else if (sSaveMagic[3] != ((char*)sSaveBuffer)[3]) {
-            OSReport("NAND data invalid label.\n");
         } else {
+            for (int i = 0; i < 4; i++) {
+                if (sSaveMagic[i] != ((char*)sSaveBuffer)[i]) {
+                    OSReport("NAND data invalid label.\n");
+                    goto close;
+                }
+            }
+
             valid = TRUE;
         }
     }
 
+close:
     result = NANDClose(&info);
     if (result == NAND_RESULT_CORRUPT) {
         OSReport("NANDClose() failed(CORRUPT).\n");
@@ -246,14 +246,21 @@ void ErrorWindow::Calc() {
     }
 }
 
+static inline f32 GetCenterX(const LayoutButton* button) {
+    return (button->mRight + button->mLeft) / 2.0f;
+}
+
+static inline f32 GetCenterY(const LayoutButton* button) {
+    return (button->mTop + button->mBottom) / 2.0f;
+}
+
 void ErrorWindow::Draw() {
     switch (mMessage) {
     case 1: {
         mYesNoLayout->Draw();
         LayoutButton* message = mYesNoLayout->FindButton("message");
-        s32 width = GetScreenWidth();
-        f32 x = (message->mRight + message->mLeft) * 0.5f + 0.5f * width;
-        f32 y = -((message->mTop + message->mBottom) * 0.5f) + 228.0f;
+        f32 x = GetCenterX(message) + 0.5f * GetScreenWidth();
+        f32 y = -GetCenterY(message) + 0.5f * GetScreenHeight();
 
         nw4r::ut::TextWriterBase<wchar_t> writer;
         wchar_t buf[0x80];

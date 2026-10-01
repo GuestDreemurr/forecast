@@ -16,21 +16,21 @@ Sections:
 Connect.cpp:
 	.text       start:0x8000AA94 end:0x8000BAC8
 	.rodata     start:0x80179358 end:0x80179388
-	.data       start:0x80198D80 end:0x80199018
+	.data       start:0x80198D80 end:0x80199014
 	.sdata      start:0x8032F568 end:0x8032F580
 	.sdata2     start:0x803319A0 end:0x803319E0
 
 ErrorWindow.cpp:
 	.text       start:0x8000BAC8 end:0x8000C734
-	.rodata     start:0x80179388 end:0x801793A0
+	.rodata     start:0x80179388 end:0x8017939D
 	.data       start:0x80199018 end:0x80199310
-	.sdata      start:0x8032F580 end:0x8032F5A0
+	.sdata      start:0x8032F580 end:0x8032F59D
 	.sbss       start:0x803309A8 end:0x803309B0
 	.sdata2     start:0x803319E0 end:0x80331A00
 
 WeatherText.cpp:
 	.data       start:0x80199310 end:0x801996B8
-	.sdata      start:0x8032F5A0 end:0x8032F928
+	.sdata      start:0x8032F5A0 end:0x8032F924
 
 WeatherTextUS.cpp:
 	.data       start:0x801996B8 end:0x80199AA8

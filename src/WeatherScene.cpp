@@ -120,7 +120,7 @@ ButtonColors gButtonColors[4] = {
 
 static inline City* LookupCity(u32 id) {
     City** city = gCities;
-    for (int i = 0; i < gForecastData->mHeader->mNumPlaces; i++) {
+    for (int i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++) {
         if (id == *(*city)->mInfo->mId) {
             return *city;
         }
@@ -217,9 +217,10 @@ WeatherScene::~WeatherScene() {
         delete mNormal;
     }
 
+    s32 numPlaces;
     City** city = gCities;
     if (city != NULL) {
-        s32 numPlaces = gForecastData->mHeader->mNumPlaces;
+        numPlaces = gForecastData->mHeader->mNumPlaces;
         for (int i = 0; i < numPlaces; i++, city++) {
             if (*city != NULL) {
                 delete *city;
@@ -569,7 +570,7 @@ void WeatherScene::StartSettingSounds() {
 BOOL WeatherScene::StateAddress() {
     switch (mStatePhase) {
     case -1:
-        mAddress->ChangeState(&WeatherAddress::StateClose, 0);
+        mAddress->Close();
         break;
     case 0:
         mStatePhase++;
@@ -737,7 +738,7 @@ BOOL WeatherScene::StateNormal() {
             if (gFade->mFading == 0) {
                 gLastSettingResult = gSettingResult;
                 ClearHoveredButtons();
-                mNormal->ChangeState(&WeatherNormal::StateOpenAround, 0);
+                mNormal->OpenAround();
                 ChangeState(&WeatherScene::StateSetting);
                 return TRUE;
             }
@@ -769,7 +770,7 @@ BOOL WeatherScene::StateNormal() {
                     }
 
                     gFade2->FadeIn(40);
-                    mNormal->ChangeState(&WeatherNormal::StateOpenAround, 0);
+                    mNormal->OpenAround();
                     mNormal->mActive = FALSE;
                     mAround->mActive = TRUE;
                     if (mAroundOpened == 0) {
@@ -903,7 +904,7 @@ BOOL WeatherScene::StateAround() {
                 ClearHoveredButtons();
                 mAround->unk250 = TRUE;
                 mAround->mCalcFunc = &WeatherAround::DrawGlobe;
-                mNormal->ChangeState(&WeatherNormal::StateCloseAround, 0);
+                mNormal->CloseAround();
                 ChangeState(&WeatherScene::StateNormal);
                 return TRUE;
             }
@@ -926,7 +927,6 @@ BOOL WeatherScene::StateAround() {
                 }
             }
             break;
-        case 3:
         default:
             if (gFade2->mFading == 0) {
                 gLastSettingResult = gSettingResult;
@@ -1148,7 +1148,7 @@ void WeatherScene::unk3C() {
 
 City* FindCity(u32 id) {
     City** city = gCities;
-    for (int i = 0; i < gForecastData->mHeader->mNumPlaces; i++) {
+    for (int i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++) {
         if (id == *(*city)->mInfo->mId) {
             return *city;
         }
