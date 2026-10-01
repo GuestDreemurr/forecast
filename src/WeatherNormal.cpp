@@ -601,7 +601,7 @@ void WeatherNormal::DrawCity() {
         }                                                                                                    \
     }
 
-void WeatherNormal::SetCity(s32 arg) {
+void WeatherNormal::SetCity() {
     City* city = gCurrentCity;
     mDateText[0] = 0;
     mDateType = 0;
@@ -1661,7 +1661,7 @@ BOOL WeatherNormal::StateScroll(s32 arg) {
             SET_BELT_STATE(mPages[gForecastPage]->mType);
             mBeltTarget = 255;
             mDateTarget = 255;
-            SetCity(0);
+            SetCity();
         }
 
         LAYOUT_PAGES();
@@ -1730,7 +1730,7 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
             CHANGE_SCROLL(&WeatherNormal::ScrollNames);
         }
 
-        SetCity(0);
+        SetCity();
         mBeltPhase = 0;
         if (mUpdateBeltText) {
             (this->*mUpdateBeltText)();

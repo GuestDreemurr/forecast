@@ -1202,7 +1202,7 @@ config.libs = [
             "objects": [
                 Object(Matching, "Connect.cpp"),
                 Object(Matching, "ErrorWindow.cpp"),
-                Object(NonMatching, "ForecastCheck.cpp"),
+                Object(Matching, "ForecastCheck.cpp"),
                 Object(NonMatching, "Weather.cpp"),
                 Object(NonMatching, "WeatherOther.cpp"),
                 Object(NonMatching, "WeatherToday.cpp"),

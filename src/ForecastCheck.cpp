@@ -22,11 +22,20 @@ void MinutesToCalendarTime(u32 minutes, OSCalendarTime* time);
         }                                                                                                    \
     }
 
+// Text offsets must point inside the file and be 2-byte aligned (UTF-16)
+static inline void CheckTextOffset(ForecastHeader* h, const u32& off, s32& err) {
+    if (off >= h->mSize) {
+        err = -1;
+    }
+    if (off & 1) {
+        err = -1;
+    }
+}
+
 BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, void* shortData, u32 shortSize,
                        s32* shortResult) {
-    // TODO: these are probably real locals, but that changes register allocation
-#define header ((ForecastHeader*)forecast)
-#define shortHeader ((ShortHeader*)shortData)
+    ForecastHeader* header;
+    ShortHeader* shortHeader;
     ForecastEntry* forecasts;
     SummaryEntry* summaries;
     WeatherType* weatherTypes;
@@ -40,16 +49,14 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
     u32 now = GetCurrentMinutes();
     OSCalendarTime time;
 
-    if (header != NULL) {
-        if (((u32)header & 3) == 0) {
-            goto headerAligned;
+    if (forecast != NULL) {
+        if (((u32)forecast & 3) == 0) {
+            header = (ForecastHeader*)forecast;
+        } else {
+            *forecastResult = -1;
+            *shortResult = 0;
+            return FALSE;
         }
-
-        *forecastResult = -1;
-        *shortResult = 0;
-        return FALSE;
-
-    headerAligned:
 
         forecasts = (ForecastEntry*)((u8*)header + header->mForecastOffset);
         if (((u32)forecasts & 3) == 0) {
@@ -73,16 +80,14 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
         err = -1;
     }
 
-    if (shortHeader != NULL) {
-        if (((u32)shortHeader & 3) == 0) {
-            goto shortAligned;
+    if (shortData != NULL) {
+        if (((u32)shortData & 3) == 0) {
+            shortHeader = (ShortHeader*)shortData;
+        } else {
+            *forecastResult = err;
+            *shortResult = -1;
+            return FALSE;
         }
-
-        *forecastResult = err;
-        *shortResult = -1;
-        return FALSE;
-
-    shortAligned:
 
         GET_TABLE(shorts, ShortEntry, shortHeader, shortHeader->mEntryOffset, shortErr);
     }
@@ -244,13 +249,7 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
             err = -1;
         }
 
-        if (weatherTypes[i].mTextOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (weatherTypes[i].mTextOffset & 1) {
-            err = -1;
-        }
+        CheckTextOffset(header, weatherTypes[i].mTextOffset, err);
     }
 
     for (s32 i = 0; i < header->mNumUVIndices; i++) {
@@ -266,13 +265,7 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
             err = -1;
         }
 
-        if (uvIndices[i].mTextOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (uvIndices[i].mTextOffset & 1) {
-            err = -1;
-        }
+        CheckTextOffset(header, uvIndices[i].mTextOffset, err);
     }
 
     for (s32 i = 0; i < header->mNumLaundryIndices; i++) {
@@ -288,13 +281,7 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
             err = -1;
         }
 
-        if (laundryIndices[i].mTextOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (laundryIndices[i].mTextOffset & 1) {
-            err = -1;
-        }
+        CheckTextOffset(header, laundryIndices[i].mTextOffset, err);
     }
 
     for (s32 i = 0; i < header->mNumPollenIndices; i++) {
@@ -310,13 +297,7 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
             err = -1;
         }
 
-        if (pollenIndices[i].mTextOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (pollenIndices[i].mTextOffset & 1) {
-            err = -1;
-        }
+        CheckTextOffset(header, pollenIndices[i].mTextOffset, err);
     }
 
     for (s32 i = 0; i < header->mNumPlaces; i++) {
@@ -362,30 +343,9 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
             err = -1;
         }
 
-        if (places[i].mNameOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (places[i].mNameOffset & 1) {
-            err = -1;
-        }
-
-        if (places[i].mRegionOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (places[i].mRegionOffset & 1) {
-            err = -1;
-        }
-
-        if (places[i].mCountryOffset >= header->mSize) {
-            err = -1;
-        }
-
-        if (places[i].mCountryOffset & 1) {
-            err = -1;
-        }
-
+        CheckTextOffset(header, places[i].mNameOffset, err);
+        CheckTextOffset(header, places[i].mRegionOffset, err);
+        CheckTextOffset(header, places[i].mCountryOffset, err);
         if (places[i].unk14 > 9) {
             err = -1;
         }
@@ -468,8 +428,6 @@ BOOL CheckForecastData(void* forecast, u32 forecastSize, s32* forecastResult, vo
     }
 
     return ret;
-#undef header
-#undef shortHeader
 }
 
 s32 CheckDayForecast(ForecastHeader* header, u32 id, s32 day, DayForecast* forecast) {
@@ -496,7 +454,8 @@ s32 CheckDayForecast(ForecastHeader* header, u32 id, s32 day, DayForecast* forec
         if (forecast->mWeatherParts[i] != 0xFFFF) {
             found = FALSE;
             for (j = 0; j < header->mNumWeatherTypes; j++) {
-                if (forecast->mWeatherParts[i] == ((WeatherType*)((u8*)header + header->mWeatherTypeOffset))[j].mCode) {
+                u16 code = ((WeatherType*)((u8*)header + header->mWeatherTypeOffset))[j].mCode;
+                if (forecast->mWeatherParts[i] == code) {
                     found = TRUE;
                     break;
                 }
@@ -594,7 +553,8 @@ u32 GetCurrentMinutes() {
     OSCalendarTime time;
     NETGetUniversalCalendar(&time);
 
-    u32 years = time.year - 2000;
+    u32 years = time.year;
+    years -= 2000;
     u32 months = time.month + 1;
     s32 days = time.mday;
     s32 hours = time.hour;

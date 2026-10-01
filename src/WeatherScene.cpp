@@ -13,6 +13,7 @@
 #include <channel/WeatherSetting.h>
 #include <channel/WeatherViews.h>
 
+#include <nw4r/math.h>
 #include <revolution/OS.h>
 #include <revolution/TPL.h>
 
@@ -691,7 +692,7 @@ BOOL WeatherScene::StateNormal() {
         sTitleFlags = gShowAmbientSound == FALSE;
         mDrawFunc = &WeatherScene::DrawNormal;
         StartNormalSounds();
-        mNormal->SetCity(0);
+        mNormal->SetCity();
         mNormal->Open();
         if (gRegion != 1) {
             gMenuVisible = FALSE;
@@ -754,16 +755,13 @@ BOOL WeatherScene::StateNormal() {
                     mWait--;
                 } else if (gEarthModel != NULL) {
                     mStatePhase++;
-                    City* city = gCurrentCity;
-                    CityInfo* info = city != NULL ? city->mInfo : NULL;
+                    CityInfo* info = gCurrentCity != NULL ? gCurrentCity->mInfo : NULL;
                     if (info != NULL) {
+                        PlaceEntry* place = (PlaceEntry*)info->mId;
                         Vec2 deg;
-                        ToDegrees(((u16*)info)[8], ((u16*)info)[9], &deg);
-                        Vec rot;
-                        rot.x = deg.x;
-                        rot.y = deg.y;
-                        rot.z = 0.0f;
-                        gSimpleGlobe->SetRotation(&rot, 0);
+                        ToDegrees(place->mLongitude, place->mLatitude, &deg);
+                        nw4r::math::VEC3 rot(deg.x, deg.y, 0.0f);
+                        gSimpleGlobe->SetRotation(rot, 0);
                         gSimpleGlobe->SetZoom(0, 0);
                         gSimpleGlobe->SetMode(0);
                         gSimpleGlobe->SetSpeed(0.0f);
@@ -922,7 +920,7 @@ BOOL WeatherScene::StateAround() {
                     UpdateForecastPage();
                     mAround->mActive = FALSE;
                     mNormal->mActive = TRUE;
-                    mNormal->SetCity(0);
+                    mNormal->SetCity();
                     mNormal->Show();
                 }
             }

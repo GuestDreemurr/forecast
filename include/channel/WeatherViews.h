@@ -408,7 +408,7 @@ public:
     void Show();
     void CalcActive();
     void DrawCity();
-    void SetCity(s32 arg);
+    void SetCity();
     void SetupDateJP();
     void SetupDate();
     void FormatDateUS(u32 minutes);

@@ -317,12 +317,9 @@ void WeatherAround::Show() {
         PlaceEntry* place = (PlaceEntry*)info->mId;
         Vec2 deg;
         ToDegrees(place->mLongitude, place->mLatitude, &deg);
-        Vec rot;
-        rot.x = deg.x;
-        rot.y = deg.y;
-        rot.z = 0.0f;
+        nw4r::math::VEC3 rot(deg.x, deg.y, 0.0f);
         globe->SetZoomLevel(0);
-        globe->Setup(&rot);
+        globe->Setup(rot);
     }
 }
 
