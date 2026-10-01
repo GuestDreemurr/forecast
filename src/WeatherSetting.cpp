@@ -26,25 +26,25 @@ WeatherSetting::WeatherSetting(void* arc)
 
     mKionSet = mSetLayout->FindButton("kion_set");
     if (mKionSet == NULL) {
-        OSPanic("d_weather_setting.cpp", 97, "kion_set \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7!!\n");
+        OSPanic("d_weather_setting.cpp", 97, "kion_set がないです!!\n");
     }
     mKionSet->mToggle = TRUE;
 
     mCitySet = mSetLayout->FindButton("city_set");
     if (mCitySet == NULL) {
-        OSPanic("d_weather_setting.cpp", 104, "city_set \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7!!\n");
+        OSPanic("d_weather_setting.cpp", 104, "city_set がないです!!\n");
     }
     mCitySet->mToggle = TRUE;
 
     mCityBtn = mSetLayout->FindButton("city_btn");
     if (mCityBtn == NULL) {
-        OSPanic("d_weather_setting.cpp", 111, "city_btn \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7!!\n");
+        OSPanic("d_weather_setting.cpp", 111, "city_btn がないです!!\n");
     }
     mCityBtn->SetLinked(mCitySet);
 
     mKionBtn = mSetLayout->FindButton("kion_btn");
     if (mKionBtn == NULL) {
-        OSPanic("d_weather_setting.cpp", 118, "kion_btn \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7!!\n");
+        OSPanic("d_weather_setting.cpp", 118, "kion_btn がないです!!\n");
     }
     mKionBtn->SetLinked(mKionSet);
 
@@ -67,13 +67,13 @@ WeatherSetting::WeatherSetting(void* arc)
 
         mWindSet = mSetLayout->FindButton("wind_set");
         if (mWindSet == NULL) {
-            OSPanic("d_weather_setting.cpp", 153, "wind_set \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7!!\n");
+            OSPanic("d_weather_setting.cpp", 153, "wind_set がないです!!\n");
         }
         mWindSet->mToggle = TRUE;
 
         mWindBtn = mSetLayout->FindButton("wind_btn");
         if (mWindBtn == NULL) {
-            OSPanic("d_weather_setting.cpp", 160, "wind_btn \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7!!\n");
+            OSPanic("d_weather_setting.cpp", 160, "wind_btn がないです!!\n");
         }
         mWindBtn->SetLinked(mWindSet);
     }
@@ -242,6 +242,6 @@ void WeatherSetting::UpdateCityName() {
         }
     } else {
         OSPanic("d_weather_setting.cpp", 439,
-                "\x93\x56\x8B\x43\x8F\x5A\x8F\x8A\x82\xAA\x83\x47\x83\x89\x81\x5B\x82\xC5\x82\xB7!!\n");
+                "天気住所がエラーです!!\n");
     }
 }

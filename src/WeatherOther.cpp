@@ -69,14 +69,14 @@ void WeatherOther::SetupJP(void* arc) {
     mNoServiceText = mNoServiceLayout->FindButton("text");
     if (mNoServiceText == NULL) {
         OSPanic("d_weather_a_other.cpp", 107,
-                "text \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "text が見つかりません!!\n");
     }
 
     for (s32 i = 0; i < 6; i++) {
         TextBox* box = &mBoxes[i];
         box->mPane = mLayout->FindButton(sBoxNamesJP[i]);
         if (box->mPane == NULL) {
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sBoxNamesJP[i]);
+            OSReport("%sが見つかりません!!\n", sBoxNamesJP[i]);
             OSPanic("d_weather_a_other.cpp", 118, "");
         }
 
@@ -124,20 +124,20 @@ void WeatherOther::Setup(void* arc) {
     mIconPane = mLayout->FindButton("life_b");
     if (mIconPane == NULL) {
         OSPanic("d_weather_a_other.cpp", 156,
-                "life_b \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "life_b が見つかりません!!\n");
     }
 
     mNoServiceText = mNoServiceLayout->FindButton("text");
     if (mNoServiceText == NULL) {
         OSPanic("d_weather_a_other.cpp", 162,
-                "text \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "text が見つかりません!!\n");
     }
 
     for (s32 i = 0; i < 2; i++) {
         TextBox* box = &mBoxes[i];
         box->mPane = mLayout->FindButton(sBoxNames[i]);
         if (box->mPane == NULL) {
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sBoxNames[i]);
+            OSReport("%sが見つかりません!!\n", sBoxNames[i]);
             OSPanic("d_weather_a_other.cpp", 173, "");
         }
 

@@ -1225,7 +1225,7 @@ s32 LoadForecastData() {
     case 24:
         break;
     default:
-        OSReport("\x93\x56\x8B\x43\x8F\xEE\x95\xF1\x90\xB6\x90\xAC\x8E\xB8\x94\x73!!\n");
+        OSReport("天気情報生成失敗!!\n");
         break;
     }
 
@@ -1245,7 +1245,7 @@ s32 LoadForecastData() {
     case 24:
         break;
     default:
-        OSReport("\x93\x56\x8B\x43\x8F\xEE\x95\xF1\x90\xB6\x90\xAC\x8E\xB8\x94\x73!!\n");
+        OSReport("天気情報生成失敗!!\n");
         break;
     }
 

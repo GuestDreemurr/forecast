@@ -169,22 +169,22 @@ WeatherAddress::WeatherAddress(void* arc)
 
     mUpButton = mListLayout->FindButton("up");
     if (mUpButton == NULL) {
-        OSPanic("d_weather_address.cpp", 180, "up \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7\x21\x21\n");
+        OSPanic("d_weather_address.cpp", 180, "up がないです!!\n");
     }
 
     mDownButton = mListLayout->FindButton("down");
     if (mDownButton == NULL) {
-        OSPanic("d_weather_address.cpp", 185, "down \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7\x21\x21\n");
+        OSPanic("d_weather_address.cpp", 185, "down がないです!!\n");
     }
 
     mBackButton = mListLayout->FindButton("back");
     if (mBackButton == NULL) {
-        OSPanic("d_weather_address.cpp", 190, "back \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7\x21\x21\n");
+        OSPanic("d_weather_address.cpp", 190, "back がないです!!\n");
     }
 
     mTitle = mListLayout->FindButton("text");
     if (mTitle == NULL) {
-        OSPanic("d_weather_address.cpp", 195, "text \x82\xAA\x82\xC8\x82\xA2\x82\xC5\x82\xB7\x21\x21\n");
+        OSPanic("d_weather_address.cpp", 195, "text がないです!!\n");
     }
 
     const wchar_t* otherText = gOtherRegionText[gLanguage];

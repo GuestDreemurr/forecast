@@ -102,14 +102,14 @@ void WeatherBaseDay::SetupJP(void* arc) {
     mNoServiceText = mNoServiceLayout->FindButton("text");
     if (mNoServiceText == NULL) {
         OSPanic("d_weather_base_day.cpp", 178,
-                "text \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "text が見つかりません!!\n");
     }
 
     for (s32 i = 0; i < 20; i++) {
         TextBox* box = &mBoxes[i];
         box->mPane = mLayout->FindButton(sBoxNamesJP[i]);
         if (box->mPane == NULL) {
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sBoxNamesJP[i]);
+            OSReport("%sが見つかりません!!\n", sBoxNamesJP[i]);
             OSPanic("d_weather_base_day.cpp", 189, "");
         }
 
@@ -178,14 +178,14 @@ void WeatherBaseDay::Setup(void* arc) {
     mNoServiceText = mNoServiceLayout->FindButton("text");
     if (mNoServiceText == NULL) {
         OSPanic("d_weather_base_day.cpp", 252,
-                "text \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "text が見つかりません!!\n");
     }
 
     for (s32 i = 0; i < 5; i++) {
         TextBox* box = &mBoxes[i];
         box->mPane = mLayout->FindButton(sBoxNames[i]);
         if (box->mPane == NULL) {
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sBoxNames[i]);
+            OSReport("%sが見つかりません!!\n", sBoxNames[i]);
             OSPanic("d_weather_base_day.cpp", 263, "");
         }
 

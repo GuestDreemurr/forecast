@@ -188,27 +188,27 @@ WeatherNormal::WeatherNormal(void* arc)
     mAroundButton = mLayout->FindButton("around");
     if (mAroundButton == NULL) {
         OSPanic("d_weather_normal.cpp", 268,
-                "around\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\n");
+                "aroundがありません!\n");
     }
     mSetButton = mLayout->FindButton("set");
     if (mSetButton == NULL) {
         OSPanic("d_weather_normal.cpp", 273,
-                "set\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\n");
+                "setがありません!\n");
     }
     mBackButton = mLayout->FindButton("back");
     if (mBackButton == NULL) {
         OSPanic("d_weather_normal.cpp", 278,
-                "back\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\n");
+                "backがありません!\n");
     }
     mUpButton = mLayout->FindButton("up");
     if (mUpButton == NULL) {
         OSPanic("d_weather_normal.cpp", 283,
-                "up\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\n");
+                "upがありません!\n");
     }
     mDownButton = mLayout->FindButton("down");
     if (mDownButton == NULL) {
         OSPanic("d_weather_normal.cpp", 288,
-                "down\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\n");
+                "downがありません!\n");
     }
 
     LayoutButton* city = mBeltLayout->FindButton("city");
@@ -407,7 +407,7 @@ WeatherNormal::~WeatherNormal() {
         for (s32 i = 0; i < 8; i++, box++) {                                                                 \
             box->mPane = mTimeLayout->FindButton(names[i]);                                                  \
             if (box->mPane == NULL) {                                                                        \
-                OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n",     \
+                OSReport("%sが見つかりません!!\n",     \
                          names[i]);                                                                          \
                 OSPanic("d_weather_normal.cpp", line, "");                                                   \
             }                                                                                                \

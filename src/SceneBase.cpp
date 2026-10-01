@@ -991,7 +991,7 @@ BOOL LoadEarthModel() {
     if (sEarthThread == NULL) {
         sEarthThread = new WorkerThread(EarthLoadThread);
         if (sEarthThread == NULL) {
-            OSPanic("d_scene.cpp", 1699, "\x83\x81\x83\x82\x83\x8A\x82\xAA\x82\xC8\x82\xA2\x81\x49\x81\x49\n");
+            OSPanic("d_scene.cpp", 1699, "メモリがない！！\n");
             return FALSE;
         }
     } else {

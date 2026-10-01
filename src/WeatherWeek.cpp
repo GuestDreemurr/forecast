@@ -129,14 +129,14 @@ void WeatherWeek::SetupJP(void* arc) {
     mNoServiceText = mNoServiceLayout->FindButton("text");
     if (mNoServiceText == NULL) {
         OSPanic("d_weather_a_week.cpp", 409,
-                "text \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "text が見つかりません!!\n");
     }
 
     for (s32 i = 0; i < 7; i++) {
         mDayPanes[i] = mLayout->FindButton(sDayPaneNamesJP[i]);
         if (mDayPanes[i] == NULL) {
             OSReport("%s : ", layoutName);
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sDayPaneNamesJP[i]);
+            OSReport("%sが見つかりません!!\n", sDayPaneNamesJP[i]);
             OSPanic("d_weather_a_week.cpp", 419, "");
         }
     }
@@ -146,7 +146,7 @@ void WeatherWeek::SetupJP(void* arc) {
         box->mPane = mLayout->FindButton(sBoxNamesJP[i]);
         if (box->mPane == NULL) {
             OSReport("%s : ", layoutName);
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sBoxNamesJP[i]);
+            OSReport("%sが見つかりません!!\n", sBoxNamesJP[i]);
             OSPanic("d_weather_a_week.cpp", 432, "");
         }
 
@@ -215,7 +215,7 @@ void WeatherWeek::Setup(void* arc) {
     mNoServiceText = mNoServiceLayout->FindButton("text");
     if (mNoServiceText == NULL) {
         OSPanic("d_weather_a_week.cpp", 499,
-                "text \x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n");
+                "text が見つかりません!!\n");
     }
 
     for (s32 i = 0; i < 30; i++) {
@@ -223,7 +223,7 @@ void WeatherWeek::Setup(void* arc) {
         box->mPane = mLayout->FindButton(sBoxNames[i]);
         if (box->mPane == NULL) {
             OSReport("%s : ", layoutName);
-            OSReport("%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1\x21\x21\n", sBoxNames[i]);
+            OSReport("%sが見つかりません!!\n", sBoxNames[i]);
             OSPanic("d_weather_a_week.cpp", 512, "");
         }
 
