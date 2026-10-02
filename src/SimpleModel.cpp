@@ -7,6 +7,9 @@
 #include <nw4r/g3d/g3d_scnmdlsmpl.h>
 #include <nw4r/math.h>
 
+// 3.0f, read from other units (SimpleGlobe ctor, fn_8002B9B0) and negated there
+extern const f32 gModelRange = 3.0f;
+
 // Scratch matrix for CalcMtx
 extern nw4r::math::MTX34 gModelMtx;
 
