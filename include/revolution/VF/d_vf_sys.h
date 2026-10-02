@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+struct PF_DTA;
+
 void VFSysSetLastError(s32 i_err);
 void VFSys_create_cache(struct VF_HANDLE_TYPE* i_handle_p, u32 i_pages, struct MEMiHeapHead* i_heap_handle);
 struct VF_HANDLE_TYPE* VFSysGetHandleP(s32 i_idx);
@@ -20,6 +22,7 @@ s32 VFSysCheckExistPrfFile_nandflash_sub(const s8* i_prf_file_name_p, u32 i_hand
 s32 VFSysCheckExistPrfFile_nandflash(struct VF_HANDLE_DEVICE* i_device_p, const s8* i_prf_file_name_p, void* i_memory_p, u32 i_handle_idx);
 s32 VFSysCheckExistPrfFile_ram(struct VF_HANDLE_DEVICE* i_device_p, const s8* i_prf_file_name_p, void* i_memory_p, u32 i_handle_idx);
 s32 VFSysCheckExistPrfFile_dvd(struct VF_HANDLE_DEVICE* i_device_p, const s8* i_prf_file_name_p, void* i_memory_p, u32 i_handle_idx);
+s32 VFSysCreatePrfFileNANDFlashEx(const s8* i_prf_file_name_p, u32 i_file_size);
 s32 VFSysCheckExistPrfFile(s32 i_handle_idx, const s8* i_prf_file_name_p, void* i_memory_p);
 s32 VFSysMountDrv(s32 i_handle_idx, const s8* i_prf_file_name_p, void* i_memory_p);
 s32 VFSysUnmountDrv(s32 i_handle_idx, u32 i_mode);
@@ -31,13 +34,23 @@ s32 VFSysReadFile(u32* o_read_size_p, void* o_buf_p, u32 i_size, struct PF_FILE*
 s32 VFSysWriteFile(void* i_buf_p, u32 i_size, struct PF_FILE* i_file_p);
 s32 VFSysDeleteFile_current(const s8* i_path_p);
 s32 VFSysDeleteFile(s32 i_handle_idx, const s8* i_path_p);
+s32 VFSysCreateDir_current(const s8* i_dir_name_p);
+s32 VFSysCreateDir(s32 i_handle_idx, const s8* i_dir_name_p);
 s32 VFSysGetFileSizeByFd(s32* o_size_p, struct PF_FILE* i_file_p);
+s32 VFSysFileSearchFirst_current(struct PF_DTA* o_dta_p, const s8* i_path_p, u8 i_attr);
+s32 VFSysFileSearchFirst(struct PF_DTA* o_dta_p, s32 i_handle_idx, const s8* i_path_p, u8 i_attr);
+s32 VFSysFileSearchNext(struct PF_DTA* i_dta_p);
 s32 VFSysGetDriveFreeSize(s32 i_handle_idx);
 s32 VFSysGetLastError();
 s32 VFSysGetLastDeviceError_current();
 s32 VFSysGetLastDeviceError(s32 i_handle_idx);
 void VFSysSetNandFuncEx(u32 i_handle_idx);
+void VFSysSetNandFuncPrivate(u32 i_handle_idx);
+s32 VFSysFormatDrive(s32 i_handle_idx);
 s32 VFSysSetSyncMode(s32 i_handle_idx, u32 i_mode);
+
+typedef void (*VFSysTimeStampCallback)(void* time);
+VFSysTimeStampCallback VFSysSetTimeStampCallback(VFSysTimeStampCallback i_timestamp_callback);
 
 #ifdef __cplusplus
 }

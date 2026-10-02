@@ -30,6 +30,7 @@ s32 VFiPFFAT_FreeChain(struct PF_FFD* p_ffd, u32 start_cluster, u32 chain_index,
 s32 VFiPFFAT_GetBeforeChain(struct PF_VOLUME* p_vol, u32 start_cluster, u32 lActive, u32* p_cluster);
 s32 VFiPFFAT_InitFATRegion(struct PF_VOLUME* p_vol);
 s32 VFiPFFAT_MakeRootDir(struct PF_VOLUME* p_vol);
+s32 VFiPFFAT_RefreshFSINFO(struct PF_VOLUME* p_vol);
 void VFiPFFAT_InitHint(struct PF_FAT_HINT* p_hint);
 s32 VFiPFFAT_TraceClustersChain(struct PF_FFD* p_ffd, u32 start_clst, u32 size, u32* p_target_clst, u32* p_next_clst);
 s32 VFiPFFAT_ReadValueToSpecifiedCluster(struct PF_VOLUME* p_vol, u32 cluster, u32* value);

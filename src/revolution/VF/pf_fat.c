@@ -12,7 +12,7 @@ const struct {
     {0xFFFFFF7, 0xFFFFFF8, 0xFFFFFFF, 0xFFFFF00, 0xFFFFFFF}  // FAT32
 };
 
-static s32 VFiPFFAT_RefreshFSINFO(PF_VOLUME* p_vol);
+s32 VFiPFFAT_RefreshFSINFO(PF_VOLUME* p_vol);
 
 static s32 VFiPFFAT_ReadFATEntry(struct PF_VOLUME* p_vol, u32 cluster, u32* p_value) {
     switch (p_vol->bpb.fat_type) {
@@ -1460,7 +1460,7 @@ s32 VFiPFFAT_MakeRootDir(struct PF_VOLUME* p_vol) {
     return 0;
 }
 
-static s32 VFiPFFAT_RefreshFSINFO(PF_VOLUME* p_vol) {
+s32 VFiPFFAT_RefreshFSINFO(PF_VOLUME* p_vol) {
     s32 err;
 
     err = 0;

@@ -92,7 +92,7 @@ NWC24Err NWC24iFOpenNand(NWC24File* pFile, const char* pPath, u32 mode) {
 
     for (i = 0; i < NAND_RETRY_COUNT; i++) {
         result = NANDPrivateOpen(pPath, &pFile->nandf, access);
-        if (result != NAND_RESULT_BUSY) {
+        if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
             break;
         }
 
@@ -184,7 +184,7 @@ NWC24Err NWC24iFCloseNand(NWC24File* pFile) {
 
     for (i = 0; i < NAND_RETRY_COUNT; i++) {
         result = NANDClose(&pFile->nandf);
-        if (result != NAND_RESULT_BUSY) {
+        if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
             break;
         }
 
@@ -232,7 +232,7 @@ NWC24Err NWC24FSeek(NWC24File* pFile, s32 offset, NWC24SeekMode whence) {
 
     for (i = 0; i < NAND_RETRY_COUNT; i++) {
         result = NANDSeek(&pFile->nandf, offset, (NANDSeekMode)whence);
-        if (result != NAND_RESULT_BUSY) {
+        if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
             break;
         }
 
@@ -274,7 +274,7 @@ NWC24Err NWC24FRead(void* pDst, s32 size, NWC24File* pFile) {
 
     for (i = 0; i < NAND_RETRY_COUNT; i++) {
         result = NANDRead(&pFile->nandf, pDst, size);
-        if (result != NAND_RESULT_BUSY) {
+        if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
             break;
         }
 
@@ -321,7 +321,7 @@ NWC24Err NWC24FWrite(const void* pSrc, s32 size, NWC24File* pFile) {
 
     for (i = 0; i < NAND_RETRY_COUNT; i++) {
         result = NANDWrite(&pFile->nandf, pSrc, size);
-        if (result != NAND_RESULT_BUSY) {
+        if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
             break;
         }
 
@@ -378,7 +378,7 @@ NWC24Err NWC24FDeleteVF(const char* pPath) {
 NWC24Err NWC24MountVF(const char* pDrive, const char* pFileName) {
     s32 result;
 
-    result = VFMountDriveNANDFlashEx(pDrive, pFileName);
+    result = VFMountDriveNANDFlashPrivateEx(pDrive, pFileName);
     if (result == VF_ERROR_B001) {
         return NWC24_ERR_FILE_NOEXISTS;
     }
@@ -418,6 +418,50 @@ NWC24Err NWC24CheckSizeVF(const char* pDrive, u32* pSize) {
 
     return NWC24_OK;
 }
+// credit: https://github.com/koopthekoopa/wii-ipl/blob/main/libs/RevoEX/src/nwc24/NWC24FileAPI.c#L446
+NWC24Err NWC24CreateVF(const char* path, u32 fileSize) {
+    s32 result;
+    s32 vfResult;
+    NANDStatus status;
+
+    vfResult = VFCreateSystemFileNANDFlashEx(path, fileSize);
+    if (vfResult != VF_OK) {
+        return ConvertVfError(vfResult, NWC24_ERR_INTERNAL_VF);
+    }
+
+    result = NANDPrivateGetStatus(path, &status);
+    if (result != NAND_RESULT_OK) {
+        return NWC24_ERR_FATAL;
+    }
+
+    status.perm = NAND_PERM_RWALL;
+    result = NANDPrivateSetStatus(path, &status);
+    if (result != NAND_RESULT_OK) {
+        return NWC24_ERR_FATAL;
+    }
+
+    result = NWC24MountVF(NWC24i_VF_DRIVE, path);
+    if (result != VF_OK) {
+        return ConvertVfError(vfResult, NWC24_ERR_INTERNAL_VF);
+    }
+
+    vfResult = VFFormatDrive(NWC24i_VF_DRIVE);
+    if (vfResult != VF_OK) {
+        return ConvertVfError(vfResult, NWC24_ERR_INTERNAL_VF);
+    }
+
+    vfResult = VFCreateDir(NWC24i_VF_DRIVE ":/mb");
+    if (vfResult != VF_OK) {
+        return ConvertVfError(vfResult, NWC24_ERR_INTERNAL_VF);
+    }
+
+    result = NWC24UnmountVF(NWC24i_VF_DRIVE);
+    if (result != VF_OK) {
+        return ConvertVfError(vfResult, NWC24_ERR_INTERNAL_VF);
+    }
+
+    return NWC24_OK;
+}
 
 static NWC24Err BufferedWrite(const void* pSrc, s32 size, NWC24File* pFile) {
     u32 now;
@@ -436,7 +480,7 @@ static NWC24Err BufferedWrite(const void* pSrc, s32 size, NWC24File* pFile) {
     err = NWC24_OK;
 
     while (left != 0) {
-        now = NWC24i_IO_BUFFER_SIZE - pos;
+        now = NWC24i_IO_WRITE_BUFFER_SIZE - pos;
 
         if (left < now) {
             now = left;
@@ -448,14 +492,14 @@ static NWC24Err BufferedWrite(const void* pSrc, s32 size, NWC24File* pFile) {
         left -= now;
         pByteSrc += now;
 
-        if (pos < NWC24i_IO_BUFFER_SIZE) {
+        if (pos < NWC24i_IO_WRITE_BUFFER_SIZE) {
             continue;
         }
 
         pos = 0;
 
         if (pFile->mode & NWC24_OPEN_VF) {
-            result = VFWriteFile(pFile->vff, pBuf, NWC24i_IO_BUFFER_SIZE);
+            result = VFWriteFile(pFile->vff, pBuf, NWC24i_IO_WRITE_BUFFER_SIZE);
             if (result == VF_OK) {
                 continue;
             }
@@ -465,8 +509,8 @@ static NWC24Err BufferedWrite(const void* pSrc, s32 size, NWC24File* pFile) {
         }
 
         for (i = 0; i < NAND_RETRY_COUNT; i++) {
-            result = NANDWrite(&pFile->nandf, pBuf, NWC24i_IO_BUFFER_SIZE);
-            if (result != NAND_RESULT_BUSY) {
+            result = NANDWrite(&pFile->nandf, pBuf, NWC24i_IO_WRITE_BUFFER_SIZE);
+            if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
                 break;
             }
 
@@ -477,7 +521,7 @@ static NWC24Err BufferedWrite(const void* pSrc, s32 size, NWC24File* pFile) {
             return NWC24_ERR_NAND_CORRUPT;
         }
 
-        if (result != NWC24i_IO_BUFFER_SIZE) {
+        if (result != NWC24i_IO_WRITE_BUFFER_SIZE) {
             err = NWC24_ERR_FILE_WRITE;
             break;
         }
@@ -517,7 +561,7 @@ static NWC24Err BufferedWriteFlush(NWC24File* pFile) {
 
     for (i = 0; i < NAND_RETRY_COUNT; i++) {
         result = NANDWrite(&pFile->nandf, pBuf, pos);
-        if (result != NAND_RESULT_BUSY) {
+        if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
             break;
         }
 
@@ -584,7 +628,7 @@ static NWC24Err BufferedRead(void* pDst, s32 size, NWC24File* pFile) {
         } else {
             for (i = 0; i < NAND_RETRY_COUNT; i++) {
                 result = NANDRead(&pFile->nandf, pBuf, now);
-                if (result != NAND_RESULT_BUSY) {
+                if (!(result == NAND_RESULT_BUSY || result == NAND_RESULT_ALLOC_FAILED)) {
                     break;
                 }
 

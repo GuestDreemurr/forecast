@@ -15,6 +15,7 @@ s32 VFi_NandCreateDir(const char* path, u8 perm, u8 attr);
 s32 VFi_NandGetLength(struct NANDFileInfo* info, u32* length);
 s32 VFi_NandOpenSp(const char* path, void* info, u8 accType, u32 i_handleIdx);
 void VFi_NandSetNANDFuncNormal(u32 i_handleIdx);
+void VFi_NandSetNANDFuncPrivate(u32 i_handleIdx);
 s32 A32_NANDRead(struct NANDFileInfo* i_fileInfo_p, void* i_buf, u32 i_size);
 s32 A32_NANDWrite(struct NANDFileInfo* i_fileInfo_p, void* i_buf, u32 i_size, struct PDM_DISK* p_disk);
 s32 VFi_NandFlushNANDFromHandleIdx(s32 i_handleIdx, int i_setLastDeviceError);

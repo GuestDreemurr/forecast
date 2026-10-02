@@ -940,6 +940,10 @@ void VFSysSetNandFuncEx(u32 i_handle_idx) {
     VFi_NandSetNANDFuncNormal(i_handle_idx);
 }
 
+void VFSysSetNandFuncPrivate(u32 i_handle_idx) {
+    VFi_NandSetNANDFuncPrivate(i_handle_idx);
+}
+
 s32 VFSysSetSyncMode(s32 i_handle_idx, u32 i_mode) {
     struct VF_HANDLE_TYPE* handle_p;
 

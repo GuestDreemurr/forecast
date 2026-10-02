@@ -276,6 +276,15 @@ void VFi_NandSetNANDFuncNormal(u32 i_handleIdx) {
     }
 }
 
+void VFi_NandSetNANDFuncPrivate(u32 i_handleIdx) {
+    if (i_handleIdx < 26) {
+        l_nandFunc[i_handleIdx].create = VFi_NANDPrivateCreate;
+        l_nandFunc[i_handleIdx].open = VFi_NANDPrivateOpen;
+        l_nandFunc[i_handleIdx].createDir = VFi_NANDPrivateCreateDir;
+        l_nandFunc[i_handleIdx].delete = VFi_NANDPrivateDelete;
+    }
+}
+
 s32 A32_NANDRead(struct NANDFileInfo* i_fileInfo_p, void* i_buf, u32 i_size) {
     u8 work[32] ALIGN(64);
     s32 NANDError;

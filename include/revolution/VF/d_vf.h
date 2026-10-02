@@ -18,9 +18,12 @@ typedef enum {
 typedef enum { VF_SYNC_MODE_0, VF_SYNC_MODE_1 } VFSyncMode;
 
 s32 VFIsAvailable();
+void VFInit();
 void VFInitEx(void* i_heap_start_address_p, u32 i_size);
+s32 VFCreateSystemFileNANDFlashEx(const char* i_sys_file_name_p, u32 i_file_size);
 static s32 VF_activate_drive_common(s32 i_handle_idx, const char* i_sys_file_name_p, void* i_memory_p);
 s32 VFMountDriveNANDFlashEx(const char* i_drive, const char* i_sys_file_name_p);
+s32 VFMountDriveNANDFlashPrivateEx(const char* i_drive, const char* i_sys_file_name_p);
 s32 VFUnmountDrive(const char* i_drive);
 static s8* VF_path2handleidx(long* o_handle_idx_p, const char* i_path_p);
 void* VFOpenFile(const char* i_path_p, const char* i_mode, u32 i_attr);
@@ -29,10 +32,14 @@ s32 VFSeekFile(void* i_file_p, s32 i_offset, s32 i_origin);
 s32 VFReadFile(void* i_file_p, void* o_buf_p, u32 i_size, u32* o_read_size_p);
 s32 VFWriteFile(void* i_file_p, void* i_buf_p, u32 i_size);
 s32 VFDeleteFile(const char* i_path_p);
+s32 VFCreateDir(const char* i_dir_name_p);
 s32 VFGetFileSizeByFd(void* i_file_p);
+s32 VFFileSearchFirst(void* o_dta_p, const char* i_path_p, u8 i_attr);
+s32 VFFileSearchNext(void* o_dta_p);
 s32 VFGetLastError();
 s32 VFGetLastDeviceError(const char* i_drive);
 s32 VFGetDriveFreeSize(const char* i_drive);
+s32 VFFormatDrive(const char* i_drive);
 s32 VFSetSyncMode(const char* i_drive, u32 i_mode);
 
 #ifdef __cplusplus

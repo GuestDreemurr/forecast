@@ -338,7 +338,7 @@ revolution/VF/pf_system.c:
 
 revolution/VF/d_vf.c:
 	.text       start:0x8005EF7C end:0x8005FED8
-	.bss        start:0x80220260 end:0x80220280
+	.bss        start:0x80220260 end:0x80288280
 	.sbss       start:0x80330C98 end:0x80330CA0
 
 revolution/VF/d_vf_sys.c:
@@ -359,8 +359,8 @@ revolution/VF/nand_drv.c:
 revolution/NWC24/NWC24FileApi.c:
 	.text       start:0x80068E54 end:0x8006A4D8
 	.data       start:0x801B42D8 end:0x801B4304
-	.sdata      start:0x80330278 end:0x80330284
-	.sbss       start:0x80330CE0 end:0x80330CF8
+	.sdata      start:0x80330278 end:0x80330290
+	.sbss       start:0x80330CE0 end:0x80330CF0
 
 revolution/NWC24/NWC24Manage.c:
 	.text       start:0x8006AB14 end:0x8006B4C0
