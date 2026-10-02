@@ -45,18 +45,18 @@ WeatherScene.cpp:
 	.rodata     start:0x801793A0 end:0x80179440
 	.data       start:0x80199AA8 end:0x8019A0B0
 	.bss        start:0x801D6F20 end:0x801D7150
-	.sdata      start:0x8032FCF0 end:0x8032FD08
-	.sbss       start:0x803309B0 end:0x80330A48
-	.sdata2     start:0x80331A00 end:0x80331A88
-	.sbss2      start:0x80333760 end:0x80333780
+	.sdata      start:0x8032FCF0 end:0x8032FD01
+	.sbss       start:0x803309B0 end:0x80330A44
+	.sdata2     start:0x80331A00 end:0x80331A78
+	.sbss2      start:0x80333760 end:0x8033377C
 
 Weather.cpp:
 	.text       start:0x80010C30 end:0x80011100
 	.ctors      start:0x8017924C end:0x80179250
-	.data       start:0x8019A0B0 end:0x8019A0D0
-	.bss        start:0x801D7150 end:0x801D7160
-	.sbss       start:0x80330A48 end:0x80330A50
-	.sdata2     start:0x80331A88 end:0x80331A98
+	.data       start:0x8019A0B0 end:0x8019A0CC
+	.bss        start:0x801D7150 end:0x801D715C
+	.sbss       start:0x80330A48 end:0x80330A4C
+	.sdata2     start:0x80331A78 end:0x80331A98
 
 WeatherOther.cpp:
 	.text       start:0x80011100 end:0x8001230C
@@ -71,17 +71,17 @@ WeatherOther.cpp:
 WeatherToday.cpp:
 	.text       start:0x8001230C end:0x80012A1C
 	.ctors      start:0x80179254 end:0x80179258
-	.data       start:0x8019A1F8 end:0x8019A230
-	.bss        start:0x801D7170 end:0x801D7180
-	.sbss       start:0x80330A58 end:0x80330A60
+	.data       start:0x8019A1F8 end:0x8019A22C
+	.bss        start:0x801D7170 end:0x801D717C
+	.sbss       start:0x80330A58 end:0x80330A5C
 	.sdata2     start:0x80331AC0 end:0x80331AE0
 
 WeatherTomorrow.cpp:
 	.text       start:0x80012A1C end:0x8001312C
 	.ctors      start:0x80179258 end:0x8017925C
-	.data       start:0x8019A230 end:0x8019A268
-	.bss        start:0x801D7180 end:0x801D7190
-	.sbss       start:0x80330A60 end:0x80330A68
+	.data       start:0x8019A230 end:0x8019A264
+	.bss        start:0x801D7180 end:0x801D718C
+	.sbss       start:0x80330A60 end:0x80330A64
 	.sdata2     start:0x80331AE0 end:0x80331B00
 
 WeatherWeek.cpp:
@@ -151,10 +151,10 @@ ForecastNow.cpp:
 WeatherSetting.cpp:
 	.text       start:0x80027DA8 end:0x800289AC
 	.ctors      start:0x80179270 end:0x80179274
-	.data       start:0x8019B5D8 end:0x8019B738
-	.bss        start:0x801D7230 end:0x801D7258
+	.data       start:0x8019B5D8 end:0x8019B720
+	.bss        start:0x801D7230 end:0x801D7254
 	.sdata      start:0x803300E0 end:0x803300F8
-	.sbss       start:0x80330AA8 end:0x80330AB8
+	.sbss       start:0x80330AA8 end:0x80330AB4
 	.sdata2     start:0x80331D20 end:0x80331D38
 
 ForecastSummary.cpp:

@@ -82,7 +82,7 @@ close:
     return ret;
 }
 
-s32 WriteSaveData(SaveData* data) {
+s32 WriteSaveData() {
     NANDFileInfo info;
     u32* end;
     BOOL written = FALSE;

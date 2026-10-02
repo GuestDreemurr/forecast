@@ -126,7 +126,7 @@ public:
     typedef void (WeatherToday::*DrawFunc)(const s32& alpha);
 
     WeatherToday(const Vec2& pos, void* arc, const Vec2& size, s32 type);
-    virtual ~WeatherToday() {}
+    virtual ~WeatherToday();
     virtual void Reset();
     virtual void Draw();
     virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
@@ -144,7 +144,7 @@ public:
     typedef void (WeatherTomorrow::*DrawFunc)(const s32& alpha);
 
     WeatherTomorrow(const Vec2& pos, void* arc, const Vec2& size, s32 type);
-    virtual ~WeatherTomorrow() {}
+    virtual ~WeatherTomorrow();
     virtual void Reset();
     virtual void Draw();
     virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);
@@ -187,7 +187,7 @@ public:
 class WeatherNow : public WeatherBaseDay {
 public:
     WeatherNow(const Vec2& pos, void* arc, const Vec2& size, s32 type);
-    virtual ~WeatherNow() {}
+    virtual ~WeatherNow();
     virtual void Reset();
     virtual void Draw();
     virtual void SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover);

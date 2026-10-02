@@ -608,7 +608,7 @@ BOOL WeatherScene::StateAddress() {
                 mSaveData->mCountryCode = gHomeCountryCode;
                 mSaveData->mTempUnit = gTempUnit;
                 mSaveData->mWindUnit = gWindUnit;
-                mWriteResult = WriteSaveData(mSaveData);
+                mWriteResult = WriteSaveData();
                 if (mWriteResult == 0) {
                     if (!CreateViews()) {
                         return FALSE;
@@ -992,7 +992,7 @@ BOOL WeatherScene::StateSetting() {
                     mSaveData->mCountryCode = gHomeCountryCode;
                     mSaveData->mTempUnit = gTempUnit;
                     mSaveData->mWindUnit = gWindUnit;
-                    mWriteResult = WriteSaveData(mSaveData);
+                    mWriteResult = WriteSaveData();
                     if (mWriteResult != 0) {
                         ChangeState(&WeatherScene::StateError);
                         return TRUE;

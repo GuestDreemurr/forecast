@@ -234,6 +234,10 @@ public:
     City(CityInfo* info);
     ~City();
 
+    CityInfo* GetInfo() const { return mInfo; }
+    CityForecast* GetForecast() const { return mForecast; }
+    CitySummary* GetSummary() const { return mSummary; }
+
     CityInfo* mInfo;   // at 0x0
     CityForecast* mForecast; // at 0x4
     CitySummary* mSummary; // at 0x8

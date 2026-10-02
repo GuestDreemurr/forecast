@@ -19,6 +19,8 @@ void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
 WeatherNow::WeatherNow(const Vec2& pos, void* arc, const Vec2& size, s32 type)
     : WeatherBaseDay(pos, arc, size, type) {}
 
+WeatherNow::~WeatherNow() {}
+
 void WeatherNow::Reset() {
     mLayout->Reset();
 }

@@ -25,6 +25,8 @@ WeatherTomorrow::WeatherTomorrow(const Vec2& pos, void* arc, const Vec2& size, s
     }
 }
 
+WeatherTomorrow::~WeatherTomorrow() {}
+
 void WeatherTomorrow::Reset() {
     mLayout->Reset();
 }
@@ -72,8 +74,8 @@ void WeatherTomorrow::SetPosition(const Vec2& pos, const f32& scale, const bool&
 
 BOOL WeatherTomorrow::IsEmpty() {
     if (gCurrentCity != NULL) {
-        CityForecast* forecast = gCurrentCity->mForecast;
-        if (gCurrentCity->mInfo != NULL) {
+        CityForecast* forecast = gCurrentCity->GetForecast();
+        if (gCurrentCity->GetInfo() != NULL) {
             if (forecast != NULL) {
                 if (forecast->mEntry->mDays[1].mWeather != 0xFFFF) {
                     u32 code = forecast->mEntry->mDays[1].mWeather;
@@ -82,7 +84,7 @@ BOOL WeatherTomorrow::IsEmpty() {
                     }
                 }
             } else {
-                CitySummary* summary = gCurrentCity->mSummary;
+                CitySummary* summary = gCurrentCity->GetSummary();
                 if (summary != NULL && summary->mEntry->mDays[1].mWeather != 0xFFFF) {
                     u32 code = summary->mEntry->mDays[1].mWeather;
                     if (gForecastData->FindWeatherInfo(code) != NULL) {
@@ -96,11 +98,14 @@ BOOL WeatherTomorrow::IsEmpty() {
     return TRUE;
 }
 
+static inline WeatherInfo* FindWeather(u32 weather) {
+    return gForecastData->FindWeatherInfo(weather);
+}
+
 void WeatherTomorrow::DrawForecast(const s32& alpha) {
-    CityForecast* forecast = gCurrentCity->mForecast;
-    if (gCurrentCity->mInfo != NULL && forecast != NULL) {
-        u32 code = forecast->mEntry->mDays[1].mWeather;
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+    CityForecast* forecast = gCurrentCity->GetForecast();
+    if (gCurrentCity->GetInfo() != NULL && forecast != NULL) {
+        WeatherInfo* info = FindWeather(forecast->mEntry->mDays[1].mWeather);
         if (info != NULL) {
             f32 scale = 1.0f;
             Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
@@ -123,10 +128,9 @@ void WeatherTomorrow::DrawForecast(const s32& alpha) {
 }
 
 void WeatherTomorrow::DrawSummary(const s32& alpha) {
-    CitySummary* summary = gCurrentCity->mSummary;
-    if (gCurrentCity->mInfo != NULL && summary != NULL) {
-        u32 code = summary->mEntry->mDays[1].mWeather;
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+    CitySummary* summary = gCurrentCity->GetSummary();
+    if (gCurrentCity->GetInfo() != NULL && summary != NULL) {
+        WeatherInfo* info = FindWeather(summary->mEntry->mDays[1].mWeather);
         if (info != NULL) {
             f32 scale = 1.0f;
             Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);

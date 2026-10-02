@@ -101,7 +101,7 @@ struct SaveData {
 
 void SetSaveDataBuffer(SaveData* buf, u32 size);
 s32 ReadSaveData();
-s32 WriteSaveData(SaveData* data);
+s32 WriteSaveData();
 
 struct CityInfo;
 
