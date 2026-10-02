@@ -52,17 +52,17 @@ struct HomeButtonController {
     u8 unk4[0xC];       // at 0x4
 };
 
-static const char* sLayoutArchives[] = {
-    "HomeButton3/LZ77_homeBtn.arc",     "HomeButton3/LZ77_homeBtn_ENG.arc",
-    "HomeButton3/LZ77_homeBtn_GER.arc", "HomeButton3/LZ77_homeBtn_FRA.arc",
-    "HomeButton3/LZ77_homeBtn_SPA.arc", "HomeButton3/LZ77_homeBtn_ITA.arc",
-    "HomeButton3/LZ77_homeBtn_NED.arc",
-};
-
 static void DrawManualFade(u8 alpha, GXRenderModeObj* rmode);
 
 HomeButton::HomeButton(u32 manualContent, const char* manualPath, const char* manualPage,
                        MEMAllocator* allocator1, MEMAllocator* allocator2, void* workBuf) {
+    static const char* sLayoutArchives[] = {
+        "HomeButton3/LZ77_homeBtn.arc",     "HomeButton3/LZ77_homeBtn_ENG.arc",
+        "HomeButton3/LZ77_homeBtn_GER.arc", "HomeButton3/LZ77_homeBtn_FRA.arc",
+        "HomeButton3/LZ77_homeBtn_SPA.arc", "HomeButton3/LZ77_homeBtn_ITA.arc",
+        "HomeButton3/LZ77_homeBtn_NED.arc",
+    };
+
     mIsReady = FALSE;
     mSoundBuffer = NULL;
     mSoundData = NULL;
@@ -104,8 +104,8 @@ HomeButton::HomeButton(u32 manualContent, const char* manualPath, const char* ma
             layoutPath = sLayoutArchives[SC_LANG_NL];
             break;
         default:
-            mInfo->language = SC_LANG_EN;
             layoutPath = sLayoutArchives[SC_LANG_EN];
+            mInfo->language = SC_LANG_EN;
             break;
         }
 

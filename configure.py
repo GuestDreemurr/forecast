@@ -1223,7 +1223,7 @@ config.libs = [
                 Object(Matching, "Region.cpp"),
                 Object(Matching, "Scene.cpp"),
                 Object(NonMatching, "SimpleModel.cpp"),
-                Object(NonMatching, "HomeButton.cpp"),
+                Object(Matching, "HomeButton.cpp"),
                 Object(Matching, "main.cpp"),
                 Object(Matching, "DrawUtil.cpp"),
                 Object(NonMatching, "GlobeDots.cpp"),
