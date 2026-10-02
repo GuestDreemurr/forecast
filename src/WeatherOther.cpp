@@ -72,8 +72,8 @@ void WeatherOther::SetupJP(void* arc) {
                 "text が見つかりません!!\n");
     }
 
-    for (s32 i = 0; i < 6; i++) {
-        TextBox* box = &mBoxes[i];
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 6; i++, box++) {
         box->mPane = mLayout->FindButton(sBoxNamesJP[i]);
         if (box->mPane == NULL) {
             OSReport("%sが見つかりません!!\n", sBoxNamesJP[i]);
@@ -86,10 +86,10 @@ void WeatherOther::SetupJP(void* arc) {
         box->mX = centerX + box->mX * scaleX;
         box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
+        f32 h = __fabsf(pane->mTop - pane->mBottom);
         f32 w = pane->mRight - pane->mLeft;
-        f32 h = pane->mTop - pane->mBottom;
         box->mWidth = scaleX * w;
-        box->mHeight = __fabsf(h);
+        box->mHeight = h;
         box->mScaleX = sBoxScalesJP[i];
         box->mScaleY = sBoxScalesJP[i];
         box->mColor.r = gColorWhite.r;
@@ -133,8 +133,8 @@ void WeatherOther::Setup(void* arc) {
                 "text が見つかりません!!\n");
     }
 
-    for (s32 i = 0; i < 2; i++) {
-        TextBox* box = &mBoxes[i];
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 2; i++, box++) {
         box->mPane = mLayout->FindButton(sBoxNames[i]);
         if (box->mPane == NULL) {
             OSReport("%sが見つかりません!!\n", sBoxNames[i]);
@@ -147,10 +147,10 @@ void WeatherOther::Setup(void* arc) {
         box->mX = centerX + box->mX * scaleX;
         box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
+        f32 h = __fabsf(pane->mTop - pane->mBottom);
         f32 w = pane->mRight - pane->mLeft;
-        f32 h = pane->mTop - pane->mBottom;
         box->mWidth = scaleX * w;
-        box->mHeight = __fabsf(h);
+        box->mHeight = h;
         box->mScaleX = sBoxScales[i];
         box->mScaleY = sBoxScales[i];
         box->mColor.r = gColorWhite.r;

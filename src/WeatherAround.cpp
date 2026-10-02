@@ -31,7 +31,7 @@ extern LayoutButton* sHoveredButtons[WPAD_MAX_CONTROLLERS];
 extern const s32 gWeatherIconIds[];
 extern const s32 gWeatherIconIds2[];
 
-void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
+void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha);
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void RequestWeatherSounds(u32 type, f32 volume);
 f32 EaseCos(u16 t);
@@ -733,14 +733,14 @@ void WeatherAround::DrawIcons() {
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawBg());
     FOR_EACH_BUCKET(mBackBuckets, mNextBack, {
         u32 code = label->GetWeatherCode(mDay);
-        DrawWeatherIcon(gForecastData->GetWeatherIcon(code), &label->mPos, label->mAlpha, scale);
+        DrawWeatherIcon(gForecastData->GetWeatherIcon(code), &label->mPos, scale, label->mAlpha);
     });
     FOR_EACH_LIST(mFrontList, mNextFront, label->DrawBg());
     FOR_EACH_BUCKET(mFrontBuckets, mNextFrontBack, label->DrawName());
     FOR_EACH_LIST(mBackList, mNext, {
         f32 bounce = scale + 0.2f * EaseCos(label->mBounce);
         u32 code = label->GetWeatherCode(mDay);
-        DrawWeatherIcon(gForecastData->GetWeatherIcon(code), &label->mPos, label->mAlpha, bounce);
+        DrawWeatherIcon(gForecastData->GetWeatherIcon(code), &label->mPos, bounce, label->mAlpha);
     });
     FOR_EACH_LIST(mFrontList, mNextFront, label->DrawName());
 }

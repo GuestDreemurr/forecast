@@ -474,7 +474,7 @@ static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, 
 static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, GXColor shadow, f32 scale);
 static void DrawIconTexture(u32 texture, const Vec2* pos, GXColor color, f32 scale);
 
-void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale) {
+void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha) {
     const IconLayer* layers;
 
     SetDefaultGXState();

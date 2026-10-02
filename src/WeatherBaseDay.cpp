@@ -15,7 +15,7 @@ extern wchar_t sTextBuf[0x100];
 extern nw4r::ut::Font* gSysFont;
 
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
-void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
+void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha);
 
 static const f32 sBoxScalesJP[20] = {
     1.0f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.6f,
@@ -374,7 +374,7 @@ void WeatherBaseDay::DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha
     if ((weather->mType->mIcon & 0x7FFF) >= 100) {
         iconScale *= 0.8f;
     }
-    DrawWeatherIcon(weather->mType->mIcon, &pos, alpha, iconScale);
+    DrawWeatherIcon(weather->mType->mIcon, &pos, iconScale, alpha);
 
     SetDefaultGXState();
     SetOrthoProjection();
@@ -616,7 +616,7 @@ void WeatherBaseDay::DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha
 
 void WeatherBaseDay::DrawDay(DayForecast* day, WeatherInfo* weather, s32 alpha, f32 scale) {
     Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
-    DrawWeatherIcon(weather->mType->mIcon, &pos, alpha, scale * mBoxes[4].mScaleX);
+    DrawWeatherIcon(weather->mType->mIcon, &pos, scale * mBoxes[4].mScaleX, alpha);
 
     SetDefaultGXState();
     SetOrthoProjection();

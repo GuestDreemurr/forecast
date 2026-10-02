@@ -1204,7 +1204,7 @@ config.libs = [
                 Object(Matching, "ErrorWindow.cpp"),
                 Object(Matching, "ForecastCheck.cpp"),
                 Object(Matching, "Weather.cpp"),
-                Object(NonMatching, "WeatherOther.cpp"),
+                Object(Matching, "WeatherOther.cpp", extra_cflags=["-ipa file"]),
                 Object(Matching, "WeatherToday.cpp"),
                 Object(Matching, "WeatherTomorrow.cpp"),
                 Object(NonMatching, "WeatherWeek.cpp"),

@@ -14,7 +14,7 @@ extern wchar_t sTextBuf[0x100];
 extern nw4r::ut::Font* gSysFont;
 extern nw4r::math::MTX34 gModelMtx;
 
-void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
+void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha);
 
 WeatherNow::WeatherNow(const Vec2& pos, void* arc, const Vec2& size, s32 type)
     : WeatherBaseDay(pos, arc, size, type) {}
@@ -86,7 +86,7 @@ void WeatherNow::DrawNow(const s32& alpha) {
     Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
     pos.x = mBoxes[4].mX + mPos.x;
     pos.y = mBoxes[4].mY - mPos.y;
-    DrawWeatherIcon(info->mType->mIcon, &pos, alpha, scale * mBoxes[4].mScaleX);
+    DrawWeatherIcon(info->mType->mIcon, &pos, scale * mBoxes[4].mScaleX, alpha);
 
     SetDefaultGXState();
     SetOrthoProjection();

@@ -16,7 +16,7 @@ extern nw4r::ut::Font* gSysFont;
 extern nw4r::math::MTX34 gModelMtx;
 
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
-void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
+void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha);
 void MinutesToCalendarTime(u32 minutes, OSCalendarTime* time);
 
 // Weekday textures, Sunday first
@@ -141,8 +141,8 @@ void WeatherWeek::SetupJP(void* arc) {
         }
     }
 
-    for (s32 i = 0; i < 45; i++) {
-        TextBox* box = &mBoxes[i];
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 45; i++, box++) {
         box->mPane = mLayout->FindButton(sBoxNamesJP[i]);
         if (box->mPane == NULL) {
             OSReport("%s : ", layoutName);
@@ -156,10 +156,10 @@ void WeatherWeek::SetupJP(void* arc) {
         box->mX = centerX + box->mX * scaleX;
         box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
+        f32 h = __fabsf(pane->mTop - pane->mBottom);
         f32 w = pane->mRight - pane->mLeft;
-        f32 h = pane->mTop - pane->mBottom;
         box->mWidth = scaleX * w;
-        box->mHeight = __fabsf(h);
+        box->mHeight = h;
         box->mScaleX = sBoxScalesJP[i];
         box->mScaleY = sBoxScalesJP[i];
 
@@ -218,8 +218,8 @@ void WeatherWeek::Setup(void* arc) {
                 "text が見つかりません!!\n");
     }
 
-    for (s32 i = 0; i < 30; i++) {
-        TextBox* box = &mBoxes[i];
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 30; i++, box++) {
         box->mPane = mLayout->FindButton(sBoxNames[i]);
         if (box->mPane == NULL) {
             OSReport("%s : ", layoutName);
@@ -233,10 +233,10 @@ void WeatherWeek::Setup(void* arc) {
         box->mX = centerX + box->mX * scaleX;
         box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
+        f32 h = __fabsf(pane->mTop - pane->mBottom);
         f32 w = pane->mRight - pane->mLeft;
-        f32 h = pane->mTop - pane->mBottom;
         box->mWidth = scaleX * w;
-        box->mHeight = __fabsf(h);
+        box->mHeight = h;
         box->mScaleX = sBoxScales[i];
         box->mScaleY = sBoxScales[i];
 
@@ -356,17 +356,18 @@ BOOL WeatherWeek::HasData(CityForecast* forecast) {
 }
 
 void WeatherWeek::DrawWeekJP(const s32& alpha) {
-    CityForecast* forecast = gCurrentCity->mForecast;
+    CityInfo* cityInfo = gCurrentCity->GetInfo();
+    CityForecast* forecast = gCurrentCity->GetForecast();
     nw4r::ut::Color color;
     f32 fade = alpha / 255.0f;
-    Vec2 pos;
     OSCalendarTime time;
 
-    if (gCurrentCity->mInfo == NULL) {
+    if (cityInfo == NULL) {
         return;
     }
 
     Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
+    Vec2 pos;
     SetDefaultGXState();
     SetOrthoProjection();
     f32 scale = 1.0f;
@@ -401,26 +402,36 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
     mWriter.SetCursor(mBoxes[2].mX + mPos.x, mBoxes[2].mY - mPos.y);
     mWriter.Print(L"(%)");
 
-    WeekForecast* week = forecast->mEntry->mWeek;
-    u32 minutes = forecast->mEntry->mTime + 1440;
-    for (s32 i = 0; i < 7; i++, week++, minutes += 1440) {
-        const s32* boxes = sDayBoxesJP[i];
+    s32 day;
+    WeekForecast* week;
+    u32 minutes;
+    wchar_t* buf;
+    buf = sTextBuf;
+    week = forecast->mEntry->mWeek;
+    day = 0;
+    minutes = forecast->mEntry->mTime;
+    minutes += 1440;
+    for (s32 i = 0; i < 7; i++, minutes += 1440, day++, week++) {
         TextBox* box;
         s32 temp;
-        s32 len;
+        size_t len;
 
         SetDefaultGXState();
         SetOrthoProjection();
         GXSetTevColorIn(GX_TEVSTAGE0, (GXTevColorArg)4, (GXTevColorArg)8, (GXTevColorArg)2, (GXTevColorArg)4);
 
-        temp = gTempUnit == 0 ? week->mMaxC : week->mMaxF;
-        if (temp <= -128) {
-            wcscpy(sTextBuf, L"--");
+        if (gTempUnit == 0) {
+            temp = week->mMaxC;
         } else {
-            FormatNumber(temp, sTextBuf, 4, FALSE);
+            temp = week->mMaxF;
         }
-        len = wcslen(sTextBuf);
-        box = &mBoxes[boxes[3]];
+        if (temp <= -128) {
+            wcscpy(buf, L"--");
+        } else {
+            FormatNumber(temp, buf, 4, FALSE);
+        }
+        len = wcslen(buf);
+        box = &mBoxes[sDayBoxesJP[day][3]];
         pos.x = box->mX + mPos.x;
         pos.y = box->mY - mPos.y;
         if (len == 1) {
@@ -430,14 +441,18 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
         box->mShadowColor.a = 0;
         DrawNumCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, 0.0f, &box->mColor, &box->mShadowColor);
 
-        temp = gTempUnit == 0 ? week->mMinC : week->mMinF;
-        if (temp <= -128) {
-            wcscpy(sTextBuf, L"--");
+        if (gTempUnit == 0) {
+            temp = week->mMinC;
         } else {
-            FormatNumber(temp, sTextBuf, 4, FALSE);
+            temp = week->mMinF;
         }
-        len = wcslen(sTextBuf);
-        box = &mBoxes[boxes[4]];
+        if (temp <= -128) {
+            wcscpy(buf, L"--");
+        } else {
+            FormatNumber(temp, buf, 4, FALSE);
+        }
+        len = wcslen(buf);
+        box = &mBoxes[sDayBoxesJP[day][4]];
         pos.x = box->mX + mPos.x;
         pos.y = box->mY - mPos.y;
         if (len == 1) {
@@ -451,12 +466,12 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
         SetOrthoProjection();
         s32 percent = week->mPercent;
         if (percent == 0xFF) {
-            wcscpy(sTextBuf, L"--");
+            wcscpy(buf, L"--");
         } else {
-            FormatNumber(percent, sTextBuf, 4, FALSE);
+            FormatNumber(percent, buf, 4, FALSE);
         }
-        len = wcslen(sTextBuf);
-        box = &mBoxes[boxes[5]];
+        len = wcslen(buf);
+        box = &mBoxes[sDayBoxesJP[day][5]];
         pos.x = box->mX + mPos.x;
         pos.y = box->mY - mPos.y;
         if (len == 1) {
@@ -468,14 +483,14 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
 
         MinutesToCalendarTime(minutes, &time);
         FormatNumber(time.mday, sTextBuf, 2, FALSE);
-        box = &mBoxes[boxes[0]];
+        box = &mBoxes[sDayBoxesJP[day][0]];
         pos.x = box->mX + mPos.x;
         pos.y = box->mY - mPos.y;
         box->mColor.a = alpha;
         box->mShadowColor.a = alpha;
         DrawDateCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
 
-        DrawIcon(&mBoxes[boxes[1]], gWeekdayTexturesJP[time.wday], alpha);
+        DrawIcon(&mBoxes[sDayBoxesJP[day][1]], gWeekdayTexturesJP[time.wday], alpha);
         switch (time.wday) {
         case 0:
             color.r = sColorSunday.r;
@@ -496,15 +511,16 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
             color.a = 128.0f * fade;
             break;
         }
-        mDayPanes[i]->SetPaneColor(sDayColorPaneNames[i], color, TRUE);
+        mDayPanes[day]->SetPaneColor(sDayColorPaneNames[day], color, TRUE);
 
-        box = &mBoxes[boxes[2]];
-        pos.x = box->mX + mPos.x;
-        pos.y = box->mY - mPos.y;
-        u32 code = week->mWeather;
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+        box = &mBoxes[sDayBoxesJP[day][2]];
+        f32 y = box->mY - mPos.y;
+        f32 x = box->mX + mPos.x;
+        pos.x = x;
+        pos.y = y;
+        WeatherInfo* info = gForecastData->FindWeatherInfo(week->mWeather);
         if (week->mWeather != 0xFFFF && info != NULL) {
-            DrawWeatherIcon(info->mType->mIcon, &pos, alpha, box->mScaleX);
+            DrawWeatherIcon(info->mType->mIcon, &pos, box->mScaleX, alpha);
         } else {
             wcscpy(sTextBuf, L"--");
             box->mColor.a = alpha;
@@ -514,15 +530,14 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
     }
 }
 
-#define FORMAT_TEMP(buf, temp)                                                                               \
-    {                                                                                                        \
-        buf = sTextBuf;                                                                                      \
-        if ((temp) <= -128) {                                                                                \
-            wcscpy(buf, L"--");                                                                              \
-        } else {                                                                                             \
-            FormatNumber(temp, buf, 4, FALSE);                                                               \
-        }                                                                                                    \
+static inline void FormatTemp(wchar_t*& buf, s32 temp) {
+    buf = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(buf, L"--");
+    } else {
+        FormatNumber(temp, buf, 4, FALSE);
     }
+}
 
 void WeatherWeek::DrawWeek(const s32& alpha) {
     CityForecast* forecast = gCurrentCity->mForecast;
@@ -534,10 +549,14 @@ void WeatherWeek::DrawWeek(const s32& alpha) {
 
     Vec2F center(mPos.x + 0.5f * GetScreenWidth(), 228.0f - mPos.y);
     Vec2 pos;
-    WeekForecast* week = forecast->mEntry->mWeek;
-    u32 minutes = forecast->mEntry->mTime + 1440;
-    for (s32 i = 0; i < 5; i++, week++, minutes += 1440) {
-        const s32* boxes = sDayBoxes[i];
+    const s32* boxes;
+    WeekForecast* week;
+    u32 minutes;
+    week = forecast->mEntry->mWeek;
+    boxes = sDayBoxes[0];
+    minutes = forecast->mEntry->mTime;
+    minutes += 1440;
+    for (s32 i = 0; i < 5; i++, minutes += 1440, boxes += 6, week++) {
         TextBox* box;
         wchar_t* buf;
         size_t len;
@@ -546,9 +565,9 @@ void WeatherWeek::DrawWeek(const s32& alpha) {
         SetOrthoProjection();
 
         if (gTempUnit == 0) {
-            FORMAT_TEMP(buf, week->mMaxC);
+            FormatTemp(buf, week->mMaxC);
         } else {
-            FORMAT_TEMP(buf, week->mMaxF);
+            FormatTemp(buf, week->mMaxF);
         }
         len = wcslen(buf);
         if (gRegion == 2) {
@@ -567,9 +586,9 @@ void WeatherWeek::DrawWeek(const s32& alpha) {
         DrawTempCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
 
         if (gTempUnit == 0) {
-            FORMAT_TEMP(buf, week->mMinC);
+            FormatTemp(buf, week->mMinC);
         } else {
-            FORMAT_TEMP(buf, week->mMinF);
+            FormatTemp(buf, week->mMinF);
         }
         len = wcslen(buf);
         if (gRegion == 2) {
@@ -602,12 +621,14 @@ void WeatherWeek::DrawWeek(const s32& alpha) {
         DrawIconLarge(box, gWeekdayTextures[gLanguage][time.wday], alpha);
 
         box = &mBoxes[boxes[1]];
-        pos.x = box->mX + mPos.x;
-        pos.y = box->mY - mPos.y;
+        f32 y = box->mY - mPos.y;
+        f32 x = box->mX + mPos.x;
+        pos.x = x;
+        pos.y = y;
         u32 code = week->mWeather;
         WeatherInfo* info = gForecastData->FindWeatherInfo(code);
         if (week->mWeather != 0xFFFF && info != NULL) {
-            DrawWeatherIcon(info->mType->mIcon, &pos, alpha, box->mScaleX);
+            DrawWeatherIcon(info->mType->mIcon, &pos, box->mScaleX, alpha);
         } else {
             wcscpy(sTextBuf, L"--");
             box->mColor.a = alpha;

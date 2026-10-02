@@ -31,7 +31,7 @@ extern const wchar_t* gLastUpdatedPrefixes[];
 extern const wchar_t* gAmText;
 extern const wchar_t* gPmText;
 
-void DrawWeatherIcon(u16 icon, const Vec2* pos, s32 alpha, f32 scale);
+void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha);
 wchar_t* FormatNumber(s32 value, wchar_t* pBuf, s32 digits, BOOL zeroPad);
 void MinutesToCalendarTime(u32 minutes, OSCalendarTime* cal);
 void WrapHour(s32* pHour);
@@ -1132,7 +1132,7 @@ void WeatherNormal::DrawTimes() {
         WeatherInfo* info = gForecastData->FindWeatherInfo(code);                                        \
         if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {                                             \
             u16 icon = info->mType->mIcon;                                                               \
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, box->mScaleX);                                 \
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, box->mScaleX, alpha);                                 \
         } else {                                                                                         \
             wcscpy(sTextBuf, L"--");                                                                     \
             box->mColor.a = alpha;                                                                       \
@@ -1187,7 +1187,7 @@ void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
             } else {
                 scale = small * box->mScaleX;
             }
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, alpha, scale);
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, scale, alpha);
         } else {
             wcscpy(sTextBuf, L"--");
             box->mColor.a = alpha;
