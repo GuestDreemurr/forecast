@@ -278,13 +278,13 @@ asm void OSLoadContext(register OSContext* ctx) {
 
     // If the context was in OSDisableInterrupts,
     // jump back to the beginning of the function
-    lis r4, __RAS_OSDisableInterrupts_begin@ha
+    lis r4, OSDisableInterrupts@ha
     lwz r6, ctx->srr0
-    addi r5, r4, __RAS_OSDisableInterrupts_begin@l
+    addi r5, r4, OSDisableInterrupts@l
     cmplw r6, r5
     ble _srr0_not_in_disableintr
-    lis r4, __RAS_OSDisableInterrupts_end@ha
-    addi r0, r4, __RAS_OSDisableInterrupts_end@l
+    lis r4, OSDisableInterrupts+0xc@ha
+    addi r0, r4, OSDisableInterrupts+0xc@l
     cmplw r6, r0
     bge _srr0_not_in_disableintr
     stw r5, ctx->srr0

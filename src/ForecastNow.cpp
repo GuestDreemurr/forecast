@@ -22,7 +22,6 @@ CityInfo::CityInfo() {
 }
 
 CityInfo::~CityInfo() {}
-
 void CityInfo::Setup(void* base, PlaceEntry* entry, u32 index) {
     u32 name = entry->mNameOffset;
     u32 country = entry->mCountryOffset;
@@ -36,7 +35,6 @@ void CityInfo::Setup(void* base, PlaceEntry* entry, u32 index) {
         mRegion = (wchar_t*)((u8*)base + ((PlaceEntry*)mId)->mRegionOffset);
     }
 }
-
 s32 PollenIndexInfo::Setup(void* base, IndexText* entry) {
     u32 offset = entry->mTextOffset;
     mIndex = entry;

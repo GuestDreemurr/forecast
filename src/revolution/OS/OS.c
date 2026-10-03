@@ -872,16 +872,20 @@ void OSRegisterVersion(const char* ver) {
     OSReport("%s\n", ver);
 }
 
+#define INVALID_CHAR(c) ('0' > c || ('9' < c && c < 'A') || c > 'Z')
+#define OS_PHYS_CURRENT_APP_NAME_1 0x80003194
 // Must be defined down here because of data pooling
 static const char* AppGameNameForSysMenu = "HAEA";
 
 const char* OSGetAppGamename(void) {
     int i;
-    const char* name =
-        (const char*)OSPhysicalToCached(OS_PHYS_CURRENT_APP_NAME);
+    const char* temp = (const char*)OSPhysicalToCached(OS_PHYS_CURRENT_APP_NAME_1);
+    const char* name = temp;
 
-    if (__OSInIPL) {
+    if (__OSInIPL){
         name = AppGameNameForSysMenu;
+    }else if(INVALID_CHAR(*temp)){
+        name = (const char*)OSPhysicalToCached(OS_PHYS_CURRENT_APP_NAME);
     }
 
     for (i = 0; i < 4; i++) {

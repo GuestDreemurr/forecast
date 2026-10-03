@@ -51,7 +51,7 @@ public:
     void SetPaneColor(const char* name, const nw4r::ut::Color& color, BOOL recursive);
     void Hide();
     void SetChildVisible(const char* name, u8 visible);
-    void SetChildAlpha(const char* name, u8 alpha);
+    void SetChildAlpha(const char* name, s32 alpha);
     void SetChildAlphaRecursive(nw4r::lyt::Pane* pane, u8 alpha);
     nw4r::lyt::Pane* FindPane(const char* name);
     void ShowLanguagePane(const char* prefix);

@@ -17,7 +17,7 @@ Connect.cpp:
 	.text       start:0x8000AA94 end:0x8000BAC8
 	.rodata     start:0x80179358 end:0x80179388
 	.data       start:0x80198D80 end:0x80199014
-	.sdata      start:0x8032F568 end:0x8032F580
+	.sdata      start:0x8032F568 end:0x8032F57A
 	.sdata2     start:0x803319A0 end:0x803319E0
 
 ErrorWindow.cpp:
@@ -62,11 +62,11 @@ WeatherOther.cpp:
 	.text       start:0x80011100 end:0x8001230C
 	.ctors      start:0x80179250 end:0x80179254
 	.rodata     start:0x80179440 end:0x80179658
-	.data       start:0x8019A0D0 end:0x8019A1F8
-	.bss        start:0x801D7160 end:0x801D7170
-	.sdata      start:0x8032FD08 end:0x8032FD30
-	.sbss       start:0x80330A50 end:0x80330A58
-	.sdata2     start:0x80331A98 end:0x80331AC0
+	.data       start:0x8019A0D0 end:0x8019A1F4
+	.bss        start:0x801D7160 end:0x801D716C
+	.sdata      start:0x8032FD08 end:0x8032FD2A
+	.sbss       start:0x80330A50 end:0x80330A54
+	.sdata2     start:0x80331A98 end:0x80331ABC
 
 WeatherToday.cpp:
 	.text       start:0x8001230C end:0x80012A1C
@@ -88,61 +88,61 @@ WeatherWeek.cpp:
 	.text       start:0x8001312C end:0x80014B40
 	.ctors      start:0x8017925C end:0x80179260
 	.rodata     start:0x80179658 end:0x80179AA8
-	.data       start:0x8019A268 end:0x8019A980
+	.data       start:0x8019A268 end:0x8019A97C
 	.bss        start:0x801D7190 end:0x801D71C0
-	.sdata      start:0x8032FD30 end:0x8032FD98
+	.sdata      start:0x8032FD30 end:0x8032FD94
 	.sbss       start:0x80330A68 end:0x80330A78
-	.sdata2     start:0x80331B00 end:0x80331B28
+	.sdata2     start:0x80331B00 end:0x80331B24
 
 WeatherAddress.cpp:
 	.text       start:0x80014B40 end:0x80017548
 	.ctors      start:0x80179260 end:0x80179264
-	.data       start:0x8019A980 end:0x8019AB08
-	.bss        start:0x801D71C0 end:0x801D71E8
-	.sdata      start:0x8032FD98 end:0x8032FDC8
-	.sbss       start:0x80330A78 end:0x80330A88
+	.data       start:0x8019A980 end:0x8019AB04
+	.bss        start:0x801D71C0 end:0x801D71E4
+	.sdata      start:0x8032FD98 end:0x8032FDC3
+	.sbss       start:0x80330A78 end:0x80330A84
 	.sdata2     start:0x80331B28 end:0x80331B70
 
 WeatherAround.cpp:
 	.text       start:0x80017548 end:0x8001C334
 	.ctors      start:0x80179264 end:0x80179268
-	.rodata     start:0x80179AA8 end:0x80179CE0
+	.rodata     start:0x80179AA8 end:0x80179CDC
 	.data       start:0x8019AB08 end:0x8019AC70
-	.bss        start:0x801D71E8 end:0x801D7210
-	.sdata      start:0x8032FDC8 end:0x8032FE60
-	.sbss       start:0x80330A88 end:0x80330A98
+	.bss        start:0x801D71E8 end:0x801D720C
+	.sdata      start:0x8032FDC8 end:0x8032FE5E
+	.sbss       start:0x80330A88 end:0x80330A94
 	.sdata2     start:0x80331B70 end:0x80331C18
 
 WeatherBase.cpp:
 	.text       start:0x8001C334 end:0x8001CA80
-	.data       start:0x8019AC70 end:0x8019AC90
-	.sdata2     start:0x80331C18 end:0x80331C50
+	.data       start:0x8019AC70 end:0x8019AC8C
+	.sdata2     start:0x80331C18 end:0x80331C4C
 
 WeatherBaseDay.cpp:
 	.text       start:0x8001CA80 end:0x8001F720
 	.ctors      start:0x80179268 end:0x8017926C
 	.rodata     start:0x80179DC0 end:0x8017A038
 	.data       start:0x8019AC90 end:0x8019AF48
-	.bss        start:0x801D7210 end:0x801D7220
+	.bss        start:0x801D7210 end:0x801D721C
 	.sdata      start:0x8032FE60 end:0x8032FEE0
-	.sbss       start:0x80330A98 end:0x80330AA0
-	.sdata2     start:0x80331C50 end:0x80331C80
+	.sbss       start:0x80330A98 end:0x80330A9C
+	.sdata2     start:0x80331C50 end:0x80331C7C
 
 ForecastData.cpp:
 	.text       start:0x8001F720 end:0x80020F9C
 	.rodata     start:0x8017A038 end:0x8017B358
-	.data       start:0x8019AF48 end:0x8019B148
-	.sdata      start:0x8032FEE0 end:0x8032FEE8
+	.data       start:0x8019AF48 end:0x8019B144
+	.sdata      start:0x8032FEE0 end:0x8032FEE6
 	.sdata2     start:0x80331C80 end:0x80331CA8
 
 WeatherNormal.cpp:
 	.text       start:0x80020F9C end:0x80027C84
 	.ctors      start:0x8017926C end:0x80179270
 	.rodata     start:0x8017B358 end:0x8017B4A0
-	.data       start:0x8019B148 end:0x8019B5D8
-	.bss        start:0x801D7220 end:0x801D7230
-	.sdata      start:0x8032FEE8 end:0x803300E0
-	.sbss       start:0x80330AA0 end:0x80330AA8
+	.data       start:0x8019B148 end:0x8019B5C8
+	.bss        start:0x801D7220 end:0x801D722C
+	.sdata      start:0x8032FEE8 end:0x803300DC
+	.sbss       start:0x80330AA0 end:0x80330AA4
 	.sdata2     start:0x80331CA8 end:0x80331D20
 
 ForecastNow.cpp:
@@ -162,20 +162,20 @@ ForecastSummary.cpp:
 
 Region.cpp:
 	.text       start:0x8002C0CC end:0x8002C164
-	.data       start:0x8019B760 end:0x8019B790
+	.data       start:0x8019B760 end:0x8019B78C
 
 Scene.cpp:
 	.text       start:0x8002C164 end:0x8002CEE0
 	.rodata     start:0x8017B4A0 end:0x8017B4C8
-	.data       start:0x8019B790 end:0x8019B968
-	.sdata2     start:0x80331E10 end:0x80331E60
+	.data       start:0x8019B790 end:0x8019B963
+	.sdata2     start:0x80331E10 end:0x80331E5C
 
 SimpleModel.cpp:
 	.text       start:0x8002CEE0 end:0x8002D1D4
 	.ctors      start:0x80179278 end:0x8017927C
-	.data       start:0x8019B968 end:0x8019B978
-	.bss        start:0x801D7270 end:0x801D7280
-	.sbss       start:0x80330AC0 end:0x80330AC8
+	.data       start:0x8019B968 end:0x8019B974
+	.bss        start:0x801D7270 end:0x801D727C
+	.sbss       start:0x80330AC0 end:0x80330AC4
 	.sdata2     start:0x80331E60 end:0x80331E70
 
 HomeButton.cpp:
@@ -189,8 +189,8 @@ main.cpp:
 DrawUtil.cpp:
 	.text       start:0x8002E3E4 end:0x8002EC68
 	.ctors      start:0x8017927C end:0x80179280
-	.bss        start:0x801D7280 end:0x801D7290
-	.sbss       start:0x80330AC8 end:0x80330AD0
+	.bss        start:0x801D7280 end:0x801D728C
+	.sbss       start:0x80330AC8 end:0x80330ACC
 	.sdata2     start:0x80331EB0 end:0x80331EC0
 
 GlobeDots.cpp:
@@ -208,19 +208,19 @@ System.cpp:
 
 ButtonGroup.cpp:
 	.text       start:0x80039994 end:0x8003A4A8
-	.sdata      start:0x803301B8 end:0x803301C0
+	.sdata      start:0x803301B8 end:0x803301BC
 	.sdata2     start:0x80332000 end:0x80332018
 
 PointerHistory.cpp:
 	.text       start:0x8003A4A8 end:0x8003A7DC
-	.sdata2     start:0x80332018 end:0x80332020
+	.sdata2     start:0x80332018 end:0x8033201C
 
 Fade.cpp:
 	.text       start:0x8003A7DC end:0x8003B0A4
 	.ctors      start:0x80179288 end:0x8017928C
-	.data       start:0x8019C190 end:0x8019C1D0
-	.bss        start:0x801F6C58 end:0x801F6C68
-	.sbss       start:0x80330B98 end:0x80330BA0
+	.data       start:0x8019C190 end:0x8019C1CC
+	.bss        start:0x801F6C58 end:0x801F6C64
+	.sbss       start:0x80330B98 end:0x80330B9C
 	.sdata2     start:0x80332020 end:0x80332040
 
 WorkerThread.cpp:
@@ -233,10 +233,10 @@ SceneBase.cpp:
 	.text       start:0x8003B2C8 end:0x8003F628
 	.ctors      start:0x8017928C end:0x80179290
 	.rodata     start:0x8018F4E8 end:0x8018F730
-	.data       start:0x8019C1D0 end:0x8019C630
-	.bss        start:0x801F6C68 end:0x801F76A0
+	.data       start:0x8019C1D0 end:0x8019C62C
+	.bss        start:0x801F6C68 end:0x801F769C
 	.sdata      start:0x803301C0 end:0x803301E0
-	.sbss       start:0x80330BA0 end:0x80330C28
+	.sbss       start:0x80330BA0 end:0x80330C24
 	.sdata2     start:0x80332040 end:0x80332098
 
 revolution/CNT/cnt.c:
@@ -274,7 +274,7 @@ revolution/VF/pdm_mbr.c:
 
 revolution/VF/pdm_dskmng.c:
 	.text       start:0x8004ACB8 end:0x8004AEDC
-	.bss        start:0x801F7740 end:0x801F82A8
+	.bss        start:0x801F7740 end:0x801F82A4
 
 revolution/VF/pf_cache.c:
 	.text       start:0x8004AEDC end:0x8004CE10
@@ -314,7 +314,7 @@ revolution/VF/pf_volume.c:
 
 revolution/VF/pf_cp932.c:
 	.text       start:0x8005E45C end:0x8005E96C
-	.rodata     start:0x8018FAC8 end:0x80193D40
+	.rodata     start:0x8018FAC8 end:0x80193D3A
 
 revolution/VF/pf_api_util.c:
 	.text       start:0x8005E96C end:0x8005EAD8
@@ -331,7 +331,7 @@ revolution/VF/pf_init_prfile2.c:
 
 revolution/VF/pf_filelock.c:
 	.text       start:0x8005EEF0 end:0x8005EF04
-	.sbss       start:0x80330C90 end:0x80330C98
+	.sbss       start:0x80330C90 end:0x80330C94
 
 revolution/VF/pf_system.c:
 	.text       start:0x8005EF04 end:0x8005EF7C
@@ -360,17 +360,17 @@ revolution/NWC24/NWC24FileApi.c:
 	.text       start:0x80068E54 end:0x8006A4D8
 	.data       start:0x801B42D8 end:0x801B4304
 	.sdata      start:0x80330278 end:0x80330290
-	.sbss       start:0x80330CE0 end:0x80330CF0
+	.sbss       start:0x80330CE0 end:0x80330CEC
 
 revolution/NWC24/NWC24Manage.c:
 	.text       start:0x8006AB14 end:0x8006B4C0
 	.data       start:0x801B4370 end:0x801B4480
 	.sdata      start:0x803302A0 end:0x803302A4
-	.sbss       start:0x80330CF8 end:0x80330D10
+	.sbss       start:0x80330CF8 end:0x80330D0C
 
 revolution/NWC24/NWC24Ipc.c:
 	.text       start:0x8006DC10 end:0x8006DD84
-	.sbss       start:0x80330D40 end:0x80330D48
+	.sbss       start:0x80330D40 end:0x80330D44
 
 nw4r/ef/ef_draworder.cpp:
 	.text       start:0x80084C10 end:0x80084D10
@@ -581,7 +581,7 @@ nw4r/g3d/g3d_workmem.cpp:
 
 nw4r/g3d/g3d_calcworld.cpp:
 	.text       start:0x800AADFC end:0x800AB66C
-	.data       start:0x801B6E78 end:0x801B6E88
+	.data       start:0x801B6E78 end:0x801B6E81
 	.sdata      start:0x80330480 end:0x80330490
 	.sdata2     start:0x80332938 end:0x80332950
 
@@ -914,7 +914,7 @@ nw4r/ut/ut_DvdLockedFileStream.cpp:
 	.ctors      start:0x801792E8 end:0x801792EC
 	.data       start:0x801B77F8 end:0x801B7860
 	.bss        start:0x802CB360 end:0x802CB378
-	.sbss       start:0x803311A0 end:0x803311A8
+	.sbss       start:0x803311A0 end:0x803311A5
 
 nw4r/ut/ut_LockedCache.cpp:
 	.text       start:0x800D1098 end:0x800D1244
@@ -1025,7 +1025,7 @@ nw4r/lyt/lyt_resourceAccessor.cpp:
 nw4r/lyt/lyt_arcResourceAccessor.cpp:
 	.text       start:0x800E2340 end:0x800E26C8
 	.data       start:0x801B8F10 end:0x801B8F28
-	.sdata      start:0x803304E0 end:0x803304E8
+	.sdata      start:0x803304E0 end:0x803304E7
 
 nw4r/lyt/lyt_common.cpp:
 	.text       start:0x800E26C8 end:0x800E31D4
@@ -1039,14 +1039,14 @@ revolution/BASE/PPCArch.c:
 
 revolution/OS/OS.c:
 	.text       start:0x800E347C end:0x800E4830
-	.data       start:0x801B8F60 end:0x801B9360
+	.data       start:0x801B8F60 end:0x801B9350
 	.bss        start:0x802CB400 end:0x802CB470
-	.sdata      start:0x803304E8 end:0x80330510
+	.sdata      start:0x803304E8 end:0x8033050C
 	.sbss       start:0x803311F8 end:0x80331240
 
 revolution/OS/OSAlloc.c:
 	.text       start:0x800E5014 end:0x800E531C
-	.sdata      start:0x80330510 end:0x80330518
+	.sdata      start:0x80330510 end:0x80330514
 	.sbss       start:0x80331248 end:0x80331258
 
 revolution/OS/OSArena.c:
@@ -1060,10 +1060,11 @@ revolution/OS/OSAudioSystem.c:
 
 revolution/OS/OSCache.c:
 	.text       start:0x800E58A4 end:0x800E5ED4
+	.data       start:0x801B93E0 end:0x801B9612
 
 revolution/OS/OSContext.c:
 	.text       start:0x800E5ED4 end:0x800E675C
-	.data       start:0x801B9618 end:0x801B97F8
+	.data       start:0x801B9618 end:0x801B97F3
 
 revolution/OS/OSError.c:
 	.text       start:0x800E675C end:0x800E6E8C
@@ -1073,14 +1074,14 @@ revolution/OS/OSError.c:
 
 revolution/OS/OSFatal.c:
 	.text       start:0x800E905C end:0x800E9C80
-	.bss        start:0x802CB4E0 end:0x802CB7C0
+	.bss        start:0x802CB4E0 end:0x802CB7B4
 	.sdata      start:0x80330538 end:0x8033053C
 	.sdata2     start:0x80332DA0 end:0x80332DE0
 
 revolution/OS/OSInterrupt.c:
 	.text       start:0x800EA948 end:0x800EB0CC
 	.data       start:0x801BA978 end:0x801BA9A8
-	.sbss       start:0x80331288 end:0x803312A0
+	.sbss       start:0x80331288 end:0x8033129C
 
 revolution/OS/OSMemory.c:
 	.text       start:0x800EB2E8 end:0x800EBAFC
@@ -1091,16 +1092,16 @@ revolution/OS/OSMutex.c:
 
 revolution/OS/OSRtc.c:
 	.text       start:0x800EC6E4 end:0x800ED170
-	.bss        start:0x802CB7C0 end:0x802CB818
+	.bss        start:0x802CB7C0 end:0x802CB814
 
 revolution/OS/OSSync.c:
 	.text       start:0x800ED170 end:0x800ED1F0
 
 revolution/OS/OSThread.c:
 	.text       start:0x800ED1F0 end:0x800EE7A8
-	.bss        start:0x802CB818 end:0x802CC220
-	.sdata      start:0x80330550 end:0x80330558
-	.sbss       start:0x803312B8 end:0x803312C8
+	.bss        start:0x802CB818 end:0x802CC210
+	.sdata      start:0x80330550 end:0x80330554
+	.sbss       start:0x803312B8 end:0x803312C4
 
 revolution/OS/OSTime.c:
 	.text       start:0x800EE7A8 end:0x800EEE5C
@@ -1112,23 +1113,24 @@ revolution/OS/OSUtf.c:
 
 revolution/OS/OSIpc.c:
 	.text       start:0x800EF094 end:0x800EF0BC
-	.sdata      start:0x80330558 end:0x80330560
-	.sbss       start:0x803312C8 end:0x803312D0
+	.sdata      start:0x80330558 end:0x8033055C
+	.sbss       start:0x803312C8 end:0x803312CC
 
 revolution/OS/OSStateTM.c:
 	.text       start:0x800EF0BC end:0x800EF800
-	.data       start:0x801C6AE0 end:0x801C6BA8
+	.data       start:0x801C6AE0 end:0x801C6BA6
 	.bss        start:0x802CC220 end:0x802CC2E0
 	.sbss       start:0x803312D0 end:0x803312F0
 
 revolution/OS/__start.c:
 	.init       start:0x80004000 end:0x800042E0
-	.sbss       start:0x803312F0 end:0x803312F4
+	.sbss       start:0x803312F0 end:0x803312F1
 
 revolution/OS/OSPlayRecord.c:
 	.text       start:0x800EF84C end:0x800EFF44
 	.data       start:0x801C6BA8 end:0x801C6BF0
-	.sdata      start:0x80330560 end:0x80330568
+	.bss        start:0x802CC2E0 end:0x802CC4D8
+	.sdata      start:0x80330560 end:0x80330564
 	.sbss       start:0x803312F8 end:0x80331318
 
 revolution/OS/OSStateFlags.c:
@@ -1157,7 +1159,7 @@ revolution/MTX/mtx44.c:
 
 revolution/MTX/vec.c:
 	.text       start:0x800F94C8 end:0x800F96D0
-	.sdata2     start:0x80332E38 end:0x80332E48
+	.sdata2     start:0x80332E38 end:0x80332E44
 
 revolution/GX/GXAttr.c:
 	.text       start:0x800FB258 end:0x800FC47C
@@ -1174,7 +1176,7 @@ revolution/GX/GXLight.c:
 
 revolution/GX/GXBump.c:
 	.text       start:0x800FF178 end:0x800FF5C4
-	.sdata2     start:0x80332EF0 end:0x80332EF8
+	.sdata2     start:0x80332EF0 end:0x80332EF4
 
 revolution/GX/GXDraw.c:
 	.text       start:0x801003A8 end:0x801017EC
@@ -1252,8 +1254,8 @@ revolution/SC/scsystem.c:
 	.rodata     start:0x80197450 end:0x801974A8
 	.data       start:0x801CD198 end:0x801CD370
 	.bss        start:0x802E8080 end:0x802F0220
-	.sdata      start:0x803306C0 end:0x803307C8
-	.sbss       start:0x80331750 end:0x80331768
+	.sdata      start:0x803306C0 end:0x803307C5
+	.sbss       start:0x80331750 end:0x80331767
 
 revolution/SC/scapi.c:
 	.text       start:0x8011731C end:0x80117940
@@ -1321,8 +1323,8 @@ revolution/BTE/stack/sdp/sdp_discovery.c:
 
 revolution/TPL/TPL.c:
 	.text       start:0x80160618 end:0x8016074C
-	.data       start:0x801D5FE0 end:0x801D6010
-	.sdata      start:0x80330938 end:0x80330940
+	.data       start:0x801D5FE0 end:0x801D600B
+	.sdata      start:0x80330938 end:0x8033093E
 
 revolution/NdevExi2AD/DebuggerDriver.c:
 	.text       start:0x8016082C end:0x80160B60
@@ -1627,28 +1629,28 @@ MetroTRK/debugger/embedded/MetroTRK/Portable/nubevent.c:
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/nubinit.c:
 	.text       start:0x80173E18 end:0x80173F9C
-	.rodata     start:0x80198B18 end:0x80198B38
-	.bss        start:0x8032D090 end:0x8032D098
+	.rodata     start:0x80198B18 end:0x80198B35
+	.bss        start:0x8032D090 end:0x8032D094
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/msg.c:
 	.text       start:0x80173F9C end:0x80173FC8
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/msgbuf.c:
 	.text       start:0x80173FC8 end:0x80174804
-	.rodata     start:0x80198B38 end:0x80198B58
+	.rodata     start:0x80198B38 end:0x80198B55
 	.bss        start:0x8032D098 end:0x8032EA48
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/serpoll.c:
 	.text       start:0x80174804 end:0x801749B0
 	.bss        start:0x8032EA48 end:0x8032EA5C
-	.sbss       start:0x803318E8 end:0x803318F0
+	.sbss       start:0x803318E8 end:0x803318EC
 
 MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/usr_put.c:
 	.text       start:0x801749B0 end:0x80174A3C
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/dispatch.c:
 	.text       start:0x80174A3C end:0x80174B84
-	.data       start:0x801D6CA8 end:0x801D6D18
+	.data       start:0x801D6CA8 end:0x801D6D14
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/msghndlr.c:
 	.text       start:0x80174B84 end:0x80175C60
@@ -1701,7 +1703,7 @@ MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk.c:
 
 MetroTRK/debugger/embedded/MetroTRK/Portable/main_TRK.c:
 	.text       start:0x80178714 end:0x80178758
-	.bss        start:0x8032EFF0 end:0x8032EFF8
+	.bss        start:0x8032EFF0 end:0x8032EFF4
 
 MetroTRK/debugger/embedded/MetroTRK/Os/dolphin/dolphin_trk_glue.c:
 	.text       start:0x80178758 end:0x80178C18

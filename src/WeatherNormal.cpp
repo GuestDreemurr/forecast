@@ -417,8 +417,8 @@ WeatherNormal::~WeatherNormal() {
             box->mX = centerX + box->mX * scaleX;                                                            \
             box->mY = centerY - box->mY;                                                                     \
             LayoutButton* pane = box->mPane;                                                                 \
-            f32 w = pane->mRight - pane->mLeft;                                                              \
             f32 h = __fabsf(pane->mTop - pane->mBottom);                                                     \
+            f32 w = pane->mRight - pane->mLeft;                                                              \
             box->mWidth = scaleX * w;                                                                        \
             box->mHeight = h;                                                                                \
             box->mScaleX = scales[i];                                                                        \
@@ -676,8 +676,8 @@ static f32 sDateScaleYJP = 0.6f;
 void WeatherNormal::SetupDateJP() {
 
     if (gCurrentCity != NULL) {
-        CityForecast* forecast = gCurrentCity->mForecast;
-        CitySummary* summary = gCurrentCity->mSummary;
+        CityForecast* forecast = gCurrentCity->GetForecast();
+        CitySummary* summary = gCurrentCity->GetSummary();
         u32 time;
         u16 today;
         u16 tomorrow;
@@ -731,8 +731,9 @@ void WeatherNormal::SetupDate() {
         CityForecast* forecast;
         CitySummary* summary;
         CityNow* now = gCurrentCity->mNow;
-        forecast = gCurrentCity->mForecast;
-        summary = gCurrentCity->mSummary;
+        forecast = gCurrentCity->GetForecast();
+        summary = gCurrentCity->GetSummary();
+        u32 dateTime;
         u32 time;
         u16 nowWeather;
         u16 today;
@@ -783,22 +784,22 @@ void WeatherNormal::SetupDate() {
 
         if (gForecastPage == 1) {
             if (now != NULL) {
-                time = now->mEntry->mTime;
+                dateTime = now->mEntry->mTime;
             } else {
                 return;
             }
         } else if (forecast != NULL) {
-            time = forecast->mEntry->mTime;
+            dateTime = forecast->mEntry->mTime;
         } else if (summary != NULL) {
-            time = summary->mEntry->mTime;
+            dateTime = summary->mEntry->mTime;
         } else {
             return;
         }
 
         gTextWriter.SetFont(*gSysFont);
-        if (time != 0) {
+        if (dateTime != 0) {
             if (mFormatDate) {
-                (this->*mFormatDate)(time);
+                (this->*mFormatDate)(dateTime);
             }
         } else {
             mDateText[0] = 0;
@@ -832,7 +833,8 @@ void WeatherNormal::FormatDateUS(u32 minutes) {
         wcscat(mDateText, gPmText);
     }
     wcscat(mDateText, L", ");
-    p = FormatNumber(cal.month + 1, mDateText + wcslen(mDateText), 2, TRUE);
+    wchar_t* d = &mDateText[wcslen(mDateText)];
+    p = FormatNumber(cal.month + 1, d, 2, TRUE);
     *p = L'/';
     FormatNumber(cal.mday, p + 1, 2, TRUE);
     FIT_DATE(sDateScaleXUS, sDateScaleYUS);
@@ -1102,8 +1104,8 @@ void WeatherNormal::Draw() {
 
 void WeatherNormal::DrawTimes() {
     if (gCurrentCity != NULL) {
-        CityForecast* forecast = gCurrentCity->mForecast;
-        CitySummary* summary = gCurrentCity->mSummary;
+        CityForecast* forecast = gCurrentCity->GetForecast();
+        CitySummary* summary = gCurrentCity->GetSummary();
         DayForecast* day;
         s32 hour;
         if (forecast != NULL) {
@@ -1116,7 +1118,8 @@ void WeatherNormal::DrawTimes() {
             return;
         }
 
-        mTimeLayout->SetPaneAlpha(255.0f * mTimesAlpha);
+        s32 alpha = mTimesAlpha * 255.0f;
+        mTimeLayout->SetPaneAlpha(alpha);
         mTimeLayout->Draw();
         if (mDrawTimes) {
             (this->*mDrawTimes)(day, hour);
@@ -1124,12 +1127,15 @@ void WeatherNormal::DrawTimes() {
     }
 }
 
+static inline WeatherInfo* FindInfo(u32 code) {
+    return gForecastData->FindWeatherInfo(code);
+}
+
 // Draws the four 6-hour weather icons, or "--" where there is no forecast
 #define DRAW_ICONS()                                                                                     \
     box = mBoxes;                                                                                        \
     for (i = 0; i < 4; i++, box++) {                                                                     \
-        u32 code = d->mWeatherParts[i];                                                                  \
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);                                        \
+        WeatherInfo* info = FindInfo(d->mWeatherParts[i]);                                               \
         if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {                                             \
             u16 icon = info->mType->mIcon;                                                               \
             DrawWeatherIcon(icon, (Vec2*)&box->mX, box->mScaleX, alpha);                                 \
@@ -1159,8 +1165,22 @@ void WeatherNormal::DrawTimes() {
     gTextWriter.SetCursor(x, (box)->mY);                                                                     \
     gTextWriter.Print(sTextBuf)
 
+static inline f32 IconScale(TextBox* box, u16 icon) {
+    f32 small = 0.6f;
+    f32 scale;
+    if ((icon & 0x7FFF) < 100) {
+        scale = box->mScaleX;
+    } else {
+        scale = small * box->mScaleX;
+    }
+    return scale;
+}
+
 // "00-06時"
 void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
+    TextBox* box;
+    s32 alpha;
+    s32 i;
     DayForecast* d;
     switch (gForecastPage) {
     case 1:
@@ -1173,21 +1193,13 @@ void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
         return;
     }
 
-    f32 small = 0.6f;
-    s32 alpha = 255.0f * mTimesAlpha;
-    TextBox* box = mBoxes;
-    for (s32 i = 0; i < 4; i++, box++) {
-        u32 code = d->mWeatherParts[i];
-        WeatherInfo* info = gForecastData->FindWeatherInfo(code);
+    alpha = 255.0f * mTimesAlpha;
+    box = mBoxes;
+    for (i = 0; i < 4; i++, box++) {
+        WeatherInfo* info = FindInfo(d->mWeatherParts[i]);
         if (d->mWeatherParts[i] != 0xFFFF && info != NULL) {
             u16 icon = info->mType->mIcon;
-            f32 scale;
-            if ((icon & 0x7FFF) < 100) {
-                scale = box->mScaleX;
-            } else {
-                scale = small * box->mScaleX;
-            }
-            DrawWeatherIcon(icon, (Vec2*)&box->mX, scale, alpha);
+            DrawWeatherIcon(icon, (Vec2*)&box->mX, IconScale(box, icon), alpha);
         } else {
             wcscpy(sTextBuf, L"--");
             box->mColor.a = alpha;
@@ -1201,17 +1213,15 @@ void WeatherNormal::DrawTimesJP(DayForecast* day, s32 hour) {
 
     SETUP_TIME_TEXT(0x111);
     s32 h = hour;
-    {
-        TextBox* box = &mBoxes[4];
-        for (s32 i = 0; i < 4; i++, box++) {
-            wchar_t* p = FormatNumber(h, sTextBuf, 2, FALSE);
-            *p = L'-';
-            h += 6;
-            WrapHourTo24(&h);
-            FormatNumber(h, p + 1, 2, FALSE);
-            wcscat(sTextBuf, L"\x6642"); // "o'clock"
-            PRINT_TIME(box, alpha, box->mX);
-        }
+    box = &mBoxes[4];
+    for (i = 0; i < 4; i++, box++) {
+        wchar_t* p = FormatNumber(h, sTextBuf, 2, FALSE);
+        *p++ = L'-';
+        h += 6;
+        WrapHourTo24(&h);
+        FormatNumber(h, p, 2, FALSE);
+        wcscat(sTextBuf, L"\x6642"); // "o'clock"
+        PRINT_TIME(box, alpha, box->mX);
     }
 }
 
@@ -1292,8 +1302,8 @@ void WeatherNormal::DrawTimesEU(DayForecast* day, s32 hour) {
     box = &mBoxes[4];
     f32 half = 0.5f;
     for (i = 0; i < 4; i++, box++) {
-        wchar_t start[4];
-        wchar_t end[4];
+        wchar_t start[3];
+        wchar_t end[3];
         FormatNumber(h, start, 2, TRUE);
         wcscpy(sTextBuf, start);
         wcscat(sTextBuf, L":00 ");
@@ -1334,8 +1344,8 @@ void WeatherNormal::DrawTimesDE(DayForecast* day, s32 hour) {
     box = &mBoxes[4];
     f32 half = 0.5f;
     for (i = 0; i < 4; i++, box++) {
-        wchar_t start[4];
-        wchar_t end[4];
+        wchar_t start[3];
+        wchar_t end[3];
         FormatNumber(h, start, 2, TRUE);
         wcscpy(sTextBuf, start);
         wcscat(sTextBuf, L":00-");
@@ -1423,8 +1433,8 @@ void WeatherNormal::DrawTimesES(DayForecast* day, s32 hour) {
     box = &mBoxes[4];
     f32 half = 0.5f;
     for (i = 0; i < 4; i++, box++) {
-        wchar_t start[4];
-        wchar_t end[4];
+        wchar_t start[3];
+        wchar_t end[3];
         FormatNumber(h, start, 2, TRUE);
         wcscpy(sTextBuf, L"De ");
         wcscat(sTextBuf, start);
@@ -1466,8 +1476,8 @@ void WeatherNormal::DrawTimesIT(DayForecast* day, s32 hour) {
     box = &mBoxes[4];
     f32 half = 0.5f;
     for (i = 0; i < 4; i++, box++) {
-        wchar_t start[4];
-        wchar_t end[4];
+        wchar_t start[3];
+        wchar_t end[3];
         FormatNumber(h, start, 2, TRUE);
         wcscpy(sTextBuf, start);
         wcscat(sTextBuf, L":00");
@@ -1507,8 +1517,8 @@ void WeatherNormal::DrawTimesNL(DayForecast* day, s32 hour) {
     box = &mBoxes[4];
     f32 half = 0.5f;
     for (i = 0; i < 4; i++, box++) {
-        wchar_t start[4];
-        wchar_t end[4];
+        wchar_t start[3];
+        wchar_t end[3];
         FormatNumber(h, start, 2, TRUE);
         wcscpy(sTextBuf, start);
         wcscat(sTextBuf, L":00 -");
@@ -1618,16 +1628,18 @@ BOOL WeatherNormal::ChangeState(StateFunc state, s32 arg) {
     return TRUE;
 }
 
-#define LAYOUT_PAGES()                                                                                       \
-    {                                                                                                        \
-        f32 y = mPageY;                                                                                      \
-        for (s32 i = 0; i < gForecastPageCount; i++) {                                                       \
-            mPageVisible[i] = TRUE;                                                                          \
-            mPagePos[i].x = mPageX;                                                                          \
-            mPagePos[i].y = y;                                                                               \
-            y -= 456.0f;                                                                                     \
-        }                                                                                                    \
+inline void WeatherNormal::LayoutPages() {
+    f32 y = mPageY;
+    f32 step = 456.0f;
+    s32 i;
+    for (i = 0; i < gForecastPageCount; i++) {
+        mPageVisible[i] = TRUE;
+        mPagePos[i].x = mPageX;
+        mPagePos[i].y = y;
+        y -= step;
     }
+}
+#define LAYOUT_PAGES() LayoutPages()
 
 #define SET_BELT_STATE(state)                                                                                \
     {                                                                                                        \
@@ -1697,13 +1709,12 @@ BOOL WeatherNormal::StateScroll(s32 arg) {
 
 #define UPDATE_ZOOM_ANIM()                                                                                   \
     {                                                                                                        \
-        f32 t = EaseCos(mAnimTimer);                                                                         \
-        mTimesAlpha = t;                                                                                     \
-        mZoomAlpha = 40.0f * t;                                                                              \
-        mZoomRect.left = mZoomX + mMoveX * t;                                                                \
-        mZoomRect.top = mZoomY + mMoveY * t;                                                                 \
-        mZoomRect.right = mZoomX + mMoveX2 * t;                                                              \
-        mZoomRect.bottom = mZoomY + mMoveY2 * t;                                                             \
+        mTimesAlpha = EaseCos(mAnimTimer);                                                                   \
+        mZoomAlpha = 40.0f * mTimesAlpha;                                                                    \
+        mZoomRect.left = mZoomX + mMoveX * mTimesAlpha;                                                      \
+        mZoomRect.top = mZoomY + mMoveY * mTimesAlpha;                                                       \
+        mZoomRect.right = mZoomX + mMoveX2 * mTimesAlpha;                                                    \
+        mZoomRect.bottom = mZoomY + mMoveY2 * mTimesAlpha;                                                   \
     }
 
 BOOL WeatherNormal::StateNormal(s32 arg) {
@@ -1964,7 +1975,10 @@ void WeatherNormal::CycleBelt(s32 state) {
 
 void WeatherNormal::UpdateWeatherSound() {
     u16 icon;
-    if (mZoomed || !mSoundEnabled) {
+    if (mZoomed) {
+        return;
+    }
+    if (!mSoundEnabled) {
         return;
     }
 
@@ -2023,6 +2037,8 @@ static f32 sAroundUnk738 = 0.0f;
 static f32 sAroundUnk73C = 0.0f;
 
 BOOL WeatherNormal::StateToAround(s32 arg) {
+    f32 pageX;
+    f32 pageY;
     f32 halfWidth = 0.5f * GetScreenWidth();
     f32 halfHeight = 228.0f;
 
@@ -2030,8 +2046,10 @@ BOOL WeatherNormal::StateToAround(s32 arg) {
     case 0:
         if (gSimpleGlobe != NULL) {
             mPhase++;
-            mPageX = sAroundPageX;
-            mPageY = -456.0f;
+            pageY = -456.0f;
+            pageX = sAroundPageX;
+            mPageX = pageX;
+            mPageY = pageY;
             unk734 = sAroundUnk734;
             unk738 = sAroundUnk738;
             unk73C = sAroundUnk73C;
@@ -2039,8 +2057,8 @@ BOOL WeatherNormal::StateToAround(s32 arg) {
             mMoveX2 = halfWidth + mPagePos[gForecastPage].x;
             mMoveY2 = halfHeight + mPagePos[gForecastPage].y;
             mMoveX = gCityPos.x - mMoveX2;
-            mAnimTimer = 0;
             mMoveY = gCityPos.y - mMoveY2;
+            mAnimTimer = 0;
             for (s32 i = 0; i < gForecastPageCount; i++) {
                 mPageVisible[i] = i == gForecastPage;
             }
@@ -2168,11 +2186,14 @@ void WeatherNormal::UpdateBeltHover() {
     }
 }
 
-#define SETUP_BELT(lastPage, tomorrowPage)                                                                   \
+#define SETUP_BELT(cases, tomorrowPage)                                                                      \
     BeltText* belt = mBelt;                                                                                  \
-    if (gForecastPage < lastPage && gForecastPage >= 1 && gCurrentCity != NULL) {                            \
-        CityForecast* forecast = gCurrentCity->mForecast;                                                    \
-        CitySummary* summary = gCurrentCity->mSummary;                                                       \
+    City* city = gCurrentCity;                                                                               \
+    switch (gForecastPage) {                                                                                 \
+    cases:                                                                                                   \
+    if (city != NULL) {                                                                                      \
+        CityForecast* forecast = city->mForecast;                                                            \
+        CitySummary* summary = city->mSummary;                                                               \
         u32 time;                                                                                            \
         if (forecast != NULL) {                                                                              \
             time = forecast->mEntry->mTime;                                                                  \
@@ -2199,14 +2220,15 @@ void WeatherNormal::UpdateBeltHover() {
         f32 scaleY = height > belt->mMaxHeight ? belt->mMaxHeight / height : 1.0f;                           \
         belt->mScaleX = scaleX;                                                                              \
         belt->mScaleY = scaleY;                                                                              \
+    }                                                                                                        \
     }
 
 void WeatherNormal::SetupBeltJP() {
-    SETUP_BELT(3, 2);
+    SETUP_BELT(case 1: case 2, 2);
 }
 
 void WeatherNormal::SetupBelt() {
-    SETUP_BELT(4, 3);
+    SETUP_BELT(case 1: case 2: case 3, 3);
 }
 
 void WeatherNormal::StopScroll() {
@@ -2263,12 +2285,18 @@ void WeatherNormal::ScrollNames() {
 }
 
 BOOL WeatherNormal::IsBackPressed() {
+    f32 x;
+    f32 y;
+    f32 left = 0.0f;
+    f32 top = 63.0f;
     f32 width = GetScreenWidth();
+    f32 bottom = 393.0f;
+
     for (s32 i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         if (IsPointerValid(i)) {
-            f32 x = gCursorX[i];
-            f32 y = gCursorY[i];
-            if (x > 0.0f && x < width && y > 63.0f && y < 393.0f && (gTrig[i] & WPAD_BUTTON_A)) {
+            x = gCursorX[i];
+            y = gCursorY[i];
+            if (x > left && x < width && y > top && y < bottom && (gTrig[i] & WPAD_BUTTON_A)) {
                 return TRUE;
             }
         } else if (gTrig[i] & WPAD_BUTTON_A) {

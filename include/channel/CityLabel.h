@@ -58,11 +58,11 @@ public:
     Vec2F GetTempSizeSmall(s8 day);
     Vec2F GetTempSizeLarge(s8 day);
 
-    Vector2 GetBoxPos() const {
+    Vec2F GetBoxPos() const {
         return mBoxPos;
     }
 
-    Vector2 GetSize() const {
+    Vec2F GetSize() const {
         return mSize;
     }
 
@@ -79,9 +79,9 @@ public:
     u8 unk18C[0x1F8 - 0x18C];  // at 0x18C
     Vector2 mPos;              // at 0x1F8
     u8 unk200[0x210 - 0x200];  // at 0x200
-    Vector2 mSize;             // at 0x210
+    Vec2F mSize;               // at 0x210
     u8 unk218[0x220 - 0x218];  // at 0x218
-    Vector2 mBoxPos;           // at 0x220
+    Vec2F mBoxPos;             // at 0x220
     u8 unk228[0x230 - 0x228];  // at 0x228
     u32 mFlags;                // at 0x230
     u8 unk234[0x238 - 0x234];  // at 0x234

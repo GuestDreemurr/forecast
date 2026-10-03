@@ -89,9 +89,10 @@ WeatherBaseDay::~WeatherBaseDay() {
     }
 }
 
+static f32 sIconWidthJP = 180.0f;
+static f32 sIconHeightJP = 120.0f;
+
 void WeatherBaseDay::SetupJP(void* arc) {
-    static f32 sIconWidth = 180.0f;
-    static f32 sIconHeight = 120.0f;
     char layoutName[0x100] = "day_nJP.brlyt";
     f32 centerX = 0.5f * GetScreenWidth();
     f32 centerY = 228.0f;
@@ -105,8 +106,8 @@ void WeatherBaseDay::SetupJP(void* arc) {
                 "text が見つかりません!!\n");
     }
 
-    for (s32 i = 0; i < 20; i++) {
-        TextBox* box = &mBoxes[i];
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 20; i++, box++) {
         box->mPane = mLayout->FindButton(sBoxNamesJP[i]);
         if (box->mPane == NULL) {
             OSReport("%sが見つかりません!!\n", sBoxNamesJP[i]);
@@ -119,10 +120,10 @@ void WeatherBaseDay::SetupJP(void* arc) {
         box->mX = centerX + box->mX * scaleX;
         box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
+        f32 h = __fabsf(pane->mTop - pane->mBottom);
         f32 w = pane->mRight - pane->mLeft;
-        f32 h = pane->mTop - pane->mBottom;
         box->mWidth = scaleX * w;
-        box->mHeight = __fabsf(h);
+        box->mHeight = h;
         box->mScaleX = sBoxScalesJP[i];
         box->mScaleY = sBoxScalesJP[i];
 
@@ -161,13 +162,14 @@ void WeatherBaseDay::SetupJP(void* arc) {
     }
 
     mIconBox = &mBoxes[19];
-    mBoxes[19].mWidth = sIconWidth;
-    mBoxes[19].mHeight = sIconHeight;
+    mIconBox->mWidth = sIconWidthJP;
+    mIconBox->mHeight = sIconHeightJP;
 }
 
+static f32 sIconWidth = 180.0f;
+static f32 sIconHeight = 120.0f;
+
 void WeatherBaseDay::Setup(void* arc) {
-    static f32 sIconWidth = 180.0f;
-    static f32 sIconHeight = 120.0f;
     char layoutName[0x100] = "day_nWW.brlyt";
     f32 centerX = 0.5f * GetScreenWidth();
     f32 centerY = 228.0f;
@@ -181,8 +183,8 @@ void WeatherBaseDay::Setup(void* arc) {
                 "text が見つかりません!!\n");
     }
 
-    for (s32 i = 0; i < 5; i++) {
-        TextBox* box = &mBoxes[i];
+    TextBox* box = mBoxes;
+    for (s32 i = 0; i < 5; i++, box++) {
         box->mPane = mLayout->FindButton(sBoxNames[i]);
         if (box->mPane == NULL) {
             OSReport("%sが見つかりません!!\n", sBoxNames[i]);
@@ -195,10 +197,10 @@ void WeatherBaseDay::Setup(void* arc) {
         box->mX = centerX + box->mX * scaleX;
         box->mY = centerY - box->mY;
         LayoutButton* pane = box->mPane;
+        f32 h = __fabsf(pane->mTop - pane->mBottom);
         f32 w = pane->mRight - pane->mLeft;
-        f32 h = pane->mTop - pane->mBottom;
         box->mWidth = scaleX * w;
-        box->mHeight = __fabsf(h);
+        box->mHeight = h;
         box->mScaleX = sBoxScales[i];
         box->mScaleY = sBoxScales[i];
         SetColor(box->mColor, gColorWhite);
@@ -206,11 +208,12 @@ void WeatherBaseDay::Setup(void* arc) {
     }
 
     s32 margin = gWidescreen ? 36 : 28;
-    mIconBox = &mBoxes[4];
     mBoxes[1].mX = GetScreenWidth() - margin;
-    mBoxes[1].mWidth = mBoxes[1].mX - (20.0f + (mBoxes[0].mX + 0.5f * mBoxes[0].mWidth));
-    mBoxes[4].mWidth = sIconWidth;
-    mBoxes[4].mHeight = sIconHeight;
+    f32 left = mBoxes[0].mX + 0.5f * mBoxes[0].mWidth;
+    mBoxes[1].mWidth = mBoxes[1].mX - (20.0f + left);
+    mIconBox = &mBoxes[4];
+    mIconBox->mWidth = sIconWidth;
+    mIconBox->mHeight = sIconHeight;
 }
 
 void WeatherBaseDay::SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover) {
@@ -523,7 +526,7 @@ void WeatherBaseDay::DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha
         pos.y = box->mY - mPos.y;
         box->mColor.a = alpha;
         box->mShadowColor.a = alpha;
-        DrawDateCentered(buf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
+        DrawDateCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
     }
 }
 
@@ -616,7 +619,8 @@ void WeatherBaseDay::DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha
 
 void WeatherBaseDay::DrawDay(DayForecast* day, WeatherInfo* weather, s32 alpha, f32 scale) {
     Vec2F pos(mBoxes[4].mX + mPos.x, mBoxes[4].mY - mPos.y);
-    DrawWeatherIcon(weather->mType->mIcon, &pos, scale * mBoxes[4].mScaleX, alpha);
+    f32 iconScale = scale * mBoxes[4].mScaleX;
+    DrawWeatherIcon(weather->mType->mIcon, &pos, iconScale, alpha);
 
     SetDefaultGXState();
     SetOrthoProjection();
@@ -637,9 +641,10 @@ void WeatherBaseDay::DrawDay(DayForecast* day, WeatherInfo* weather, s32 alpha, 
 
     SetDefaultGXState();
     SetOrthoProjection();
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_C2, GX_CC_TEXC, GX_CC_C1, GX_CC_C2);
+    GXSetTevColorIn(GX_TEVSTAGE0, (GXTevColorArg)4, (GXTevColorArg)8, (GXTevColorArg)2, (GXTevColorArg)4);
     if (gTempUnit == 0) {
-        DRAW_TEMP_C(day->mMaxC, alpha);
+        s32 maxC = day->mMaxC;
+        DRAW_TEMP_C(maxC, alpha);
     } else {
         DrawTemp(day->mMaxF, alpha);
     }
@@ -660,7 +665,7 @@ void WeatherBaseDay::FormatWindDefault(u8 dir, u8 speed) {
         } else if (speed != 0xFF) {
             swprintf(sTextBuf, 0x100, L"%d %ls", speed, GetWindUnitName());
         } else {
-            swprintf(sTextBuf, 0x100, L"-- %ls", GetWindUnitName());
+            swprintf(sTextBuf, 0x100, L"-- %ls", speed, GetWindUnitName());
         }
     } else {
         wcscpy(sTextBuf, GetWindDirName(dir));
@@ -680,6 +685,7 @@ void WeatherBaseDay::FormatWindDefault(u8 dir, u8 speed) {
 
 void WeatherBaseDay::UpdateHover(BOOL enable) {
     TextBox* icon;
+    f32 x, y;
     s32 prev = unk98;
     unk98 = -1;
     if (!enable) {
@@ -694,8 +700,8 @@ void WeatherBaseDay::UpdateHover(BOOL enable) {
 
     for (s32 i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         if (gKPADLatest[i] >= 0) {
-            f32 x = gCursorX[i];
-            f32 y = gCursorY[i];
+            x = gCursorX[i];
+            y = gCursorY[i];
             if (x > left && x < right && y > top && y < bottom) {
                 unk98 = i;
                 break;

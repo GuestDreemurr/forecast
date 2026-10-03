@@ -20,8 +20,13 @@ extern f32 gDragScroll[];
 f32 SmoothApproach(f32* value, f32 target, f32 rate, f32 maxStep, f32 minStep);
 void UpdateCurrentCity();
 
+static const wchar_t sBullet[] = L"\x25CF";
+
+#pragma explicit_zero_data on
 static f32 sOtherEntryX = 0.0f;
 static f32 sOtherEntryY = 0.0f;
+
+#pragma explicit_zero_data reset
 
 static Color sListColor(255, 255, 255, 64);
 static Color sTextColor(255, 255, 255, 255);
@@ -54,17 +59,17 @@ static Color sTextColor(255, 255, 255, 255);
         }                                                                                                    \
     }
 
-#define FIND_AREA(result)                                                                                    \
-    {                                                                                                        \
-        AddressEntry* entry = mEntries;                                                                      \
-        result = -1;                                                                                         \
-        for (s32 i = 0; i < mNumPlaces; i++, entry++) {                                                      \
-            if (mAreaId == (*entry->mPlace->mId & 0xFFFF0000)) {                                             \
-                result = i;                                                                                  \
-                break;                                                                                       \
-            }                                                                                                \
-        }                                                                                                    \
+static inline s32 FindAreaIndex(WeatherAddress* self) {
+    AddressEntry* entry = self->mEntries;
+    for (s32 i = 0; i < self->mNumPlaces; i++, entry++) {
+        if (self->mAreaId == (*entry->mPlace->mId & 0xFFFF0000)) {
+            return i;
+        }
     }
+    return -1;
+}
+
+#define FIND_AREA(result) result = FindAreaIndex(this)
 
 WeatherAddress::WeatherAddress(void* arc)
     : mEntries(NULL), mSelected(NULL), mListHead(NULL), mActiveLayout(NULL), mBaseLayout(NULL), mListLayout(NULL),
@@ -101,39 +106,44 @@ WeatherAddress::WeatherAddress(void* arc)
     mShowArrows = FALSE;
 
     s32 numPlaces = gForecastData->mHeader->mNumPlaces;
+    f32 one = 1.0f;
     mWriter.SetFont(*gSysFont);
     mWriter.SetCharSpace(0.0f);
-    mWriter.SetScale(1.0f);
+    mWriter.SetScale(one);
 
-    f32 maxWidth = GetScreenWidth() - (gWidescreen ? 36 : 28) - (gWidescreen ? 36 : 28);
+    s32 innerWidth = GetScreenWidth() - (gWidescreen ? 36 : 28);
+    f32 maxWidth = innerWidth - (gWidescreen ? 36 : 28);
     mNumPlaces = numPlaces;
     mEntries = new AddressEntry[numPlaces];
 
-    AddressEntry* entry = mEntries;
+    s32 nameLen;
+    const wchar_t* otherText;
     CityInfo* place = gForecastData->mPlaces;
-    for (s32 i = 0; i < numPlaces; i++, place++, entry++) {
+    s32 i;
+    AddressEntry* entry = mEntries;
+    for (i = 0; i < numPlaces; i++, place++, entry++) {
         entry->mPlace = place;
 
-        s32 len = 0;
+        nameLen = 0;
         if (place->mRegion != NULL) {
-            len = wcslen(place->mRegion);
+            nameLen = wcslen(place->mRegion);
         } else if (place->mCountry != NULL) {
-            len = wcslen(place->mCountry);
+            nameLen = wcslen(place->mCountry);
         }
 
-        len += wcslen(place->mName);
-        if (len != 0) {
-            len++;
+        nameLen += wcslen(place->mName);
+        if (nameLen != 0) {
+            nameLen++;
         }
 
-        entry->mName = new wchar_t[len];
+        entry->mName = new wchar_t[nameLen];
         wcscpy(entry->mName, place->mName);
 
         f32 width = mWriter.CalcStringWidth(entry->mName);
         if (width > maxWidth) {
             entry->mNameScaleX = maxWidth / width;
         } else {
-            entry->mNameScaleX = 1.0f;
+            entry->mNameScaleX = one;
         }
 
         if ((*place->mId & 0xFF0000) != 0xFE0000) {
@@ -146,7 +156,7 @@ WeatherAddress::WeatherAddress(void* arc)
                 }
             }
         } else {
-            entry->mLabel = L"\x25CF";
+            entry->mLabel = sBullet;
         }
 
         width = mWriter.CalcStringWidth(entry->mLabel);
@@ -154,11 +164,11 @@ WeatherAddress::WeatherAddress(void* arc)
             entry->mLabelScaleX = maxWidth / width;
             width = maxWidth;
         } else {
-            entry->mLabelScaleX = 1.0f;
+            entry->mLabelScaleX = one;
         }
 
-        entry->mNameScaleY = 1.0f;
-        entry->mLabelScaleY = 1.0f;
+        entry->mNameScaleY = one;
+        entry->mLabelScaleY = one;
         entry->mWidth = 20.0f + width;
         entry->mHeight = mRowHeight;
     }
@@ -187,7 +197,7 @@ WeatherAddress::WeatherAddress(void* arc)
         OSPanic("d_weather_address.cpp", 195, "text がないです!!\n");
     }
 
-    const wchar_t* otherText = gOtherRegionText[gLanguage];
+    otherText = gOtherRegionText[gLanguage];
     s32 len = wcslen(otherText) + 1;
     mOtherEntry.mPrev = NULL;
     mOtherEntry.mNext = NULL;
@@ -199,10 +209,10 @@ WeatherAddress::WeatherAddress(void* arc)
     mOtherEntry.mY = sOtherEntryY;
     mOtherEntry.mWidth = GetScreenWidth();
     mOtherEntry.mHeight = mRowHeight;
-    mOtherEntry.mNameScaleX = 1.0f;
-    mOtherEntry.mNameScaleY = 1.0f;
-    mOtherEntry.mLabelScaleX = 1.0f;
-    mOtherEntry.mLabelScaleY = 1.0f;
+    mOtherEntry.mNameScaleX = one;
+    mOtherEntry.mNameScaleY = one;
+    mOtherEntry.mLabelScaleX = one;
+    mOtherEntry.mLabelScaleY = one;
     mOtherEntry.mLeft = 0.0f;
     mOtherEntry.mTop = 0.0f;
     mOtherEntry.mRight = 0.0f;
@@ -211,8 +221,10 @@ WeatherAddress::WeatherAddress(void* arc)
     mOtherEntry.mWasHovered = FALSE;
     mOtherEntry.mHidden = FALSE;
 
+    TPLPalette* tpl = gCommonTpl;
+    f32 arrowX = 0.5f * (GetScreenWidth() - GetTexWidth(tpl, 0));
     mUpArrowPos.y = 108.0f;
-    mDownArrowPos.x = mUpArrowPos.x = 0.5f * (GetScreenWidth() - GetTexWidth(gCommonTpl, 0));
+    mUpArrowPos.x = mDownArrowPos.x = arrowX;
     mDownArrowPos.y = 388.0f - GetTexHeight(gCommonTpl, 0);
 
     CHANGE_STATE(&WeatherAddress::StateClose, 0);
@@ -337,32 +349,32 @@ void WeatherAddress::UpdateInput() {
 s32 WeatherAddress::BuildCityList() {
     s32 i;
     AddressEntry* entry;
-    s32 index;
 
     mListHead = NULL;
     f32 y = 0.5f * mRowHeight;
-    entry = mEntries;
+    AddressEntry* e = mEntries;
     mNumEntries = 0;
-    for (i = 0; i < mNumPlaces; i++, entry++) {
-        entry->mPrev = NULL;
-        entry->mNext = NULL;
+    for (i = 0; i < mNumPlaces; i++, e++) {
+        e->mPrev = NULL;
+        e->mNext = NULL;
     }
 
-    FIND_AREA(index);
-    if (index < 0) {
+    FIND_AREA(i);
+    if (i < 0) {
         return 0;
     }
 
-    entry = &mEntries[index];
+    entry = &mEntries[i];
     mListHead = entry;
     mNumEntries++;
     entry->mX = mListX;
     entry->mY = y;
+    i++;
 
     AddressEntry* last = mListHead;
     y += mRowHeight;
     entry++;
-    for (i = index + 1; i < mNumPlaces; i++, entry++) {
+    for (; i < mNumPlaces; i++, entry++) {
         if (mAreaId == (*entry->mPlace->mId & 0xFFFF0000)) {
             last->mNext = entry;
             entry->mPrev = last;
@@ -383,9 +395,24 @@ s32 WeatherAddress::BuildCityList() {
     return 0;
 }
 
+static inline BOOL ListHasArea(WeatherAddress* self, u32 id) {
+    AddressEntry* area = self->mListHead;
+    u32 key = id & 0xFFFF0000;
+    for (; area != NULL; area = area->mNext) {
+        if ((*area->mPlace->mId & 0xFFFF0000) == key) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 s32 WeatherAddress::BuildAreaList() {
     s32 i;
     AddressEntry* entry = mEntries;
+    s32 j;
+    AddressEntry* e;
+    AddressEntry* last;
+    u32 firstArea;
 
     f32 y = 0.5f * mRowHeight;
     for (i = 0; i < mNumPlaces; i++, entry++) {
@@ -394,40 +421,26 @@ s32 WeatherAddress::BuildAreaList() {
     }
 
     AddressEntry* first = mEntries;
+    firstArea = *first->mPlace->mId & 0xFF000000;
     mListHead = first;
     mNumEntries = 1;
     first->mX = mListX;
     first->mY = y;
 
-    AddressEntry* last = mListHead;
+    last = mListHead;
     y += mRowHeight;
-    entry = first + 1;
-    for (i = 1; i < mNumPlaces; i++, entry++) {
-        u32 id = *entry->mPlace->mId;
-        if ((id & 0xFF000000) == (*first->mPlace->mId & 0xFF000000)) {
-            BOOL found;
-            AddressEntry* area = mListHead;
-            while (TRUE) {
-                if (area == NULL) {
-                    found = FALSE;
-                    break;
-                }
-
-                if ((*area->mPlace->mId & 0xFFFF0000) == (id & 0xFFFF0000)) {
-                    found = TRUE;
-                    break;
-                }
-
-                area = area->mNext;
-            }
-
+    e = first + 1;
+    for (j = 1; j < mNumPlaces; j++, e++) {
+        u32 id = *e->mPlace->mId;
+        if ((id & 0xFF000000) == firstArea) {
+            BOOL found = ListHasArea(this, id);
             if (!found) {
-                last->mNext = entry;
-                entry->mPrev = last;
-                last = entry;
+                last->mNext = e;
+                e->mPrev = last;
+                last = e;
                 mNumEntries++;
-                entry->mX = mListX;
-                entry->mY = y;
+                e->mX = mListX;
+                e->mY = y;
                 y += mRowHeight;
             }
         }
@@ -439,8 +452,9 @@ s32 WeatherAddress::BuildAreaList() {
     }
 
     s32 index = 0;
-    for (entry = mListHead; entry != NULL; entry = entry->mNext, index++) {
-        if (mAreaId == (*entry->mPlace->mId & 0xFFFF0000)) {
+    AddressEntry* ent;
+    for (ent = mListHead; ent != NULL; ent = ent->mNext, index++) {
+        if (mAreaId == (*ent->mPlace->mId & 0xFFFF0000)) {
             if (index >= mNumPages - 1) {
                 index = mNumPages - 1;
             }
@@ -458,20 +472,13 @@ void WeatherAddress::DrawCityList() {
     Vec quad[4];
 
     SetScaledScissor(0, 103, GetScreenWidth(), 353);
-    quad[0].z = 0.0f;
-    quad[1].z = 0.0f;
-    quad[2].z = 0.0f;
-    quad[3].z = 0.0f;
+    quad[0].z = quad[1].z = quad[2].z = quad[3].z = 0.0f;
     for (; entry != NULL; entry = entry->mNext) {
         if (!entry->mHidden) {
-            quad[0].x = entry->mLeft;
-            quad[1].x = entry->mLeft;
-            quad[2].x = entry->mRight;
-            quad[3].x = entry->mRight;
-            quad[0].y = entry->mTop;
-            quad[3].y = entry->mTop;
-            quad[1].y = entry->mBottom;
-            quad[2].y = entry->mBottom;
+            quad[0].x = quad[1].x = entry->mLeft;
+            quad[2].x = quad[3].x = entry->mRight;
+            quad[0].y = quad[3].y = entry->mTop;
+            quad[1].y = quad[2].y = entry->mBottom;
 
             const Color* src = &sListColor;
             if (entry->mHovered) {
@@ -507,20 +514,13 @@ void WeatherAddress::DrawAreaList() {
     Vec quad[4];
 
     SetScaledScissor(0, 103, GetScreenWidth(), 353);
-    quad[0].z = 0.0f;
-    quad[1].z = 0.0f;
-    quad[2].z = 0.0f;
-    quad[3].z = 0.0f;
+    quad[0].z = quad[1].z = quad[2].z = quad[3].z = 0.0f;
     for (; entry != NULL; entry = entry->mNext) {
         if (!entry->mHidden) {
-            quad[0].x = entry->mLeft;
-            quad[1].x = entry->mLeft;
-            quad[2].x = entry->mRight;
-            quad[3].x = entry->mRight;
-            quad[0].y = entry->mTop;
-            quad[3].y = entry->mTop;
-            quad[1].y = entry->mBottom;
-            quad[2].y = entry->mBottom;
+            quad[0].x = quad[1].x = entry->mLeft;
+            quad[2].x = quad[3].x = entry->mRight;
+            quad[0].y = quad[3].y = entry->mTop;
+            quad[1].y = quad[2].y = entry->mBottom;
 
             const Color* src = &sListColor;
             if (entry->mHovered) {
@@ -613,15 +613,17 @@ void WeatherAddress::ScrollNormal() {
         }
 
         if (mTopIndex == 0) {
-            mUpButton->mLocked = TRUE;
-            mUpButton->Release();
+            LayoutButton* up = mUpButton;
+            up->mLocked = TRUE;
+            up->Release();
         } else {
             mUpButton->mLocked = FALSE;
         }
 
         if (mNumPages <= 0 || mTopIndex == mNumPages - 1) {
-            mDownButton->mLocked = TRUE;
-            mDownButton->Release();
+            LayoutButton* down = mDownButton;
+            down->mLocked = TRUE;
+            down->Release();
         } else {
             mDownButton->mLocked = FALSE;
         }
@@ -642,7 +644,7 @@ void WeatherAddress::ScrollDrag() {
         gCursorState[3] = 0;
         mShowArrows = FALSE;
         if (mScrollSpeed < 0.0f) {
-            mTopIndex = (mRowHeight - mScroll) / mRowHeight;
+            mTopIndex = (-mScroll + mRowHeight) / mRowHeight;
         } else {
             mTopIndex = -mScroll / mRowHeight;
         }
@@ -672,7 +674,8 @@ void WeatherAddress::ScrollDrag() {
             gCursorState[i] = 0;
             if (gHold[i] & 0x400) {
                 gCursorState[i] = 4;
-                mScrollSpeed = 0.1f * gDragScroll[i];
+                f32 d = gDragScroll[i];
+                mScrollSpeed = 0.1f * d;
                 break;
             }
         }
@@ -685,13 +688,15 @@ void WeatherAddress::ScrollDrag() {
         }
 
         if (mScroll >= mScrollMax) {
-            mUpButton->mLocked = TRUE;
-            mUpButton->Release();
+            LayoutButton* up = mUpButton;
+            up->mLocked = TRUE;
+            up->Release();
             mDownButton->mLocked = FALSE;
         } else if (mScroll <= mScrollMin) {
             mUpButton->mLocked = FALSE;
-            mDownButton->mLocked = TRUE;
-            mDownButton->Release();
+            LayoutButton* down = mDownButton;
+            down->mLocked = TRUE;
+            down->Release();
         } else {
             mUpButton->mLocked = FALSE;
             mDownButton->mLocked = FALSE;
@@ -716,20 +721,16 @@ void WeatherAddress::ChangeState(StateFunc state, s32 arg) {
 #define UPDATE_ENTRIES()                                                                                     \
     {                                                                                                        \
         AddressEntry* entry = mListHead;                                                                     \
-        f32 offset = (mScroll + mListTop) - 20.0f;                                                           \
+        f32 off20 = 20.0f; f32 offset = (mScroll + mListTop) - off20;                                                          \
         f32 right = GetScreenWidth();                                                                        \
         for (; entry != NULL; entry = entry->mNext) {                                                        \
-            BOOL hidden = FALSE;                                                                             \
             entry->mWasHovered = entry->mHovered;                                                            \
-            entry->mHovered = FALSE;                                                                         \
+            entry->mHovered = FALSE;                                                                        \
             entry->mLeft = 0.0f;                                                                             \
-            entry->mTop = entry->mY + offset;                                                                \
+            entry->mTop = entry->mY + offset;                                                             \
             entry->mRight = right;                                                                           \
             entry->mBottom = 40.0f + entry->mTop;                                                            \
-            if (entry->mBottom < 0.0f || entry->mTop > mClipBottom) {                                        \
-                hidden = TRUE;                                                                               \
-            }                                                                                                \
-            entry->mHidden = hidden;                                                                         \
+            entry->mHidden = (entry->mBottom < 0.0f || entry->mTop > mClipBottom);                           \
         }                                                                                                    \
     }
 
@@ -773,14 +774,15 @@ void WeatherAddress::StateCity(s32 arg) {
         mPhase++;
         CHANGE_SCROLL(&WeatherAddress::ScrollNormal);
         mTopIndex = BuildCityList();
-        mActiveLayout = mListLayout;
         mScroll = mScrollTarget = -(mRowHeight * mTopIndex);
+        mActiveLayout = mListLayout;
         mDrawFunc = &WeatherAddress::DrawCityList;
         if (gViewsCreated) {
             mBackButton->mLocked = FALSE;
         } else {
-            mBackButton->mLocked = TRUE;
-            mBackButton->Release();
+            LayoutButton* back = mBackButton;
+            back->mLocked = TRUE;
+            back->Release();
         }
         mTitle->SetState(0);
         break;
@@ -802,7 +804,7 @@ void WeatherAddress::StateCity(s32 arg) {
                 (this->*mScrollState)();
             }
 
-            if (UpdateCityList()) {
+            if (!UpdateCityList()) {
                 return;
             }
             return;
@@ -829,8 +831,8 @@ void WeatherAddress::StateArea(s32 arg) {
         mPhase++;
         CHANGE_SCROLL(&WeatherAddress::ScrollNormal);
         mTopIndex = BuildAreaList();
-        mActiveLayout = mListLayout;
         mScroll = mScrollTarget = -(mRowHeight * mTopIndex);
+        mActiveLayout = mListLayout;
         mDrawFunc = &WeatherAddress::DrawAreaList;
         mTitle->SetState(1);
         FIND_AREA(index);
@@ -838,8 +840,9 @@ void WeatherAddress::StateArea(s32 arg) {
         if (mCanGoBack) {
             mBackButton->mLocked = FALSE;
         } else {
-            mBackButton->mLocked = TRUE;
-            mBackButton->Release();
+            LayoutButton* back = mBackButton;
+            back->mLocked = TRUE;
+            back->Release();
         }
         break;
     case -1:
@@ -860,7 +863,7 @@ void WeatherAddress::StateArea(s32 arg) {
                 (this->*mScrollState)();
             }
 
-            if (UpdateAreaList()) {
+            if (!UpdateAreaList()) {
                 return;
             }
             return;
@@ -903,7 +906,8 @@ void WeatherAddress::StateConfirm(s32 arg) {
                 PlaySE(37);
                 mPhase = 2;
                 mTimer = 0;
-                mConfirmLayout->FindButton("yes")->mPressed = TRUE;
+                LayoutButton* yes = mConfirmLayout->FindButton("yes");
+                yes->mPressed = TRUE;
                 return;
             }
 
@@ -911,7 +915,8 @@ void WeatherAddress::StateConfirm(s32 arg) {
                 PlaySE(38);
                 mPhase = 3;
                 mTimer = 12;
-                mConfirmLayout->FindButton("no")->mPressed = TRUE;
+                LayoutButton* no = mConfirmLayout->FindButton("no");
+                no->mPressed = TRUE;
                 return;
             }
             break;
@@ -930,6 +935,7 @@ void WeatherAddress::StateConfirm(s32 arg) {
             }
             CHANGE_STATE(&WeatherAddress::StateClose, 0);
             break;
+        case 3:
         default:
             if (mTimer != 0) {
                 mTimer--;
@@ -964,8 +970,8 @@ s32 WeatherAddress::HitTest(AddressEntry* entry) {
         }
 
         if (valid) {
-            f32 y = gPointerY[i][0];
             f32 x = gPointerX[i][0];
+            f32 y = gPointerY[i][0];
             if (y > mClipTop && y < mClipBottom && x > entry->mLeft && x < entry->mRight && y > entry->mTop &&
                 y < entry->mBottom) {
                 entry->mHovered = TRUE;

@@ -18,6 +18,8 @@ WeatherBase::WeatherBase(const Vec2& pos, const Vec2& size, s32 type)
 }
 
 void WeatherBase::SetPosition(const Vec2& pos, const f32& scale, const bool& visible, BOOL checkHover) {
+    // HACK: dead u32->f32 conversion, only to reproduce .sdata2 pool order (unsigned magic double before 2.0f)
+    f32 unusedConv = (f32)(u32)checkHover;
     mPos = pos;
     mScale = scale;
     mVisible = visible;
@@ -33,16 +35,21 @@ void WeatherBase::SetPosition(const Vec2& pos, const f32& scale, const bool& vis
 
 void WeatherBase::DrawIcon(TextBox* box, u32 id, s32 alpha) {
     f32 halfWidth = box->mScaleX * (0.5f * GetTexWidth(gCommonTpl, id));
-    f32 halfHeight = 0.5f * GetTexHeight(gCommonTpl, id);
     Vec pos;
     Vec shadowPos;
 
-    pos.x = box->mX + mPos.x - halfWidth;
-    pos.y = box->mY - mPos.y - box->mScaleX * halfHeight;
+    f32 x, y;
+    f32 hh = box->mScaleX * (0.5f * GetTexHeight(gCommonTpl, id));
+    y = box->mY - mPos.y - hh;
+    x = box->mX + mPos.x - halfWidth;
     pos.z = 0.0f;
-    shadowPos.x = 2.0f + pos.x;
-    shadowPos.y = 2.0f + pos.y;
     shadowPos.z = 0.0f;
+    pos.x = x;
+    pos.y = y;
+    f32 sx = 2.0f + x;
+    f32 sy = 2.0f + y;
+    shadowPos.x = sx;
+    shadowPos.y = sy;
 
     box->mShadowColor.a = alpha;
     box->mColor.a = alpha;
@@ -54,16 +61,21 @@ void WeatherBase::DrawIcon(TextBox* box, u32 id, s32 alpha) {
 
 void WeatherBase::DrawIconLarge(TextBox* box, u32 id, s32 alpha) {
     f32 halfWidth = box->mScaleX * (0.5f * GetTexWidth(gCommonTpl, id));
-    f32 halfHeight = 0.5f * GetTexHeight(gCommonTpl, id);
     Vec pos;
     Vec shadowPos;
 
-    pos.x = box->mX + mPos.x - halfWidth;
-    pos.y = box->mY - mPos.y - box->mScaleX * halfHeight;
+    f32 x, y;
+    f32 hh = box->mScaleX * (0.5f * GetTexHeight(gCommonTpl, id));
+    y = box->mY - mPos.y - hh;
+    x = box->mX + mPos.x - halfWidth;
     pos.z = 0.0f;
-    shadowPos.x = 3.0f + pos.x;
-    shadowPos.y = 3.0f + pos.y;
     shadowPos.z = 0.0f;
+    pos.x = x;
+    pos.y = y;
+    f32 sx = 3.0f + x;
+    f32 sy = 3.0f + y;
+    shadowPos.x = sx;
+    shadowPos.y = sy;
 
     box->mShadowColor.a = alpha;
     box->mColor.a = alpha;
@@ -71,6 +83,11 @@ void WeatherBase::DrawIconLarge(TextBox* box, u32 id, s32 alpha) {
     DrawTextureAt(gCommonTpl, id, box->mScaleX, box->mScaleX, &shadowPos);
     GXSetTevColor(GX_TEVREG0, box->mColor);
     DrawTextureAt(gCommonTpl, id, box->mScaleX, box->mScaleX, &pos);
+}
+
+static inline f32 Shrink(f32 scale, f32 max, f32 cur) {
+    f32 r = max / cur;
+    return scale * r;
 }
 
 void WeatherBase::DrawText(TextBox* box, const wchar_t* text, s32 alpha) {
@@ -84,13 +101,15 @@ void WeatherBase::DrawText(TextBox* box, const wchar_t* text, s32 alpha) {
     box->mColor.a = alpha;
 
     mWriter.SetScale(box->mScaleX, box->mScaleY);
-    mWriter.SetCharSpace(gUnkSceneFloat * box->mScaleX);
+    f32 space = gUnkSceneFloat;
+    mWriter.SetCharSpace(box->mScaleX * space);
     mWriter.SetLineSpace(0.0f);
 
     f32 width = mWriter.CalcStringWidth(text);
     if (width > box->mWidth) {
-        scaleX = box->mScaleX * (box->mWidth / width);
-        mWriter.SetCharSpace(scaleX * gUnkSceneFloat);
+        scaleX = Shrink(box->mScaleX, box->mWidth, width);
+        f32 cs = gUnkSceneFloat;
+        mWriter.SetCharSpace(scaleX * cs);
     } else {
         scaleX = box->mScaleX;
     }

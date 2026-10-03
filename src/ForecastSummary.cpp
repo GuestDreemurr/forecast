@@ -19,6 +19,7 @@ WeatherInfo::WeatherInfo() {
 
 WeatherInfo::~WeatherInfo() {}
 
+#pragma scheduling off
 s32 WeatherInfo::Setup(void* base, WeatherType* type) {
     u32 offset = type->mTextOffset;
     mType = type;
@@ -28,7 +29,9 @@ s32 WeatherInfo::Setup(void* base, WeatherType* type) {
     mText = (const wchar_t*)((u8*)base + offset);
     return 0x18;
 }
+#pragma scheduling reset
 
+#pragma scheduling off
 s32 UVIndexInfo::Setup(void* base, IndexText* entry) {
     u32 offset = entry->mTextOffset;
     mIndex = entry;
@@ -38,3 +41,4 @@ s32 UVIndexInfo::Setup(void* base, IndexText* entry) {
     mText = (const wchar_t*)((u8*)base + offset);
     return 0x18;
 }
+#pragma scheduling reset

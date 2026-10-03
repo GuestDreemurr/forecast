@@ -60,3 +60,15 @@ void* OSAllocFromMEM1ArenaLo(size_t size, u32 align) {
     OSSetMEM1ArenaLo(end);
     return begin;
 }
+
+void* OSAllocFromMEM1ArenaHi(size_t size, u32 align) {
+    void* ptr;
+    u8* arenaHi;
+
+    arenaHi = OSGetMEM1ArenaHi();
+    arenaHi = (u8*)TRUNC(arenaHi, align);
+    arenaHi -= size;
+    arenaHi = ptr = (void*)TRUNC(arenaHi, align);
+    OSSetMEM1ArenaHi(arenaHi);
+    return ptr;
+}
