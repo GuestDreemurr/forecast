@@ -1,3 +1,4 @@
+#include "revolution/OS/OSExec.h"
 #include <revolution/BASE.h>
 #include <revolution/DB.h>
 #include <revolution/DVD.h>
@@ -210,7 +211,11 @@ u32 OSGetConsoleType(void) {
             if (hollywood > 0x00000011) {
                 return OS_CONSOLE_NDEV_2_1;
             }
+
+        case 0x300:
+            return OS_CONSOLE_RVA_1;
         }
+
     }
 
     mem2size = OSGetPhysicalMem2Size();
@@ -588,8 +593,11 @@ void OSInit(void) {
             EnableMetroTRKInterrupts();
         }
 
-        ClearArena();
-        ClearMEM2Arena();
+        if (!__OSInNandBoot && !__OSInReboot) {
+            ClearArena();
+            ClearMEM2Arena();
+        }
+
         OSEnableInterrupts();
         IPCCltInit();
 
@@ -756,7 +764,7 @@ static asm void OSExceptionVector(void) {
     entry __OSEVStart
 
     mtsprg0 r4
-    
+
     // Current OS context (physical address)
     lwz r4, 0x000000C0(0)
     stw r3, OSContext.gprs[3](r4)
@@ -879,7 +887,7 @@ static const char* AppGameNameForSysMenu = "HAEA";
 
 const char* OSGetAppGamename(void) {
     int i;
-    const char* temp = (const char*)OSPhysicalToCached(OS_PHYS_CURRENT_APP_NAME_1);
+    const char* temp = (const char*)OS_PHYS_CURRENT_APP_NAME_1;
     const char* name = temp;
 
     if (__OSInIPL){

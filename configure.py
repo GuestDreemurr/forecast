@@ -591,7 +591,7 @@ config.libs = [
             Object(NonMatching, "revolution/NWC24/NWC24Utils.c"),
 
             # OS
-            Object(NonMatching, "revolution/OS/__ppc_eabi_init.c"),
+            Object(Matching, "revolution/OS/__ppc_eabi_init.c"),
             Object(Matching, "revolution/OS/__start.c"),
             Object(NonMatching, "revolution/OS/OS.c"),
             Object(NonMatching, "revolution/OS/OSAlarm.c"),
@@ -615,7 +615,7 @@ config.libs = [
             Object(NonMatching, "revolution/OS/OSReset.c"),
             Object(NonMatching, "revolution/OS/OSRtc.c"),
             Object(Matching, "revolution/OS/OSStateFlags.c"),
-            Object(NonMatching, "revolution/OS/OSStateTM.c"),
+            Object(Matching, "revolution/OS/OSStateTM.c"),
             Object(Matching, "revolution/OS/OSSync.c"),
             Object(Matching, "revolution/OS/OSThread.c"),
             Object(Matching, "revolution/OS/OSTime.c"),
