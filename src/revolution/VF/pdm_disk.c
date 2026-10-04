@@ -215,6 +215,7 @@ s32 VFipdm_disk_open_disk(struct PDM_INIT_DISK* p_init_disk_tbl, struct PDM_DISK
     }
 
     p_disk->signature++;
+    p_disk->signature &= 0xFFFF;
     p_disk->open_disk_cnt++;
 
     VFipdm_disk_set.disk_handle[handle_no].signature = p_disk->signature;

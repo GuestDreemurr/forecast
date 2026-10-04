@@ -344,6 +344,27 @@ typedef struct PF_VOLUME {
     const unsigned char* format_param;        // offset 0x1894, size 0x4
 } PF_VOLUME;
 
+typedef struct PF_DTA {
+    // total size: 0x444
+    struct PF_FILE* p_file;              // offset 0x0, size 0x4
+    struct PF_DIR* p_dir;                // offset 0x4, size 0x4
+    struct PF_VOLUME* p_vol;             // offset 0x8, size 0x4
+    unsigned long parent_start_cluster;  // offset 0xC, size 0x4
+    unsigned long parent_pos;            // offset 0x10, size 0x4
+    unsigned long status;                // offset 0x14, size 0x4
+    unsigned char num_entry_LFNs;        // offset 0x18, size 0x1
+    unsigned char ordinal;               // offset 0x19, size 0x1
+    unsigned char check_sum;             // offset 0x1A, size 0x1
+    unsigned char attr;                  // offset 0x1B, size 0x1
+    signed char reg_exp[520];            // offset 0x1C, size 0x208
+    unsigned short Time;                 // offset 0x224, size 0x2
+    unsigned short Date;                 // offset 0x226, size 0x2
+    unsigned long FileSize;              // offset 0x228, size 0x4
+    unsigned char Attribute;             // offset 0x22C, size 0x1
+    signed char FileName[13];            // offset 0x22D, size 0xD
+    signed char LongName[520];           // offset 0x23A, size 0x208
+};
+
 struct PF_CUR_VOLUME {
     // total size: 0xC
     unsigned long stat;       // offset 0x0, size 0x4

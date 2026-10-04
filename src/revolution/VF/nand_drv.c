@@ -2,8 +2,13 @@
 #include <revolution/VF.h>
 
 extern struct PDM_DISK_SET VFipdm_disk_set;
-s32 VF_nand_retry_max;
 s32 VF_nand_sleep_msec;
+s32 VF_nand_retry_max;
+
+#define VFi_NANDPanic(msg, line)
+
+typedef s32 (*VFi_NANDCreate)(const char*, u8, u8);
+typedef s32 (*VFi_NANDDelete)(const char*);
 
 static struct {
     s32 (*create)(const char*, u8, u8);
@@ -13,13 +18,13 @@ static struct {
 } l_nandFunc[26];
 
 static const struct PDM_FUNCTBL l_nand_func = {
-    nanddrv_init, 
-    nanddrv_finalize, 
-    nanddrv_mount, 
-    nanddrv_unmount, 
-    (s32 (*)(struct PDM_DISK*, u8*))nanddrv_format, 
-    nanddrv_pread, 
-    (s32 (*)(struct PDM_DISK*, u8*, u32, u32, u32*))nanddrv_pwrite, 
+    nanddrv_init,
+    nanddrv_finalize,
+    nanddrv_mount,
+    nanddrv_unmount,
+    (s32 (*)(struct PDM_DISK*, u8*))nanddrv_format,
+    nanddrv_pread,
+    (s32 (*)(struct PDM_DISK*, u8*, u32, u32, u32*))nanddrv_pwrite,
     (s32 (*)(struct PDM_DISK*, struct PDM_DISK_INFO*))nanddrv_get_disk_info
 };
 
@@ -35,7 +40,7 @@ s32 VFi_NandCreate(const char* path, u8 perm, u8 attr) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDCreate(path, perm, attr);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -52,7 +57,7 @@ s32 VFi_NANDPrivateCreate(const char* path, u8 perm, u8 attr) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDPrivateCreate(path, perm, attr);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -69,7 +74,7 @@ s32 VFi_NandDelete(const char* path) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDDelete(path);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -86,7 +91,7 @@ s32 VFi_NANDPrivateDelete(const char* path) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDPrivateDelete(path);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -103,7 +108,7 @@ s32 VFi_NandClose(struct NANDFileInfo* info) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDClose(info);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -120,7 +125,7 @@ s32 VFi_NandOpen(const char* path, struct NANDFileInfo* info, u8 accType) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDOpen(path, info, accType);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -137,7 +142,7 @@ s32 VFi_NANDPrivateOpen(const char* path, struct NANDFileInfo* info, u8 accType)
     error = 0;
     while (challenge-- > 0) {
         error = NANDPrivateOpen(path, info, accType);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -154,7 +159,7 @@ s32 VFi_NandWrite(struct NANDFileInfo* info, void* buf, u32 length) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDWrite(info, buf, length);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -171,7 +176,7 @@ s32 VFi_NandSeek(struct NANDFileInfo* info, s32 offset, s32 whence) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDSeek(info, offset, whence);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -188,7 +193,7 @@ s32 VFi_NandRead(struct NANDFileInfo* info, void* buf, u32 length) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDRead(info, buf, length);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -205,7 +210,7 @@ s32 VFi_NandCreateDir(const char* path, u8 perm, u8 attr) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDCreateDir(path, perm, attr);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -222,7 +227,7 @@ s32 VFi_NANDPrivateCreateDir(const char* path, u8 perm, u8 attr) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDPrivateCreateDir(path, perm, attr);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
@@ -239,13 +244,52 @@ s32 VFi_NandGetLength(struct NANDFileInfo* info, u32* length) {
     error = 0;
     while (challenge-- > 0) {
         error = NANDGetLength(info, length);
-        if (error != NAND_RESULT_BUSY) {
+        if (error != NAND_RESULT_BUSY && error != NAND_RESULT_ALLOC_FAILED) {
             return error;
         } else {
             _SleepAfewMiliSec();
         }
     }
     return error;
+}
+
+static u8 _MakePermitForRVL(u8 i_perm) {
+    u8 perm = 0;
+    if ((i_perm & 1) != 0) {
+        perm |= 0x10;
+    }
+    if ((i_perm & 2) != 0) {
+        perm |= 0x20;
+    }
+    if ((i_perm & 4) != 0) {
+        perm |= 4;
+    }
+    if ((i_perm & 8) != 0) {
+        perm |= 8;
+    }
+    if ((i_perm & 0x10) != 0) {
+        perm |= 1;
+    }
+    if ((i_perm & 0x20) != 0) {
+        perm |= 2;
+    }
+    return perm;
+}
+
+s32 VFi_NandCreateSp(const char* path, u8 i_perm, u8 attr, u32 i_handleIdx) {
+    u8 perm = _MakePermitForRVL(i_perm);
+    if (i_handleIdx < 26) {
+        VFi_NANDCreate tmpCreate;
+        tmpCreate = l_nandFunc[i_handleIdx].create;
+        if (tmpCreate != NULL) {
+            return tmpCreate(path, perm, attr);
+        }
+        return VFi_NandCreate(path, perm, attr);
+    }
+    if (i_handleIdx == -10) {
+        return VFi_NandCreate(path, perm, attr);
+    }
+    return VFi_NANDPrivateCreate(path, perm, attr);
 }
 
 s32 VFi_NandOpenSp(const char* path, void* info, u8 accType, u32 i_handleIdx) {
@@ -267,6 +311,20 @@ s32 VFi_NandOpenSp(const char* path, void* info, u8 accType, u32 i_handleIdx) {
     }
 }
 
+s32 VFi_NandDeleteSp(const char* path, u32 i_handleIdx) {
+    if (i_handleIdx < 26) {
+        VFi_NANDDelete tmpDelete = l_nandFunc[i_handleIdx].delete;
+        if (tmpDelete != NULL) {
+            return tmpDelete(path);
+        }
+        return VFi_NandDelete(path);
+    }
+    if (i_handleIdx == -10) {
+        return VFi_NandDelete(path);
+    }
+    return VFi_NANDPrivateDelete(path);
+}
+
 void VFi_NandSetNANDFuncNormal(u32 i_handleIdx) {
     if (i_handleIdx < 26) {
         l_nandFunc[i_handleIdx].create = VFi_NandCreate;
@@ -283,6 +341,12 @@ void VFi_NandSetNANDFuncPrivate(u32 i_handleIdx) {
         l_nandFunc[i_handleIdx].createDir = VFi_NANDPrivateCreateDir;
         l_nandFunc[i_handleIdx].delete = VFi_NANDPrivateDelete;
     }
+}
+
+static s32 _CreateNANDFileWithDir(const char* i_path_p, u8 i_perm, u32 i_handleIdx) {
+    s32 nandErr = 0;
+    nandErr = VFi_NandCreateSp(i_path_p, i_perm, 0, i_handleIdx);
+    return (s16)nandErr;
 }
 
 s32 A32_NANDRead(struct NANDFileInfo* i_fileInfo_p, void* i_buf, u32 i_size) {
@@ -377,6 +441,62 @@ s32 A32_NANDWrite(struct NANDFileInfo* i_fileInfo_p, void* i_buf, u32 i_size, st
     }
 
     return i_size;
+}
+
+s32 _CreatePrfFile(u32 i_fileSize, char* i_fullpath_p, u16 i_version, u8 i_perm, u32 i_handleIdx) {
+    u8 work[512] ATTRIBUTE_ALIGN(64);
+    s32 nandError = NAND_RESULT_OK;
+    NANDFileInfo fileInfo;
+    u32 restSize = i_fileSize;
+
+    if ((i_fileSize & 31) != 0) {
+        VFi_NANDPanic(1284, "VFF size は32の倍数にしてください。");  // "VF size should be a multiple by 32"
+        return NAND_RESULT_INVALID;
+    }
+
+    nandError = _CreateNANDFileWithDir(i_fullpath_p, i_perm, i_handleIdx);
+    if (nandError != NAND_RESULT_OK) {
+        return (s16)nandError;
+    }
+
+    nandError = VFi_NandOpenSp(i_fullpath_p, &fileInfo, NAND_ACCESS_WRITE, i_handleIdx);
+    if (nandError != NAND_RESULT_OK) {
+        return (s16)nandError;
+    }
+
+    dCommon_CopyPrfFileHeader(&work, i_fileSize, i_version, 0);
+    nandError = VFi_NandWrite(&fileInfo, &work, 32);
+    restSize -= 0x20;
+
+    if (nandError < NAND_RESULT_OK) {
+        VFi_NandClose(&fileInfo);
+        VFi_NandDeleteSp(i_fullpath_p, i_handleIdx);
+        return nandError;
+    }
+    VFipf_memset(&work, 0, 0x200);
+
+    for (; restSize >= 0x200; restSize -= 0x200) {
+        nandError = VFi_NandWrite(&fileInfo, &work, 0x200);
+        if (nandError < NAND_RESULT_OK) {
+            VFi_NandClose(&fileInfo);
+            VFi_NandDeleteSp(i_fullpath_p, i_handleIdx);
+            return nandError;
+        }
+    }
+    if (restSize != 0) {
+        nandError = VFi_NandWrite(&fileInfo, &work, restSize);
+        if (nandError < NAND_RESULT_OK) {
+            VFi_NandClose(&fileInfo);
+            VFi_NandDeleteSp(i_fullpath_p, i_handleIdx);
+            return nandError;
+        }
+    }
+    VFi_NandClose(&fileInfo);
+    return NAND_RESULT_OK;
+}
+
+s32 NAND_CreatePrfFileEx(u32 i_fileSize, char* i_fullpath_p, u16 i_version) {
+    return _CreatePrfFile(i_fileSize, i_fullpath_p, i_version, 63, -11);
 }
 
 s32 VFi_NandFlushNANDFromHandleIdx(s32 i_handleIdx, int i_setLastDeviceError) {

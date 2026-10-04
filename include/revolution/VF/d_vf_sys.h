@@ -24,6 +24,7 @@ s32 VFSysCheckExistPrfFile_ram(struct VF_HANDLE_DEVICE* i_device_p, const s8* i_
 s32 VFSysCheckExistPrfFile_dvd(struct VF_HANDLE_DEVICE* i_device_p, const s8* i_prf_file_name_p, void* i_memory_p, u32 i_handle_idx);
 s32 VFSysCreatePrfFileNANDFlashEx(const s8* i_prf_file_name_p, u32 i_file_size);
 s32 VFSysCheckExistPrfFile(s32 i_handle_idx, const s8* i_prf_file_name_p, void* i_memory_p);
+s32 VFSysCreatePrfFileNANDFlashEx(const s8* i_prf_file_name_p, u32 i_file_size);
 s32 VFSysMountDrv(s32 i_handle_idx, const s8* i_prf_file_name_p, void* i_memory_p);
 s32 VFSysUnmountDrv(s32 i_handle_idx, u32 i_mode);
 struct PF_FILE* VFSysOpenFile_current(const s8* i_path_p, const s8* i_mode);
@@ -48,6 +49,7 @@ void VFSysSetNandFuncEx(u32 i_handle_idx);
 void VFSysSetNandFuncPrivate(u32 i_handle_idx);
 s32 VFSysFormatDrive(s32 i_handle_idx);
 s32 VFSysSetSyncMode(s32 i_handle_idx, u32 i_mode);
+u32 VFSysGetSyncMode(s32 i_handle_idx);
 
 typedef void (*VFSysTimeStampCallback)(void* time);
 VFSysTimeStampCallback VFSysSetTimeStampCallback(VFSysTimeStampCallback i_timestamp_callback);

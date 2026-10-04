@@ -205,6 +205,7 @@ s32 VFipdm_part_open_partition(struct PDM_DISK* p_disk, u16 part_id, struct PDM_
     }
 
     p_part->signature++;
+    p_part->signature &= 0xFFFF;
     p_part->open_part_cnt++;
 
     VFipdm_disk_set.partition_handle[handle_no].signature = p_part->signature;

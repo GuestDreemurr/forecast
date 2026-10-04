@@ -592,6 +592,40 @@ s32 VFiPFENT_ITER_Retreat(struct PF_ENT_ITER* p_iter, u32 may_allocate) {
     }
 }
 
+s32 VFiPFENT_ITER_FindEntry(PF_ENT_ITER* p_iter, PF_DIR_ENT* p_ent, PF_STR* p_pattern, u8 attr_required, u8 attr_unwanted, u32* p_is_found, u32 is_skip) {
+    s32 err;
+
+    if (p_ent == NULL) {
+        return 10;
+    }
+    if (p_pattern->p_head == NULL) {
+        return 10;
+    }
+    if (VFiPFSTR_StrLen(p_pattern) == 0) {
+        return 10;
+    }
+    if (p_is_found == NULL) {
+        return 10;
+    }
+
+    *p_is_found = 0;
+
+    if (attr_required & attr_unwanted) {
+        return 10;
+    }
+
+    err = VFiPFENT_ITER_DoFindEntry(p_iter, p_ent, p_pattern, attr_required, attr_unwanted, p_is_found, is_skip);
+    if (err != 0) {
+        return err;
+    }
+
+    return 0;
+}
+
 s32 VFiPFENT_ITER_GetEntryOfPath(struct PF_ENT_ITER* p_iter, struct PF_DIR_ENT* p_ent, struct PF_VOLUME* p_vol, struct PF_STR* p_path, u32 no_look_last_token) {
     return VFiPFENT_ITER_DoGetEntry(p_iter, p_ent, p_vol, p_path, 0, no_look_last_token);
+}
+
+s32 VFiPFENT_ITER_GetEntryOfPattern(struct PF_ENT_ITER* p_iter, struct PF_DIR_ENT* p_ent, struct PF_VOLUME* p_vol, struct PF_STR* p_path) {
+    return VFiPFENT_ITER_DoGetEntry(p_iter, p_ent, p_vol, p_path, 1, 1);
 }

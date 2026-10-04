@@ -345,7 +345,7 @@ revolution/VF/d_vf_sys.c:
 	.text       start:0x8005FED8 end:0x80062284
 	.data       start:0x801B3F48 end:0x801B3F58
 	.bss        start:0x80288280 end:0x802883B8
-	.sbss       start:0x80330CA0 end:0x80330CC0
+	.sbss       start:0x80330CA0 end:0x80330CB8
 
 revolution/VF/d_hash.c:
 	.text       start:0x8006229C end:0x8006291C
@@ -355,6 +355,7 @@ revolution/VF/nand_drv.c:
 	.text       start:0x80063694 end:0x80066604
 	.rodata     start:0x80193D40 end:0x80193D60
 	.bss        start:0x80288800 end:0x802889A0
+	.sbss       start:0x80330CB8 end:0x80330CC0
 
 revolution/NWC24/NWC24FileApi.c:
 	.text       start:0x80068E54 end:0x8006A4D8
