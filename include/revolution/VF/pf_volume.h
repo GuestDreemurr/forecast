@@ -7,6 +7,7 @@ extern "C" {
 
 s32 VFiPFVOL_DoMountVolume(struct PF_VOLUME* p_vol);
 s32 VFiPFVOL_p_unmount(struct PF_VOLUME* p_vol, u32 mode);
+s32 VFiPFVOL_p_format(struct PF_VOLUME* p_vol, const u8* param);
 s32 VFiPFVOL_InitModule(u32 config, void* param);
 s32 VFiPFVOL_CheckForRead(struct PF_VOLUME* p_vol);
 s32 VFiPFVOL_CheckForWrite(struct PF_VOLUME* p_vol);
@@ -19,6 +20,7 @@ s32 VFiPFVOL_errnum();
 s32 VFiPFVOL_getdev(s8 drv_char, struct PF_DEV_INF* dev_inf);
 s32 VFiPFVOL_attach(struct PF_DRV_TBL* p_drv);
 s32 VFiPFVOL_detach(s8 drv_char);
+s32 VFiPFVOL_format(s8 drv_char, const u8* param);
 s32 VFiPFVOL_unmount(s8 drv_char, u32 mode);
 
 #ifdef __cplusplus

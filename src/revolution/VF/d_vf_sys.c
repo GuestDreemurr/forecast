@@ -29,6 +29,7 @@ union VFSysDeviceTableEntry {
 };
 
 s32 VFSysSetSyncMode(s32 i_handle_idx, u32 i_mode);
+int VFipf2_format(s8 drive, const s8* param);
 
 static union VFSysDeviceTableEntry* l_vfsys_dev_table[26];
 static struct PDM_INIT_DISK l_dev_init_info_table[26];
@@ -621,6 +622,18 @@ s32 VFSysCheckExistPrfFile(s32 i_handle_idx, const s8* i_prf_file_name_p, void* 
     return 0;
 }
 
+s32 VFSysCreatePrfFileNANDFlashEx(const s8* i_prf_file_name_p, u32 i_file_size) {
+    s8 file_name[255];
+
+    VFSys_change_separater(file_name, i_prf_file_name_p, '/', '\\', 0xFF);
+
+    if (VFSysCheckExistPrfFile_nandflash_sub(file_name, -0xB) == 0xB001) {
+        return NAND_CreatePrfFileEx(i_file_size, (char*)file_name, 0x100);
+    } else {
+        return 0;
+    }
+}
+
 s32 VFSysMountDrv(s32 i_handle_idx, const s8* i_prf_file_name_p, void* i_memory_p) {
     struct VF_HANDLE_TYPE* handle_p;
     struct VF_HANDLE_DRIVE* drive_p;
@@ -869,6 +882,22 @@ static s32 VFSysCreateDir_common(const s8* i_dir_name_p) {
     return VFipf2_errnum();
 }
 
+s32 VFSysCreateDir_current(const s8* i_dir_name_p) {
+    VFSys_set_current_device_err_info(0);
+    return VFSysCreateDir_common(i_dir_name_p);
+}
+
+s32 VFSysCreateDir(s32 i_handle_idx, const s8* i_dir_name_p) {
+    s32 err;
+
+    err = VFSys_set_current_vol(i_handle_idx);
+    if (err == 0) {
+        VFSysSetDevErrInfo(i_handle_idx, 0);
+        err = VFSysCreateDir_common(i_dir_name_p);
+    }
+    return err;
+}
+
 s32 VFSysGetFileSizeByFd(s32* o_size_p, struct PF_FILE* i_file_p) {
     struct PF_INFO info;
     s32 err;
@@ -883,6 +912,68 @@ s32 VFSysGetFileSizeByFd(s32* o_size_p, struct PF_FILE* i_file_p) {
         return VFipf2_errnum();
     }
     return -1;
+}
+
+s32 VFSysFileSearchFirst_current(struct PF_DTA* o_dta_p, const s8* i_path_p, u8 i_attr) {
+    VFSys_set_current_device_err_info(0);
+
+    if (VFipf2_fsfirst(i_path_p, i_attr, o_dta_p) == 0) {
+        return 0;
+    }
+    return VFipf2_errnum();
+}
+
+s32 VFSysFileSearchFirst(struct PF_DTA* o_dta_p, s32 i_handle_idx, const s8* i_path_p, u8 i_attr) {
+    s32 err;
+
+    err = VFSys_set_current_vol(i_handle_idx);
+
+    if (err == 0) {
+        VFSysSetDevErrInfo(i_handle_idx, 0);
+
+        if (VFipf2_fsfirst(i_path_p, i_attr, o_dta_p) == 0) {
+            return 0;
+        }
+
+        return VFipf2_errnum();
+    }
+    return err;
+}
+
+s32 VFSysFileSearchNext(struct PF_DTA* i_dta_p) {
+    struct VF_HANDLE_TYPE* handle_end_p;
+    struct VF_HANDLE_TYPE* handle_result_p;
+    struct PF_VOLUME* vol_p;
+    struct VF_HANDLE_TYPE* handle_p;
+
+    if (i_dta_p != NULL) {
+        vol_p = i_dta_p->p_vol;
+
+        if (vol_p != NULL) {
+            handle_p = VFSysGetHandleP(0);
+
+            handle_end_p = handle_p + l_vfsys_vol_max;
+
+            while (handle_p != handle_end_p) {
+                if (handle_p->device_p != NULL && handle_p->drive.pf_drv.drive == vol_p->drv_char) {
+                    handle_result_p = handle_p;
+                    goto searchnext_found;
+                }
+                handle_p++;
+            }
+        }
+
+        handle_result_p = NULL;
+
+    searchnext_found:
+        VFSys_set_device_err_info(handle_result_p, 0);
+    }
+
+    if (VFipf2_fsnext(i_dta_p) == 0) {
+        return 0;
+    }
+
+    return VFipf2_errnum();
 }
 
 s32 VFSysGetDriveFreeSize(s32 i_handle_idx) {
@@ -944,6 +1035,45 @@ void VFSysSetNandFuncPrivate(u32 i_handle_idx) {
     VFi_NandSetNANDFuncPrivate(i_handle_idx);
 }
 
+s32 VFSysFormatDrive(s32 i_handle_idx) {
+    u32 save_flag;
+    struct VF_HANDLE_TYPE* handle;
+    s32 err;
+
+    handle = VFSysGetHandleP(i_handle_idx);
+
+    if (handle == NULL || handle->device_p == NULL) {
+        return 0xB003;
+    }
+
+    if (handle->drive.pf_disk_p == NULL) {
+        return 0xB003;
+    }
+
+    VFSys_set_device_err_info(handle, 0);
+
+    save_flag = VFSysGetSyncMode(i_handle_idx);
+
+    VFSysSetSyncMode(i_handle_idx, 1);
+    err = VFipf2_format(handle->drive.pf_drv.drive, 0);
+    if (err == 0) {
+        VFSysSetSyncMode(i_handle_idx, 0);
+
+        if (dCommon_FlushFromHandleIdx(i_handle_idx, 1) == 0) {
+            VFSysSetSyncMode(i_handle_idx, save_flag);
+            return 0;
+        } else {
+            VFSysSetSyncMode(i_handle_idx, save_flag);
+            return 5;
+        }
+    } else {
+        VFSysSetSyncMode(i_handle_idx, 0);
+        dCommon_FlushFromHandleIdx(i_handle_idx, 1);
+        VFSysSetSyncMode(i_handle_idx, save_flag);
+        return VFipf2_errnum();
+    }
+}
+
 s32 VFSysSetSyncMode(s32 i_handle_idx, u32 i_mode) {
     struct VF_HANDLE_TYPE* handle_p;
 
@@ -956,4 +1086,14 @@ s32 VFSysSetSyncMode(s32 i_handle_idx, u32 i_mode) {
         return 0;
     }
     return -1;
+}
+
+static inline u32 VFSysGetSyncMode(s32 i_handle_idx) {
+    struct VF_HANDLE_TYPE* handle_p = VFSysGetHandleP(i_handle_idx);
+
+    if (handle_p == NULL || handle_p->drive.pf_disk_p == NULL || handle_p->device_p == NULL) {
+        return 0;
+    }
+
+    return handle_p->device_p->sync_mode;
 }

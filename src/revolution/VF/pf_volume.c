@@ -189,6 +189,99 @@ s32 VFiPFVOL_p_unmount(struct PF_VOLUME* p_vol, u32 mode) {
     return err;
 }
 
+static s32 VFiPFVOL_p_format(struct PF_VOLUME* p_vol, const u8* param) {
+    s32 err;
+    u32 ecl;
+    u32 is_mounted;
+    u32 save_cache_mode;
+    u16 save_fsi_flag;
+
+    is_mounted = 0;
+    save_cache_mode = 0;
+    save_fsi_flag = 0;
+
+    if (p_vol == NULL) {
+        return 10;
+    }
+
+    if (VFiPFDRV_IsWProtected(p_vol) != 0) {
+        return 11;
+    }
+
+    err = VFiPFDRV_format(p_vol, param);
+    if (err != 0) {
+        return err;
+    }
+
+    if ((p_vol->flags & 2) != 0) {
+        is_mounted = 1;
+        save_cache_mode = *(u32*)&p_vol->cache;
+        save_fsi_flag = p_vol->fsi_flag;
+
+        VFiPFCACHE_FreeAllCaches(p_vol);
+
+        err = VFiPFVOL_p_unmount(p_vol, 0);
+        if (err != 0) {
+            return err;
+        }
+    }
+
+    err = VFiPFVOL_p_mount(p_vol);
+    if (err != 0) {
+        return err;
+    }
+
+    if (is_mounted == 1) {
+        *(u32*)&p_vol->cache = save_cache_mode;
+        p_vol->fsi_flag = save_fsi_flag;
+    }
+
+    if ((p_vol->flags & 0x20) != 0) {
+        if (p_vol->bpb.fat_type == FAT_32 && (p_vol->fsi_flag & 2) != 0) {
+            p_vol->fsi_flag |= 4;
+            VFiPFFAT_RefreshFSINFO(p_vol);
+        } else {
+            p_vol->fsi_flag &= ~4;
+
+            if (p_vol->bpb.fat_type != FAT_32) {
+                p_vol->fsi_flag &= ~3;
+            }
+
+            err = VFiPFFAT_CountFreeClusters(p_vol, &ecl);
+            if (err != 0) {
+                return err;
+            }
+        }
+        err = 0;
+    } else {
+        err = VFiPFFAT_InitFATRegion(p_vol);
+        if (err != 0) {
+            return err;
+        }
+
+        err = VFiPFENT_MakeRootDir(p_vol);
+        if (err != 0) {
+            return err;
+        }
+
+        if (p_vol->bpb.fat_type != FAT_32) {
+            p_vol->fsi_flag &= ~3;
+        }
+
+        if (p_vol->bpb.fat_type == FAT_32) {
+            if ((p_vol->fsi_flag & 2) != 0) {
+                err = VFiPFFAT_RefreshFSINFO(p_vol);
+                if (err != 0) {
+                    return err;
+                }
+            }
+        }
+        err = 0;
+    }
+
+    return err;
+}
+
 static s32 VFiPFVOL_CheckMediaInsert(struct PF_VOLUME* p_vol) {
     s32 err;
 
@@ -575,6 +668,55 @@ s32 VFiPFVOL_detach(s8 drv_char) {
 
     p_vol->flags &= ~1;
     VFipf_vol_set.num_attached_drives--;
+
+    return 0;
+}
+
+s32 VFiPFVOL_format(s8 drv_char, const u8* param) {
+    struct PF_VOLUME* p_vol;
+    s32 err;
+
+    p_vol = VFiPFVOL_GetVolumeFromDrvChar(drv_char);
+    if (p_vol == NULL) {
+        VFipf_vol_set.last_error = 10;
+        return 10;
+    }
+
+    if ((p_vol->flags & 1) == 0) {
+        VFipf_vol_set.last_error = 10;
+        p_vol->last_error = 10;
+        return 10;
+    }
+
+    if (VFiPFDRV_IsInserted(p_vol) == 0) {
+        VFipf_vol_set.last_error = 10;
+        p_vol->last_error = 10;
+        return 10;
+    }
+
+    if (p_vol->num_opened_files != 0) {
+        VFiPFFILE_FinalizeAllFiles(p_vol);
+        VFiPFCACHE_FreeAllCaches(p_vol);
+    }
+
+    if (p_vol->num_opened_directories != 0) {
+        VFiPFDIR_FinalizeAllDirs(p_vol);
+    }
+
+    err = VFiPFVOL_p_format(p_vol, param);
+    if (err != 0) {
+        VFipf_vol_set.last_error = err;
+        p_vol->last_error = err;
+        return err;
+    }
+
+    p_vol->fsi_flag |= 4;
+
+    if (p_vol->bpb.fat_type == FAT_32) {
+        p_vol->num_free_clusters = p_vol->bpb.num_clusters - 1;
+    } else {
+        p_vol->num_free_clusters = p_vol->bpb.num_clusters;
+    }
 
     return 0;
 }
