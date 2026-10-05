@@ -529,7 +529,7 @@ static inline void DrawFadeBrightness(GXTexObj* texObj, u8 alpha, f32 width, f32
     GXEnd();
 }
 
-static inline void DrawFadeZoom(GXTexObj* texObj, u8 alpha, f32 progress, f32 width, f32 height) {
+static inline void DrawFadeZoom(GXTexObj* texObj, u8 alpha, f32& progress, f32 width, f32 height) {
     if (gFadeType == FADE_ZOOM_IN) {
         alpha = 255 - alpha;
     }
