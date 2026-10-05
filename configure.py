@@ -993,7 +993,7 @@ config.libs = [
                 Object(Matching, "main.cpp"),
                 Object(Matching, "DrawUtil.cpp"),
                 Object(NonMatching, "GlobeDots.cpp"),
-                Object(NonMatching, "System.cpp"),
+                Object(Matching, "System.cpp"),
                 Object(NonMatching, "ButtonGroup.cpp"),
                 Object(Matching, "PointerHistory.cpp"),
                 Object(Matching, "Fade.cpp"),

@@ -531,30 +531,9 @@ static inline void DrawFadeBrightness(GXTexObj* texObj, u8 alpha, f32 width, f32
     GXEnd();
 }
 
-static inline void DrawFadeZoom(GXTexObj* texObj, u8 alpha, f32& progress, f32 width, f32 height) {
-    if (gFadeType == FADE_ZOOM_IN) {
-        alpha = 255 - alpha;
-    }
-    if (gFadeType != FADE_ZOOM_IN) {
-        progress = 1.0f - progress;
-    }
-    progress *= 0.1f;
-
-    GXLoadTexObj(texObj, GX_TEXMAP0);
-
+static inline void SetZoomColor(u8 alpha) {
     GXColor brightness = {alpha, alpha, alpha, 255};
     GXSetTevColor(GX_TEVREG0, brightness);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXTexCoord2f32(progress, progress);
-    GXPosition3f32(width, 0.0f, 0.0f);
-    GXTexCoord2f32(1.0f - progress, progress);
-    GXPosition3f32(width, height, 0.0f);
-    GXTexCoord2f32(1.0f - progress, 1.0f - progress);
-    GXPosition3f32(0.0f, height, 0.0f);
-    GXTexCoord2f32(progress, 1.0f - progress);
-    GXEnd();
 }
 
 void SystemDraw(void) {
@@ -641,8 +620,28 @@ void SystemDraw(void) {
             break;
         case FADE_ZOOM_IN:
         case FADE_ZOOM_OUT:
-            DrawFadeZoom(&texObj, alpha, progress, width, height);
+            {
+            if (gFadeType == FADE_ZOOM_IN) {
+                alpha = 255 - alpha;
+            }
+            if (gFadeType != FADE_ZOOM_IN) {
+                progress = 1.0f - progress;
+            }
+            progress *= 0.1f;
+            GXLoadTexObj(&texObj, GX_TEXMAP0);
+            SetZoomColor(alpha);
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3f32(0.0f, 0.0f, 0.0f);
+            GXTexCoord2f32(progress, progress);
+            GXPosition3f32(width, 0.0f, 0.0f);
+            GXTexCoord2f32(1.0f - progress, progress);
+            GXPosition3f32(width, height, 0.0f);
+            GXTexCoord2f32(1.0f - progress, 1.0f - progress);
+            GXPosition3f32(0.0f, height, 0.0f);
+            GXTexCoord2f32(progress, 1.0f - progress);
+            GXEnd();
             break;
+        }
         }
     }
 
