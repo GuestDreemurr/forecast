@@ -169,8 +169,10 @@ void SystemInit(void) {
     InitDownloader();
     CNTInit();
 
+    u32 content = 6;
     for (u32 i = 4; i < CONTENT_HANDLE_MAX; i++) {
-        contentInitHandleNAND(i + 2, &gContentHandles[i], &gMEM1Allocator32);
+        contentInitHandleNAND(content, &gContentHandles[i], &gMEM1Allocator32);
+        content++;
     }
 
     gUnk80330B64 = 7;
