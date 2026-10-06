@@ -81,6 +81,7 @@ VIScanMode VIGetScanMode(void);
 u32 VIGetDTVStatus(void);
 
 BOOL VIEnableDimming(BOOL enable);
+BOOL VIResetDimmingCount();
 
 #ifdef __cplusplus
 }

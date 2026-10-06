@@ -208,7 +208,6 @@ cflags_base = [
     "-RTTI off",
     "-fp_contract on",
     "-str reuse",
-    "-enc SJIS",
     "-i include",
     "-i include/MSL_C/include",
     "-i include/decomp",
@@ -257,6 +256,7 @@ cflags_rvl = [
 cflags_channel = [
     "-i include/nw4r_compat",
     *cflags_base,
+    "-enc SJIS",
     "-inline noauto",
     "-fp_contract off",
     "-i include/channel",
@@ -264,6 +264,7 @@ cflags_channel = [
 
 cflags_nw4r = [
     "-i include/nw4r_compat",
+    "-enc SJIS",
     *cflags_base,
     "-ipa file",
     "-fp_contract off",
@@ -379,7 +380,7 @@ config.libs = [
         "progress_category": "sdk",  # str | List[str]
         "objects": [
             Object(NonMatching, "Runtime.PPCEABI.H/global_destructor_chain.c"),
-            Object(NonMatching, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
+            Object(Matching, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
         ],
     },
     {
@@ -591,12 +592,12 @@ config.libs = [
             Object(NonMatching, "revolution/NWC24/NWC24Utils.c"),
 
             # OS
-            Object(NonMatching, "revolution/OS/__ppc_eabi_init.c"),
+            Object(Matching, "revolution/OS/__ppc_eabi_init.c"),
             Object(Matching, "revolution/OS/__start.c"),
             Object(NonMatching, "revolution/OS/OS.c"),
             Object(NonMatching, "revolution/OS/OSAlarm.c"),
             Object(Matching, "revolution/OS/OSAlloc.c"),
-            Object(NonMatching, "revolution/OS/OSArena.c"),
+            Object(Matching, "revolution/OS/OSArena.c"),
             Object(Matching, "revolution/OS/OSAudioSystem.c"),
             Object(Matching, "revolution/OS/OSCache.c"),
             Object(Matching, "revolution/OS/OSContext.c"),
@@ -615,7 +616,7 @@ config.libs = [
             Object(NonMatching, "revolution/OS/OSReset.c"),
             Object(NonMatching, "revolution/OS/OSRtc.c"),
             Object(Matching, "revolution/OS/OSStateFlags.c"),
-            Object(NonMatching, "revolution/OS/OSStateTM.c"),
+            Object(Matching, "revolution/OS/OSStateTM.c"),
             Object(Matching, "revolution/OS/OSSync.c"),
             Object(Matching, "revolution/OS/OSThread.c"),
             Object(Matching, "revolution/OS/OSTime.c"),

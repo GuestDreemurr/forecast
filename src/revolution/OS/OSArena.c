@@ -61,6 +61,9 @@ void* OSAllocFromMEM1ArenaLo(size_t size, u32 align) {
     return begin;
 }
 
+// TODO move
+#define TRUNC(n, a) (((u32)(n)) & ~((a) - 1))
+
 void* OSAllocFromMEM1ArenaHi(size_t size, u32 align) {
     void* ptr;
     u8* arenaHi;
@@ -70,5 +73,17 @@ void* OSAllocFromMEM1ArenaHi(size_t size, u32 align) {
     arenaHi -= size;
     arenaHi = ptr = (void*)TRUNC(arenaHi, align);
     OSSetMEM1ArenaHi(arenaHi);
+    return ptr;
+}
+
+void* OSAllocFromMEM2ArenaHi(size_t size, u32 align) {
+    void* ptr;
+    u8* arenaHi;
+
+    arenaHi = OSGetMEM2ArenaHi();
+    arenaHi = (u8*)TRUNC(arenaHi, align);
+    arenaHi -= size;
+    arenaHi = ptr = (void*)TRUNC(arenaHi, align);
+    OSSetMEM2ArenaHi(arenaHi);
     return ptr;
 }

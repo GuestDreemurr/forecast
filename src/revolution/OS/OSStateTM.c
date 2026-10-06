@@ -1,3 +1,6 @@
+#include "revolution/IPC/ipcclt.h"
+#include "revolution/OS/OSInterrupt.h"
+#include "revolution/VI/vi.h"
 #include <revolution/IPC.h>
 #include <revolution/OS.h>
 #include <revolution/VI.h>
@@ -73,6 +76,28 @@ OSStateCallback OSSetPowerCallback(OSStateCallback callback) {
 
     OSRestoreInterrupts(enabled);
     return old;
+}
+
+BOOL OSGetResetButtonState(void) {
+    BOOL enabled = OSDisableInterrupts();
+    s32 ret = ResetDown;
+
+    ResetDown = 0;
+    OSRestoreInterrupts(enabled);
+
+    if (!StmEhRegistered) {
+        enabled = OSDisableInterrupts();
+
+        if (!IOS_IoctlAsync(StmEhDesc, 0x1000, StmEhInBuf, 0x20, StmEhOutBuf, 0x20, __OSStateEventHandler, NULL)) {
+            StmEhRegistered = 1;
+        } else {
+            StmEhRegistered = 0;
+        }
+
+        OSRestoreInterrupts(enabled);
+    }
+
+    return ret;
 }
 
 BOOL __OSInitSTM(void) {
@@ -275,6 +300,7 @@ static s32 __OSStateEventHandler(s32 result, void* arg) {
             callback();
 
             OSRestoreInterrupts(enabled);
+            VIResetDimmingCount();
         }
         __OSRegisterStateEvent();
     }
