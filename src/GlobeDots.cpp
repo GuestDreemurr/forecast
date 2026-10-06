@@ -19,7 +19,8 @@ extern "C" const u8 gGlobeDotSizes[GLOBE_DOT_COUNT];
 extern "C" const u8 gGlobeDotColorIndices[GLOBE_DOT_COUNT];
 extern "C" const u8 gGlobeDotColors[];
 
-static const Vec sBaseVerts[3] = {
+// HACK: non-const (so MWCC reloads the words inside the ctor loop like the target) but forced into .rodata.
+__declspec(section ".rodata") static Vec sBaseVerts[3] = {
     {0.0f, 0.0f, -100.0f},
     {0.0f, 0.0f, -100.0f},
     {0.0f, 0.0f, -100.0f},
@@ -40,7 +41,7 @@ static inline void TransformVert(Mtx mtx, const Vec& base, f32 x, f32 y, Vec* ou
 
 GlobeDots::GlobeDots() {
     const Vec* base = sBaseVerts;
-    for (u16 i = 0; i < GLOBE_DOT_COUNT; i++) {
+    for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
         Mtx rotX;
         Mtx rotY;
         Mtx mtx;
@@ -54,9 +55,12 @@ GlobeDots::GlobeDots() {
         PSMTXRotTrig(rotY, nw4r::math::SinIdx(lat), nw4r::math::CosIdx(lat), 'y');
         PSMTXConcat(rotY, rotX, mtx);
 
-        TransformVert(mtx, base[0], -size, -size, &mVerts[i * 3 + 0]);
-        TransformVert(mtx, base[1], far, -size, &mVerts[i * 3 + 1]);
-        TransformVert(mtx, base[2], -size, far, &mVerts[i * 3 + 2]);
+
+        f32* fv = (f32*)mVerts;
+        int n = i * 9;
+        TransformVert(mtx, base[0], -size, -size, (Vec*)&fv[n]);
+        TransformVert(mtx, base[1], far, -size, (Vec*)&fv[n + 3]);
+        TransformVert(mtx, base[2], -size, far, (Vec*)&fv[n + 6]);
     }
 }
 
