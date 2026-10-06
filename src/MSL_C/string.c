@@ -1,6 +1,6 @@
 #include <cstring>
 
-#define K1 0x80808080 
+#define K1 0x80808080
 #define K2 0xfefefeff
 
 char* strcpy(char *dst, const char *src) {
@@ -8,10 +8,10 @@ char* strcpy(char *dst, const char *src) {
     register unsigned int w, t, align;
     register unsigned int k1;
     register unsigned int k2;
-			
+
     fromb = (unsigned char *)src;
     destb = (unsigned char *)dst;
-    
+
     if ((align = ((int)fromb & 3)) != ((int)destb & 3)) {
         goto bytecopy;
     }
@@ -41,9 +41,9 @@ char* strcpy(char *dst, const char *src) {
     if (t) {
         goto bytecopy;
     }
-    
+
     --((int*)(destb));
-			
+
     do {
         *(++((int*)(destb))) = w;
         w = *(++((int*)(fromb)));
@@ -66,7 +66,7 @@ char* strcpy(char *dst, const char *src) {
             if ((*(++destb) = *(++fromb)) == 0) {
                 return dst;
             }
-                
+
         } while(1);
 
         return dst;
@@ -114,7 +114,7 @@ char *strncat(char *dst, char *src, size_t n) {
         }
     }
     q[1] = 0;
-    
+
     return dst;
 }
 
@@ -199,9 +199,9 @@ int strncmp(const char *str1, const char *str2, size_t n) {
     const unsigned char * p1 = (unsigned char *) str1 - 1;
     const unsigned char * p2 = (unsigned char *) str2 - 1;
     unsigned long c1, c2;
-    
+
     n++;
-    
+
     while (--n) {
         if ((c1 = *++p1) != (c2 = *++p2)) {
             return(c1 - c2);
@@ -233,19 +233,85 @@ char* strrchr(const char *str, int chr) {
     const unsigned char* q = 0;
     unsigned long c = (chr & 0xff);
     unsigned long ch;
-    
+
     while(ch = *++p) {
         if (ch == c)
             q = p;
     }
-    
+
     if (q) {
         return((char*)q);
     }
-    
+
     return(c ? 0 : (char*)p);
 }
 
+char *strpbrk(const char *str, const char *key) {
+    const unsigned char *p = (const unsigned char *)key - 1;
+    const unsigned char *s;
+    unsigned char map[32] = {0};
+    unsigned long c;
+
+    while (c = *++p) {
+        unsigned char val = 1 << (c & 7);
+        map[(c >> 3) & 31] |= val;
+    }
+
+    s = (const unsigned char *)str - 1;
+    while (c = *++s) {
+        unsigned char val = 1 << (c & 7);
+        if (map[(c >> 3) & 31] & val) {
+            return (char *)s;
+        }
+    }
+
+    return 0;
+}
+
+size_t strspn(const char *str, const char *key) {
+    const unsigned char *p = (const unsigned char *)key - 1;
+    const unsigned char *s;
+    unsigned char map[32] = {0};
+    unsigned long c;
+
+    while (c = *++p) {
+        unsigned char val = 1 << (c & 7);
+        map[(c >> 3) & 31] |= val;
+    }
+
+    s = (const unsigned char *)str - 1;
+    while (c = *++s) {
+        unsigned char val = 1 << (c & 7);
+        if (!(map[(c >> 3) & 31] & val)) {
+            break;
+        }
+    }
+
+    return s - (const unsigned char *)str;
+}
+
+
+size_t strcspn(const char *str, const char *key) {
+    const unsigned char *p = (const unsigned char *)key - 1;
+    const unsigned char *s;
+    unsigned char map[32] = {0};
+    unsigned long c;
+
+    while (c = *++p) {
+        unsigned char val = 1 << (c & 7);
+        map[(c >> 3) & 31] |= val;
+    }
+
+    s = (const unsigned char *)str - 1;
+    while (c = *++s) {
+        unsigned char val = 1 << (c & 7);
+        if (map[(c >> 3) & 31] & val) {
+            break;
+        }
+    }
+
+    return s - (const unsigned char *)str;
+}
 
 char* strstr(const char *str, const char *pat) {
     unsigned char* s1 = (unsigned char*)str - 1;
