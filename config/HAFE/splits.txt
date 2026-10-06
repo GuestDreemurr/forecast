@@ -1339,6 +1339,16 @@ revolution/NdevExi2AD/DebuggerDriver.c:
 revolution/NdevExi2AD/exi2.c:
 	.text       start:0x80160B60 end:0x801612EC
 
+Runtime.PPCEABI.H/global_destructor_chain.c:
+	.text       start:0x801613D0 end:0x80161430
+	.sbss       start:0x803318B8 end:0x803318C0
+
+Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
+	.text       start:0x80161FB8 end:0x80162028
+	.ctors      start:0x80179240 end:0x80179244
+	.dtors      start:0x80179320 end:0x80179328
+	.sdata      start:0x80330948 end:0x80330950
+
 MSL_C/alloc.c:
 	extab       start:0x800066E8 end:0x80006700
 	extabindex  start:0x80006C1C end:0x80006C40

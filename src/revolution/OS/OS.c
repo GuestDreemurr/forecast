@@ -1,4 +1,5 @@
 #include "revolution/OS/OSExec.h"
+#include "revolution/OS/OSPlayTime.h"
 #include <revolution/BASE.h>
 #include <revolution/DB.h>
 #include <revolution/DVD.h>
@@ -622,6 +623,10 @@ void OSInit(void) {
                 DCInvalidateRange(&DriveInfo, sizeof(DVDDriveInfo));
                 DVDInquiryAsync(&DriveBlock, &DriveInfo, InquiryCallback);
             }
+        }
+
+        if (!__OSInIPL && !__OSInNandBoot) {
+            __OSInitPlayTime();
         }
 
         if (!__OSInIPL && !__OSInNandBoot && !__OSInReboot) {
