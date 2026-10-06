@@ -139,6 +139,14 @@ static inline void AppendLabel(CityLabel*& head, CityLabel* label, CityLabel* Ci
     }
 }
 
+static inline void SetBoxPos(TextBox* box, f32 centerX, f32 scaleX, f32 centerY) {
+    Vec2F center = box->mPane->GetCenter();
+    box->mX = center.x;
+    box->mY = center.y;
+    box->mX = centerX + box->mX * scaleX;
+    box->mY = centerY - box->mY;
+}
+
 WeatherAround::WeatherAround(void* arc)
     : mBackList(NULL), mFrontList(NULL), mOverlapList(NULL), mLayout(NULL), mBeltLayout(NULL), mResetButton(NULL),
       mBelt(NULL), mKion(NULL), mRain(NULL), mHigh(NULL), mNextButton(NULL), mZoomInButton(NULL),
@@ -209,11 +217,7 @@ WeatherAround::WeatherAround(void* arc)
         for (; t < 3; t++, name++, titleScale++, box++) {
             box->mPane = mBeltLayout->FindButton(*name);
             if (box->mPane != NULL) {
-                Vec2F center = box->mPane->GetCenter();
-                box->mX = center.x;
-                box->mY = center.y;
-                box->mX = centerX + box->mX * scaleX;
-                box->mY = centerY - box->mY;
+                SetBoxPos(box, centerX, scaleX, centerY);
                 LayoutButton* pane = box->mPane;
                 f32 h = pane->mTop - pane->mBottom;
                 f32 w = pane->mRight - pane->mLeft;
@@ -889,6 +893,32 @@ inline s32 WeatherAround::FindPressedTouch() {
     return -1;
 }
 
+static inline void GetHitBox(CityLabel* label, Vec2& pos) {
+    Vec2F box = label->GetBoxPos();
+    pos.x = box.x;
+    pos.y = box.y;
+}
+static inline void GetHitSize(CityLabel* label, Vec2& half) {
+    Vec2F boxSize = label->GetSize();
+    half.x = boxSize.x / 2.0f;
+    half.y = boxSize.y / 2.0f;
+}
+
+static inline void AddFrontBucket(CityLabel** buckets, CityLabel* l) {
+    if (*l->mCity->mInfo->mId == gCurrentCityId) {
+        buckets[10] = l;
+    } else {
+        APPEND_LABEL(buckets[l->mPriority], l, mNextFrontBack);
+    }
+}
+static inline void AddBackBucket(CityLabel** buckets, CityLabel* l) {
+    if (*l->mCity->mInfo->mId == gCurrentCityId) {
+        buckets[10] = l;
+    } else {
+        APPEND_LABEL(buckets[l->mPriority], l, mNextBack);
+    }
+}
+
 void WeatherAround::UpdateLabels() {
     f32 top = 63.0f;
     f32 bottom = 393.0f;
@@ -1049,28 +1079,14 @@ void WeatherAround::UpdateLabels() {
             pos.x += 0.5f * size.x * scale;
             (*label)->SetPosition(&pos, nameScale);
             if ((*label)->IsDrawn()) {
-                CityLabel* l = *label;
-                if (*l->mCity->mInfo->mId == gCurrentCityId) {
-                    mFrontBuckets[10] = l;
-                } else {
-                    APPEND_LABEL(mFrontBuckets[l->mPriority], l, mNextFrontBack);
-                }
+                AddFrontBucket(mFrontBuckets, *label);
             }
-            CityLabel* l = *label;
-            if (*l->mCity->mInfo->mId == gCurrentCityId) {
-                mBackBuckets[10] = l;
-            } else {
-                APPEND_LABEL(mBackBuckets[l->mPriority], l, mNextBack);
-            }
+            AddBackBucket(mBackBuckets, *label);
         }
 
         if ((*label)->mInputFlags & CITY_LABEL_HIT) {
-            Vec2F box = (*label)->GetBoxPos();
-            pos.x = box.x;
-            pos.y = box.y;
-            Vec2F boxSize = (*label)->GetSize();
-            half.x = boxSize.x / 2.0f;
-            half.y = boxSize.y / 2.0f;
+            GetHitBox(*label, pos);
+            GetHitSize(*label, half);
             mHitIndex = i;
             mHitRect.left = pos.x - half.x;
             mHitRect.right = pos.x + half.x;

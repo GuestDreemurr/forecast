@@ -38,7 +38,7 @@ void WrapHour(s32* pHour);
 void WrapHourTo24(s32* pHour);
 void RequestWeatherSounds(u32 type, f32 volume);
 // Declared returning double here (the calls are followed by frsp), unlike in d_weather_around
-double EaseCos(u16 t);
+f32 EaseCos(u16 t);
 f32 SmoothApproach(f32* value, f32 target, f32 rate, f32 maxStep, f32 minStep);
 
 // Zero-initialized statics live in .sdata here, not .sbss
@@ -60,12 +60,12 @@ static const f32 sBoxScales[8] = {0.65f, 0.65f, 0.65f, 0.65f, 0.6f, 0.6f, 0.6f, 
 // Vertical offset of the city name while it scrolls through its lines
 static const f32 sNameScrollY[4] = {0.0f, -50.0f, -100.0f, 0.0f};
 
-static const u32 sUnusedColors0[10] = {
+extern const u32 sUnusedColors0[10] = {
     0xD8D8D8FF, 0xFF7800FF, 0xF8BE00FF, 0x00A2DEFF, 0x47C528FF,
     0xD8D8D8FF, 0xD8D8D8FF, 0xD8D8D8FF, 0xFFFFFFFF, 0xFFFFFFFF,
 };
 
-static const u32 sUnusedColors1[10] = {
+extern const u32 sUnusedColors1[10] = {
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x50FF32FF,
 };
@@ -124,6 +124,10 @@ static inline BOOL IsNearZero(f32 value) {
     return result;
 }
 
+inline void WeatherNormal::StartNormal() {
+    CHANGE_STATE(&WeatherNormal::StateNormal);
+}
+
 WeatherNormal::WeatherNormal(void* arc)
     : mLayout(NULL), mBaseLayout(NULL), mBeltLayout(NULL), mTimeLayout(NULL), mAroundButton(NULL), mSetButton(NULL),
       mBackButton(NULL), mUpButton(NULL), mDownButton(NULL), mState(NULL), unk174(NULL), mSetupDate(NULL),
@@ -148,14 +152,14 @@ WeatherNormal::WeatherNormal(void* arc)
     }
 
     {
-        s32 width = GetScreenWidth();
-        f32 height = 456.0f;
         Vec2 pos;
         Vec2 offset;
-        offset.x = 0.0f;
-        pos.y = 0.5f * height;
-        offset.y = 0.0f;
+        f32 height = 456.0f;
+        s32 width = GetScreenWidth();
         pos.x = 0.5f * width;
+        pos.y = 0.5f * height;
+        offset.x = 0.0f;
+        offset.y = 0.0f;
 
         if (gLanguage == 0) {
             mPages[0] = new WeatherOther(pos, arc, offset, 0);
@@ -216,21 +220,25 @@ WeatherNormal::WeatherNormal(void* arc)
     f32 centerY = 228.0f;
     f32 scaleX = gWidescreen ? 1.3684211f : 1.0f;
     if (city != NULL) {
+        f32 h;
         f32 w = city->mRight - city->mLeft;
-        f32 h = __fabsf(city->mTop - city->mBottom);
+        h = __fabsf(city->mTop - city->mBottom);
         Vec2F center = city->GetCenter();
         f32 scaledW = w * scaleX;
         center.x *= scaleX;
         mCityRect.left = (centerX + center.x) - 0.5f * scaledW;
-        mCityRect.right = mCityRect.left + scaledW;
         mCityRect.top = (centerY - center.y) - 0.5f * h;
+        mCityRect.right = mCityRect.left + scaledW;
         mCityRect.bottom = mCityRect.top + h;
     }
 
-    if (gLanguage == 0) {
+    switch (gLanguage) {
+    case 0:
         strcpy(sNameBuf, "timeJP");
-    } else {
+        break;
+    default:
         strcpy(sNameBuf, "timeWW");
+        break;
     }
     LayoutButton* time = mBeltLayout->FindButton(sNameBuf);
     if (time != NULL) {
@@ -251,7 +259,7 @@ WeatherNormal::WeatherNormal(void* arc)
     if (beltTime != NULL) {
         beltTime->ShowLanguagePane("belt_timeB");
         if (gLanguage == 0) {
-            f32 x = scaleX * ((beltTime->mRight + beltTime->mLeft) * 0.5f);
+            f32 x = scaleX * ((beltTime->mRight + beltTime->mLeft) / 2.0f);
             strcpy(sNameBuf, "belt_timeB");
             ButtonPane* pane = (ButtonPane*)beltTime->FindPane(sNameBuf);
             if (pane != NULL) {
@@ -284,23 +292,29 @@ WeatherNormal::WeatherNormal(void* arc)
     }
 
     {
-        f32 top = 74.0f;
-        f32 bottom = 124.0f;
-        f32 halfHeight = 0.5f * (bottom - top);
+        f32 bottom;
+        f32 top;
+        f32 halfHeight;
+        f32 halfWidth;
+        top = 74.0f;
+        bottom = 124.0f;
+        halfWidth = 0.5f * mBelt[0].mRect.GetWidth();
+        halfHeight = bottom - top;
+        halfHeight = 0.5f * halfHeight;
         mBelt[1].mRect.top = top;
         mBelt[0].mRect.top = top;
         mBelt[1].mRect.bottom = bottom;
         mBelt[0].mRect.bottom = bottom;
-        mBelt[0].mX = 0.5f * (mBelt[0].mRect.right - mBelt[0].mRect.left) + mBelt[0].mRect.left;
+        mBelt[0].mX = halfWidth + mBelt[0].mRect.left;
         mBelt[0].mY = halfHeight + top;
         mBelt[0].mMaxWidth = (mBelt[0].mRect.right - GetSideMargin()) - 8.0f;
         mBelt[0].mMaxHeight = 2.0f * (halfHeight - 8.0f);
 
-        halfHeight = 0.5f * (mBelt[1].mRect.bottom - mBelt[1].mRect.top);
-        mBelt[1].mY = halfHeight + mBelt[1].mRect.top;
+        halfHeight = 0.5f * mBelt[1].mRect.GetHeight();
         mBelt[1].mX = GetScreenWidth() - GetSideMargin();
-        mBelt[1].mMaxHeight = 2.0f * (halfHeight - 8.0f);
+        mBelt[1].mY = halfHeight + mBelt[1].mRect.top;
         mBelt[1].mMaxWidth = (mBelt[1].mX - mBelt[1].mRect.left) - 8.0f;
+        mBelt[1].mMaxHeight = 2.0f * (halfHeight - 8.0f);
     }
 
     mSetupDate = sSetupDateFuncs[gLanguage];
@@ -372,7 +386,7 @@ WeatherNormal::WeatherNormal(void* arc)
     mZoomColors[3].a = 255;
 
     CHANGE_SCROLL(&WeatherNormal::ScrollNames);
-    CHANGE_STATE(&WeatherNormal::StateNormal);
+    StartNormal();
     mCalcFunc = &WeatherNormal::DrawCity;
     mWideOffset = 0.5f * (GetScreenWidth() - SCREEN_WIDTH_4_3);
 }
@@ -988,7 +1002,9 @@ void WeatherNormal::FormatDateNL(u32 minutes) {
 }
 
 void WeatherNormal::Draw() {
-    u8 alpha = 255.0f * mAlpha;
+    s32 i;
+    u8 dateAlpha;
+    s32 alpha = 255.0f * mAlpha;
     SetDefaultGXState();
     SetOrthoProjection();
 
@@ -998,27 +1014,33 @@ void WeatherNormal::Draw() {
     } else {
         baseAlpha = 128.0f * mAlpha;
     }
+    // HACK (frame slot): the original has a dead int->float conversion here. MWCC allocates its
+    // stack temp before dropping the dead code, so the flash/date magic-double temp (0x50) no
+    // longer shares a slot with the float->int temps and the frame grows to 0xB0.
+    f32 deadBaseAlpha = baseAlpha;
     if (baseAlpha != 0) {
         mBaseLayout->SetPaneAlpha(baseAlpha);
         mBaseLayout->Draw();
     }
 
-    for (s32 i = 0; i < gForecastPageCount; i++) {
+    for (i = 0; i < gForecastPageCount; i++) {
         mPages[i]->Draw();
     }
 
     if (mFlash) {
         s32 width = GetScreenWidth();
-        f32 halfHeight = mAlpha * 228.0f;
         f32 halfWidth = mAlpha * (0.5f * width);
+        f32 baseHeight = 228.0f;
+        f32 halfHeight = mAlpha * baseHeight;
         nw4r::ut::Rect rect(mFlashX - halfWidth, mFlashY - halfHeight, mFlashX + halfWidth, mFlashY + halfHeight);
         SetDefaultGXState();
         SetOrthoProjection();
+        s32 fa = mFlashAlpha;
         GXColor color;
         color.r = 255;
         color.g = 255;
         color.b = 255;
-        color.a = mFlashAlpha;
+        color.a = fa;
         DrawRect((Rect*)&rect, &color);
     }
 
@@ -1052,17 +1074,17 @@ void WeatherNormal::Draw() {
     gTextWriter.SetupGX();
 
     CityNameLine* line = mNames;
-    f32 lineHeight = mBelt[1].mRect.bottom - mBelt[1].mRect.top;
-    f32 y = mNameScroll + (mCityRect.top + 0.5f * (mCityRect.bottom - mCityRect.top));
+    f32 lineHeight = mBelt[1].mRect.GetHeight();
+    f32 y = mNameScroll + (mCityRect.top + 0.5f * mCityRect.GetHeight());
     SetScaledScissor(0, mBelt[1].mRect.top, GetScreenWidth(), lineHeight);
     switch (mDateType) {
     case 0:
-        for (s32 i = 0; i < mNumNames; i++, line++) {
-            f32 offset = 1.0f;
+        for (i = 0; i < mNumNames; i++, line++) {
             gTextWriter.SetTextColor(nw4r::ut::Color(32, 32, 32, alpha));
             gTextWriter.SetScale(line->mScale, mNameScaleY);
-            gTextWriter.SetCharSpace(line->mScale * gUnkSceneFloat);
-            gTextWriter.SetCursor(offset + mCityRect.right, offset + y);
+            f32 cs = gUnkSceneFloat;
+            gTextWriter.SetCharSpace(line->mScale * cs);
+            gTextWriter.SetCursor(1.0f + mCityRect.right, 1.0f + y);
             gTextWriter.Print(line->mText);
             gTextWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
             gTextWriter.SetCursor(mCityRect.right, y);
@@ -1071,12 +1093,12 @@ void WeatherNormal::Draw() {
         }
         break;
     case 1:
-        for (s32 i = 0; i < mNumNames; i++, line++) {
-            f32 offset = 1.0f;
+        for (i = 0; i < mNumNames; i++, line++) {
             gTextWriter.SetTextColor(nw4r::ut::Color(32, 32, 32, alpha));
             gTextWriter.SetScale(line->mScale, mNameScaleY);
-            gTextWriter.SetCharSpace(line->mScale * gUnkSceneFloat);
-            gTextWriter.SetCursor(offset + mCityRect.right, offset + y);
+            f32 cs = gUnkSceneFloat;
+            gTextWriter.SetCharSpace(line->mScale * cs);
+            gTextWriter.SetCursor(1.0f + mCityRect.right, 1.0f + y);
             gTextWriter.Print(line->mText);
             gTextWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
             gTextWriter.SetCursor(mCityRect.right, y);
@@ -1091,13 +1113,14 @@ void WeatherNormal::Draw() {
         gTextWriter.SetDrawFlag(0x111);
         gTextWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, alpha));
     } else {
-        u8 dateAlpha = mDateAlpha * mAlpha;
+        dateAlpha = mDateAlpha * mAlpha;
         gTextWriter.SetDrawFlag(0x122);
         gTextWriter.SetTextColor(nw4r::ut::Color(255, 255, 255, dateAlpha));
     }
     gTextWriter.SetupGX();
     gTextWriter.SetScale(mDateScaleX, mDateScaleY);
-    gTextWriter.SetCharSpace(mDateScaleX * gUnkSceneFloat);
+    f32 cs = gUnkSceneFloat;
+    gTextWriter.SetCharSpace(mDateScaleX * cs);
     gTextWriter.SetCursor(mDateX, mDateY);
     gTextWriter.Print(mDateText);
 }
@@ -1717,6 +1740,14 @@ BOOL WeatherNormal::StateScroll(s32 arg) {
         mZoomRect.bottom = mZoomY + mMoveY2 * mTimesAlpha;                                                   \
     }
 
+inline void WeatherNormal::ApplyBelt(const char* name, s32 state) {
+    s32 beltState = state;
+    LayoutButton* belt = mBeltLayout->FindButton(name);
+    if (belt != NULL) {
+        belt->SetState(beltState);
+    }
+}
+
 BOOL WeatherNormal::StateNormal(s32 arg) {
     UpdateWeatherSound();
     switch (mPhase) {
@@ -1746,7 +1777,7 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
         if (mUpdateBeltText) {
             (this->*mUpdateBeltText)();
         }
-        SET_BELT_STATE(mBeltState);
+        ApplyBelt("belt", mBeltState);
         UpdateArrows();
         break;
     }
@@ -1767,8 +1798,8 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
                 s32 width = GetScreenWidth();
                 mZoomRect.right = mZoomX;
                 mZoomRect.left = mZoomX;
-                mMoveY2 = 456.0f - mZoomY;
                 mMoveX2 = width - mZoomX;
+                mMoveY2 = 456.0f - mZoomY;
                 mZoomRect.bottom = mZoomY;
                 mZoomRect.top = mZoomY;
                 PlaySE(42);
@@ -1812,12 +1843,12 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
                 mTimesAlpha = EaseCos(0x8000);
                 mZoomAlpha = 40.0f * mTimesAlpha;
                 START_ZOOM_ANIM();
-                mZoomRect.left = 0.0f;
-                mZoomRect.top = 0.0f;
                 mMoveX2 = GetScreenWidth() - mZoomX;
                 mMoveY2 = 456.0f - mZoomY;
-                mZoomRect.bottom = 456.0f;
+                mZoomRect.left = 0.0f;
+                mZoomRect.top = 0.0f;
                 mZoomRect.right = GetScreenWidth();
+                mZoomRect.bottom = 456.0f;
                 PlaySE(43);
             }
             break;
@@ -1838,7 +1869,7 @@ BOOL WeatherNormal::StateNormal(s32 arg) {
         if (mUpdateBeltText) {
             (this->*mUpdateBeltText)();
         }
-        SET_BELT_STATE(mBeltState);
+        ApplyBelt("belt", mBeltState);
         break;
     }
     return TRUE;
@@ -2062,10 +2093,10 @@ BOOL WeatherNormal::StateToAround(s32 arg) {
             for (s32 i = 0; i < gForecastPageCount; i++) {
                 mPageVisible[i] = i == gForecastPage;
             }
-            mFlashX = mMoveX2;
             mFlash = TRUE;
-            mFlashY = mMoveY2;
             mFlashAlpha = 40.0f * (1.0f - mAlpha);
+            mFlashX = mMoveX2;
+            mFlashY = mMoveY2;
             CHANGE_SCROLL(&WeatherNormal::StopScroll);
         }
         break;
@@ -2080,9 +2111,9 @@ BOOL WeatherNormal::StateToAround(s32 arg) {
             return TRUE;
         }
         f32 t = 0.5f - 0.5f * nw4r::math::CosIdx(mAnimTimer);
-        mAlpha = 1.0f - t;
         mFlashY = mMoveY2 + mMoveY * t;
         mFlashX = mMoveX2 + mMoveX * t;
+        mAlpha = 1.0f - t;
         mFlashAlpha = 40.0f * (1.0f - mAlpha);
         break;
     }
@@ -2143,10 +2174,10 @@ BOOL WeatherNormal::StateCloseAround(s32 arg) {
         for (s32 i = 0; i < gForecastPageCount; i++) {
             mPageVisible[i] = i == gForecastPage;
         }
-        mFlashX = mMoveX2;
         mFlash = TRUE;
-        mFlashY = mMoveY2;
         mFlashAlpha = 40.0f * (1.0f - mAlpha);
+        mFlashX = mMoveX2;
+        mFlashY = mMoveY2;
         UpdateArrows();
         break;
     }

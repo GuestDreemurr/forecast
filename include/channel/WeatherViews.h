@@ -432,6 +432,8 @@ public:
     void DrawTimesNL(DayForecast* day, s32 hour);
     void UpdateArrows();
     inline void LayoutPages();
+    inline void StartNormal();
+    inline void ApplyBelt(const char* name, s32 state);
     void UpdateBelt();
     BOOL ChangeState(StateFunc state, s32 arg);
 

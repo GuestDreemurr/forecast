@@ -55,6 +55,10 @@ public:
     void SetZoomLevel(s32 level);
     void PlayRotateSound(u32 id);
 
+    GlobeView* GetView() {
+        return mView;
+    }
+
     nw4r::g3d::ScnRoot* mScnRoot; // at 0x0
     GlobeView* mView;             // at 0x4
     u8 unk8[0x6C - 0x8];          // at 0x8

@@ -1,4 +1,5 @@
 #include "Runtime.PPCEABI.H/NMWException.h"
+#include "types.h"
 
 DestructorChain* __global_destructor_chain;
 

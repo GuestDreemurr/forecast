@@ -335,7 +335,7 @@ cflags_rel = [
     "-sdata2 0",
 ]
 
-config.linker_version = "GC/1.3.2"
+config.linker_version = "GC/3.0a5.2"
 
 
 # Helper function for Dolphin libraries
@@ -379,7 +379,7 @@ config.libs = [
         "cflags": cflags_runtime,
         "progress_category": "sdk",  # str | List[str]
         "objects": [
-            Object(NonMatching, "Runtime.PPCEABI.H/global_destructor_chain.c"),
+            Object(Matching, "Runtime.PPCEABI.H/global_destructor_chain.c"),
             Object(Matching, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
         ],
     },
@@ -979,8 +979,8 @@ config.libs = [
                 Object(NonMatching, "WeatherAround.cpp"),
                 Object(Matching, "WeatherBase.cpp"),
                 Object(Matching, "WeatherBaseDay.cpp"),
-                Object(NonMatching, "ForecastData.cpp"),
-                Object(NonMatching, "WeatherNormal.cpp"),
+                Object(Matching, "ForecastData.cpp", extra_cflags=["-ipa file"]),
+                Object(Matching, "WeatherNormal.cpp", extra_cflags=["-ipa file"]),
                 Object(Matching, "WeatherText.cpp"),
                 Object(Matching, "WeatherTextUS.cpp"),
                 Object(Matching, "WeatherScene.cpp", extra_cflags=["-ipa file"]),
@@ -993,7 +993,7 @@ config.libs = [
                 Object(Matching, "HomeButton.cpp"),
                 Object(Matching, "main.cpp"),
                 Object(Matching, "DrawUtil.cpp"),
-                Object(NonMatching, "GlobeDots.cpp"),
+                Object(Matching, "GlobeDots.cpp"),
                 Object(Matching, "System.cpp"),
                 Object(Matching, "ButtonGroup.cpp"),
                 Object(Matching, "PointerHistory.cpp"),

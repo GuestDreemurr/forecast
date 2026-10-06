@@ -36,7 +36,7 @@ public:
     CityLabel(City* city, f32 scale, nw4r::ut::Font* font);
     ~CityLabel();
 
-    void Project(GlobeView* view, s8 zoomLevel);
+    void Project(GlobeView* view, s32 zoomLevel);
     void UpdateTempText();
     void UpdateHover();
     void UpdateAlpha();

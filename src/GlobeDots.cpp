@@ -20,11 +20,9 @@ extern "C" const u8 gGlobeDotColorIndices[GLOBE_DOT_COUNT];
 extern "C" const u8 gGlobeDotColors[];
 
 // HACK: non-const (so MWCC reloads the words inside the ctor loop like the target) but forced into .rodata.
-__declspec(section ".rodata") static Vec sBaseVerts[3] = {
-    {0.0f, 0.0f, -100.0f},
-    {0.0f, 0.0f, -100.0f},
-    {0.0f, 0.0f, -100.0f},
-};
+__declspec(section ".rodata") static Vec sBase0 = {0.0f, 0.0f, -100.0f};
+__declspec(section ".rodata") static Vec sBase1 = {0.0f, 0.0f, -100.0f};
+__declspec(section ".rodata") static Vec sBase2 = {0.0f, 0.0f, -100.0f};
 
 static const f32 sTexCoords[3][2] = {
     {0.0f, 0.0f},
@@ -40,16 +38,16 @@ static inline void TransformVert(Mtx mtx, const Vec& base, f32 x, f32 y, Vec* ou
 }
 
 GlobeDots::GlobeDots() {
-    const Vec* base = sBaseVerts;
     for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
         Mtx rotX;
         Mtx rotY;
         Mtx mtx;
 
+        u16 lon = ((const u16*)gGlobeDotPositions)[i*2];
+        int n = i * 9;
         f32 size = 0.0045f * gGlobeDotSizes[i];
         f32 far = 3.0f * size;
-        u16 lon = gGlobeDotPositions[i].lon;
-        u16 lat = gGlobeDotPositions[i].lat;
+        u16 lat = ((const u16*)gGlobeDotPositions)[i*2+1];
 
         PSMTXRotTrig(rotX, nw4r::math::SinIdx(lon), nw4r::math::CosIdx(lon), 'x');
         PSMTXRotTrig(rotY, nw4r::math::SinIdx(lat), nw4r::math::CosIdx(lat), 'y');
@@ -57,10 +55,9 @@ GlobeDots::GlobeDots() {
 
 
         f32* fv = (f32*)mVerts;
-        int n = i * 9;
-        TransformVert(mtx, base[0], -size, -size, (Vec*)&fv[n]);
-        TransformVert(mtx, base[1], far, -size, (Vec*)&fv[n + 3]);
-        TransformVert(mtx, base[2], -size, far, (Vec*)&fv[n + 6]);
+        TransformVert(mtx, sBase0, -size, -size, (Vec*)&fv[n]);
+        TransformVert(mtx, sBase1, far, -size, (Vec*)&fv[n + 3]);
+        TransformVert(mtx, sBase2, -size, far, (Vec*)&fv[n + 6]);
     }
 }
 
@@ -92,7 +89,7 @@ static inline void SetDotColor(u8 alpha) {
 }
 
 void GlobeDots::Draw() {
-    GlobeView* view = gSimpleGlobe->mView;
+    GlobeView* view = gSimpleGlobe->GetView();
     nw4r::math::MTX34 viewMtx;
     nw4r::math::MTX44 projMtx;
     GXTexObj texObj;
@@ -136,17 +133,17 @@ void GlobeDots::Draw() {
     int v = 0;
     for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
         u8 colorIdx = gGlobeDotColorIndices[(u32)i];
+        v += 3;
 
-        GXPosition1x16(v + 0);
+        GXPosition1x16(v - 3);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(0);
-        GXPosition1x16(v + 1);
+        GXPosition1x16(v - 2);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(1);
-        GXPosition1x16(v + 2);
+        GXPosition1x16(v - 1);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(2);
-        v += 3;
     }
     GXEnd();
 }

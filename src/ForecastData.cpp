@@ -477,7 +477,7 @@ extern const IconLayer sIcon126[];
 
 static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale);
 static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale);
-static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, GXColor shadow, f32 scale);
+static void DrawIconTextureShadow(u32 texture, const Vec2* pos, const GXColor& color, const GXColor& shadow, f32 scale);
 static void DrawIconTexture(u32 texture, const Vec2* pos, GXColor color, f32 scale);
 
 void DrawWeatherIcon(u16 icon, const Vec2* pos, f32 scale, s32 alpha) {
@@ -714,13 +714,22 @@ static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, 
     }
 }
 
+// The by-value copies of the two colors only land in the original's order/stack slots when
+// they go through two inline wrappers, the inner one taking (shadow, color) swapped.
+static inline void DrawIconShadowSwapped(u32 texture, const Vec2* pos, GXColor shadow, GXColor color, f32 scale) {
+    DrawIconTextureShadow(texture, pos, color, shadow, scale);
+}
+
+static inline void DrawIconShadowColors(u32 texture, const Vec2* pos, GXColor color, GXColor shadow, f32 scale) {
+    DrawIconShadowSwapped(texture, pos, shadow, color, scale);
+}
+
 static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 alpha, BOOL night, f32 scale) {
     f32 fade = alpha / 255.0f;
-    // HACK: temp GXColor copies only steer register allocation / stack layout
-    GXColor colorCopy;
     GXColor color;
-    GXColor colorCopy2;
     GXColor shadow;
+    u8 shadowAlpha; // declared before colorAlpha: gives the alpha ints the target registers
+    u8 colorAlpha;
     color.r = 255;
     color.g = 255;
     color.b = 255;
@@ -731,21 +740,22 @@ static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 a
     shadow.a = alpha;
     const IconLayer* layer = layers;
     for (; layer->mTexture != 0xFFFFFFFF; layer++) {
-        colorCopy = layer->mColor;
-        color.a = colorCopy.a * fade;
-        color.r = colorCopy.r;
+        colorAlpha = layer->mColor.a * fade;
+        shadowAlpha = layer->mShadowColor.a * fade;
+        color.a = colorAlpha;
+        color.r = layer->mColor.r;
+        color.g = layer->mColor.g;
         color.b = layer->mColor.b;
-        color.g = (colorCopy2 = colorCopy).g;
-        shadow.a = layer->mShadowColor.a * fade;
+        shadow.a = shadowAlpha;
         shadow.r = layer->mShadowColor.r;
         shadow.g = layer->mShadowColor.g;
         shadow.b = layer->mShadowColor.b;
         nw4r::math::VEC2 layerPos(pos->x + layer->mOffset.x * scale, pos->y + layer->mOffset.y * scale);
-        DrawIconTextureShadow(GetNightTexture(layer->mTexture, night), (Vec2*)&layerPos, color, shadow, layer->mScale * scale);
+        DrawIconShadowColors(GetNightTexture(layer->mTexture, night), (Vec2*)&layerPos, color, shadow, layer->mScale * scale);
     }
 }
 
-static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, GXColor shadow, f32 scale) {
+static void DrawIconTextureShadow(u32 texture, const Vec2* pos, const GXColor& color, const GXColor& shadow, f32 scale) {
     f32 halfW = scale * (0.5f * GetTexWidth(WEATHER_TPL, texture));
     Vec corner;
     Vec shadowPos;
