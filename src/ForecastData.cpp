@@ -105,13 +105,14 @@ ForecastData::~ForecastData() {
 s32 ForecastData::LoadForecast(void* data) {
     s32 result = 0;
     u32 i;
+    ForecastHeader* header;
 
     mForecastBin = data;
     if (data == NULL) {
-        return result;
+        goto done;
     }
 
-    ForecastHeader* header = (ForecastHeader*)data;
+    header = (ForecastHeader*)data;
     mHeader = header;
     if (header->mMessageOffset != 0) {
         mMessage = (const wchar_t*)((u8*)data + header->mMessageOffset);
@@ -259,11 +260,13 @@ fail:
         MEM2Free(mForecastBin);
         mForecastBin = NULL;
     }
+done:
     return result;
 }
 
 s32 ForecastData::LoadShort(void* data) {
     s32 result = 1;
+    u32 i;
 
     mShortBin = data;
     if (data != NULL) {
@@ -287,7 +290,7 @@ s32 ForecastData::LoadShort(void* data) {
             }
             CityNow* now = mNow;
             ShortEntry* entry = mShortEntries;
-            for (u32 i = 0; i < mShortHeader->mNumEntries; i++, now++, entry++) {
+            for (i = 0; i < mShortHeader->mNumEntries; i++, now++, entry++) {
                 now->Setup(mShortBin, entry);
             }
         }
@@ -340,16 +343,18 @@ WeatherInfo* ForecastData::FindWeatherInfo(const u32& code) {
     return NULL;
 }
 
-u16 ForecastData::GetWeatherIcon(const u32& code) {
-    WeatherInfo* info = mWeatherInfo;
-    u32 i;
-    for (i = 0; i < mHeader->mNumWeatherTypes; i++, info++) {
+static inline WeatherInfo* SearchWeatherInfo(ForecastData* self, const u32& code) {
+    WeatherInfo* info = self->mWeatherInfo;
+    for (u32 i = 0; i < self->mHeader->mNumWeatherTypes; i++, info++) {
         if (code == info->mType->mCode) {
-            goto found;
+            return info;
         }
     }
-    info = NULL;
-found:
+    return NULL;
+}
+
+u16 ForecastData::GetWeatherIcon(const u32& code) {
+    WeatherInfo* info = SearchWeatherInfo(this, code);
     if (info != NULL) {
         return info->mType->mIcon;
     }
@@ -394,7 +399,8 @@ CityForecast::~CityForecast() {}
 
 void CityForecast::Setup(void* base, ForecastEntry* entry) {
     mEntry = entry;
-    mMinutes = (entry->mTime - entry->mOffset) + gStartMinutes;
+    s32 elapsed = entry->mTime - entry->mOffset;
+    mMinutes = elapsed + gStartMinutes;
     MinutesToCalendarTime(mMinutes, &mTime);
 }
 
@@ -697,13 +703,14 @@ static void DrawIconLayers(const IconLayer* layers, const Vec2* pos, s32 alpha, 
     color.g = 255;
     color.b = 255;
     color.a = alpha;
-    for (; layers->mTexture != 0xFFFFFFFF; layers++) {
-        color.a = layers->mColor.a * fade;
-        color.g = layers->mColor.g;
-        color.r = layers->mColor.r;
-        color.b = layers->mColor.b;
-        nw4r::math::VEC2 layerPos(pos->x + layers->mOffset.x * scale, pos->y + layers->mOffset.y * scale);
-        DrawIconTexture(GetNightTexture(layers->mTexture, night), (Vec2*)&layerPos, color, layers->mScale * scale);
+    const IconLayer* layer = layers;
+    for (; layer->mTexture != 0xFFFFFFFF; layer++) {
+        color.a = layer->mColor.a * fade;
+        color.r = layer->mColor.r;
+        color.g = layer->mColor.g;
+        color.b = layer->mColor.b;
+        nw4r::math::VEC2 layerPos(pos->x + layer->mOffset.x * scale, pos->y + layer->mOffset.y * scale);
+        DrawIconTexture(GetNightTexture(layer->mTexture, night), (Vec2*)&layerPos, color, layer->mScale * scale);
     }
 }
 
@@ -736,14 +743,19 @@ static void DrawIconLayersShadow(const IconLayer* layers, const Vec2* pos, s32 a
 
 static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, GXColor shadow, f32 scale) {
     f32 halfW = scale * (0.5f * GetTexWidth(WEATHER_TPL, texture));
-    f32 halfH = scale * (0.5f * GetTexHeight(WEATHER_TPL, texture));
     Vec corner;
-    corner.x = pos->x - halfW;
-    corner.y = pos->y - halfH;
-    corner.z = 0.0f;
     Vec shadowPos;
-    shadowPos.x = 2.0f + corner.x;
-    shadowPos.y = 2.0f + corner.y;
+    f32 x, y;
+    f32 halfH = scale * (0.5f * GetTexHeight(WEATHER_TPL, texture));
+    y = pos->y - halfH;
+    x = pos->x - halfW;
+    corner.x = x;
+    corner.y = y;
+    corner.z = 0.0f;
+    f32 sx = 2.0f + x;
+    f32 sy = 2.0f + y;
+    shadowPos.x = sx;
+    shadowPos.y = sy;
     shadowPos.z = 0.0f;
     GXSetTevColor(GX_TEVREG0, shadow);
     DrawTextureAt(WEATHER_TPL, texture, scale, scale, &shadowPos);
@@ -753,15 +765,20 @@ static void DrawIconTextureShadow(u32 texture, const Vec2* pos, GXColor color, G
 
 static void DrawIconTexture(u32 texture, const Vec2* pos, GXColor color, f32 scale) {
     f32 halfW = scale * (0.5f * GetTexWidth(WEATHER_TPL, texture));
-    f32 halfH = scale * (0.5f * GetTexHeight(WEATHER_TPL, texture));
     Vec corner;
-    corner.x = pos->x - halfW;
-    corner.y = pos->y - halfH;
+    f32 x, y;
+    f32 halfH = scale * (0.5f * GetTexHeight(WEATHER_TPL, texture));
+    y = pos->y - halfH;
+    x = pos->x - halfW;
     corner.z = 0.0f;
+    corner.x = x;
+    corner.y = y;
     GXSetTevColor(GX_TEVREG0, color);
     DrawTextureAt(WEATHER_TPL, texture, scale, scale, &corner);
 }
+#pragma scheduling reset
 
+#pragma scheduling off
 s32 LaundryIndexInfo::Setup(void* base, IndexText* entry) {
     u32 offset = entry->mTextOffset;
     mIndex = entry;
@@ -771,6 +788,7 @@ s32 LaundryIndexInfo::Setup(void* base, IndexText* entry) {
     mText = (const wchar_t*)((u8*)base + offset);
     return 0x18;
 }
+#pragma scheduling reset
 
 const IconLayer sIcon1[] = {
     {4, {0.0f, 0.0f}, 1.0f, {255, 255, 255, 255}, {32, 32, 32, 255}},

@@ -243,7 +243,7 @@ public:
     CitySummary* mSummary; // at 0x8
     CityNow* mNow;     // at 0xC
     u8 mIsNight;       // at 0x10
-    u8 mIsDay;         // at 0x11
+    bool mIsDay;        // at 0x11
 };
 
 // forecast.bin and short.bin (size 0x54)

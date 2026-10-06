@@ -11,6 +11,12 @@
 #include <revolution/GX.h>
 #include <revolution/MTX.h>
 
+inline void ButtonGroup::ResetButtons() {
+    for (int i = 0; i < mNumButtons; i++) {
+        mButtons[i]->Reset();
+    }
+}
+
 ButtonGroup::ButtonGroup(void* arc, const char* layoutName, void* soundInfo, bool influencedAlpha)
     : mFadeFrames(0), mFadeFrame(0), mAlpha(255) {
     mResAccessor = new nw4r::lyt::ArcResourceAccessor;
@@ -25,7 +31,8 @@ ButtonGroup::ButtonGroup(void* arc, const char* layoutName, void* soundInfo, boo
     mDrawInfo->SetLocationAdjust(true);
 
     f32 aspect = gWidescreen ? 832.0f / 608.0f : 1.0f;
-    mDrawInfo->SetLocationAdjustScale(nw4r::math::VEC2(1.0f / aspect, 1.0f));
+    f32 sx = 1.0f / aspect;
+    mDrawInfo->SetLocationAdjustScale(nw4r::math::VEC2(sx, 1.0f));
     mDrawInfo->SetViewRect(mLayout->GetLayoutRect());
 
     nw4r::math::MTX34 mtx;
@@ -34,8 +41,8 @@ ButtonGroup::ButtonGroup(void* arc, const char* layoutName, void* soundInfo, boo
 
     mTagProcessor = new TextTagProcessor;
 
-    mNumButtons = 0;
     nw4r::lyt::PaneList& panes = mLayout->GetRootPane()->GetChildList();
+    mNumButtons = 0;
     for (nw4r::lyt::PaneList::Iterator it = panes.GetBeginIter(); it != panes.GetEndIter(); ++it) {
         if (mNumButtons >= BUTTON_GROUP_MAX_BUTTONS) {
             break;
@@ -44,9 +51,7 @@ ButtonGroup::ButtonGroup(void* arc, const char* layoutName, void* soundInfo, boo
         mButtons[mNumButtons++] = new LayoutButton(&*it, mDrawInfo, soundInfo, mTagProcessor);
     }
 
-    for (int i = 0; i < mNumButtons; i++) {
-        mButtons[i]->Reset();
-    }
+    ResetButtons();
 
     mSlidingOut = FALSE;
     mSlideFrames = 15;
@@ -85,6 +90,24 @@ void ButtonGroup::ReleaseAll() {
     mSlideFrame = 0;
 }
 
+inline void ButtonGroup::UpdateAll() {
+    for (int i = 0; i < mNumButtons; i++) {
+        mButtons[i]->Update();
+    }
+}
+
+inline void ButtonGroup::ApplySlide(f32 offset) {
+    for (int i = 0; i < mNumButtons; i++) {
+        mButtons[i]->mSlideOffset = offset * (mButtons[i]->mPane->mTransY > 0.0f ? 1 : -1);
+    }
+}
+
+inline void ButtonGroup::ApplyAlpha(s32 alpha) {
+    for (int i = 0; i < mNumButtons; i++) {
+        mButtons[i]->SetAlpha(alpha);
+    }
+}
+
 void ButtonGroup::Calc() {
     for (int i = 0; i < mNumButtons; i++) {
         mButtons[i]->Calc();
@@ -106,9 +129,7 @@ void ButtonGroup::Calc() {
     }
 
     f32 offset = height * mSlideFrame / mSlideFrames;
-    for (int i = 0; i < mNumButtons; i++) {
-        mButtons[i]->SetSlideOffset(offset);
-    }
+    ApplySlide(offset);
 
     if (mFadingOut) {
         if (mFadeFrame < mFadeFrames) {
@@ -120,9 +141,7 @@ void ButtonGroup::Calc() {
 
     s32 alpha = 255 - mFadeFrame * 255 / mFadeFrames;
     mAlpha = alpha;
-    for (int i = 0; i < mNumButtons; i++) {
-        mButtons[i]->SetAlpha(alpha);
-    }
+    ApplyAlpha(alpha);
 }
 
 void ButtonGroup::Draw() {
@@ -141,14 +160,12 @@ void ButtonGroup::Draw() {
     GXSetCullMode(GX_CULL_NONE);
     GXSetZMode(GX_FALSE, GX_NEVER, GX_FALSE);
 
-    for (int i = 0; i < mNumButtons; i++) {
-        mButtons[i]->Update();
-    }
+    UpdateAll();
 
     mLayout->CalculateMtx(*mDrawInfo);
 
-    for (int i = 0; i < mNumButtons; i++) {
-        mButtons[i]->Draw();
+    for (int j = 0; j < mNumButtons; j++) {
+        mButtons[j]->Draw();
     }
 }
 
@@ -227,7 +244,9 @@ void ButtonGroup::SetViewMtx(const nw4r::math::MTX34& mtx) {
 }
 
 void ButtonGroup::SetSlideOffset(f32 offset) {
+    LayoutButton* b;
     for (int i = 0; i < mNumButtons; i++) {
-        mButtons[i]->SetSlideOffset(offset);
+        b = mButtons[i];
+        b->SetSlideOffset(offset);
     }
 }

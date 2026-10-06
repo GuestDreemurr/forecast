@@ -23,18 +23,23 @@ CityInfo::CityInfo() {
 
 CityInfo::~CityInfo() {}
 void CityInfo::Setup(void* base, PlaceEntry* entry, u32 index) {
+    CityInfo* self = this;
     u32 name = entry->mNameOffset;
+    CityInfo** pself; // HACK: address of a local copy of this changes the schedule
     u32 country = entry->mCountryOffset;
-    mIndex = index;
-    mId = &entry->mId;
-    mName = (wchar_t*)((u8*)base + name);
+    self->mIndex = index;
+    self->mId = &entry->mId;
+    self->mName = (wchar_t*)((u8*)base + name);
+    pself = &self;
     if (country != 0) {
-        mCountry = (wchar_t*)((u8*)base + country);
+        (*pself)->mCountry = (wchar_t*)((u8*)base + country);
     }
-    if (((PlaceEntry*)mId)->mRegionOffset != 0) {
-        mRegion = (wchar_t*)((u8*)base + ((PlaceEntry*)mId)->mRegionOffset);
+    if (((PlaceEntry*)(*pself)->mId)->mRegionOffset != 0) {
+        self->mRegion = (wchar_t*)((u8*)base + ((PlaceEntry*)self->mId)->mRegionOffset);
     }
 }
+
+#pragma scheduling off
 s32 PollenIndexInfo::Setup(void* base, IndexText* entry) {
     u32 offset = entry->mTextOffset;
     mIndex = entry;
@@ -44,3 +49,4 @@ s32 PollenIndexInfo::Setup(void* base, IndexText* entry) {
     mText = (const wchar_t*)((u8*)base + offset);
     return 0x18;
 }
+#pragma scheduling reset

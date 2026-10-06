@@ -33,7 +33,7 @@ class CityLabel {
 public:
     typedef void (CityLabel::*DrawFunc)();
 
-    CityLabel(City* city, nw4r::ut::Font* font, f32 scale);
+    CityLabel(City* city, f32 scale, nw4r::ut::Font* font);
     ~CityLabel();
 
     void Project(GlobeView* view, s8 zoomLevel);

@@ -19,7 +19,7 @@ public:
     void Calc();
     void UpdateMtx();
     void Draw();
-    nw4r::math::MTX34 CalcMtx(const nw4r::math::VEC3& rot);
+    nw4r::math::MTX34 CalcMtx(nw4r::math::VEC3& rot);
 
     u32 unk4;                          // at 0x4
     nw4r::g3d::ResMdl mResMdl;         // at 0x8

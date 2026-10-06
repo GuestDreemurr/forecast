@@ -190,9 +190,8 @@ WeatherAround::WeatherAround(void* arc)
 
     mLabels = new CityLabel*[gForecastData->mHeader->mNumPlaces];
     CityLabel** label = mLabels;
-    s32 k = 0;
-    for (; k < (s32)gForecastData->mHeader->mNumPlaces; k++, label++) {
-        *label = new CityLabel(gCities[k], gFutiFont, mFontScale);
+    for (i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
+        *label = new CityLabel(gCities[i], mFontScale, gFutiFont);
     }
 
     f32 centerY = 228.0f;
@@ -233,7 +232,8 @@ WeatherAround::WeatherAround(void* arc)
     }
 
     Vec2F center = mBelt->GetCenter();
-    center.y = (centerY - center.y) - 0.5f * __fabsf(mBelt->mTop - mBelt->mBottom);
+    f32 beltH = __fabsf(mBelt->mTop - mBelt->mBottom);
+    center.y = (centerY - center.y) - 0.5f * beltH;
     mSlideMax = center.y - (gWidescreen ? 19 : 34);
 
     mDots = new GlobeDots();
@@ -277,28 +277,32 @@ WeatherAround::~WeatherAround() {
     delete mLayout;
 }
 
+inline void WeatherAround::ResetLabels() {
+    CityLabel** label = mLabels;
+    for (s32 i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
+        (*label)->UpdateTempText();
+        (*label)->ResetDrawFunc();
+        (*label)->CalcSize();
+    }
+}
+
 void WeatherAround::Reset() {
-    s32 i;
     SimpleGlobe* globe = gSimpleGlobe;
     if (globe != NULL) {
         CityInfo* info = gCurrentCity != NULL ? gCurrentCity->mInfo : NULL;
         PlaceEntry* place = (PlaceEntry*)info->mId;
         Vec2 deg;
         ToDegrees(place->mLongitude, place->mLatitude, &deg);
+        f32 ry = deg.y;
+        f32 rx = deg.x;
         Vec rot;
-        rot.x = deg.x;
-        rot.y = deg.y;
+        rot.x = rx;
+        rot.y = ry;
         rot.z = 0.0f;
         globe->SetZoomLevel(0);
         globe->Setup(&rot);
     }
-
-    CityLabel** label = mLabels;
-    for (i = 0; i < (s32)gForecastData->mHeader->mNumPlaces; i++, label++) {
-        (*label)->UpdateTempText();
-        (*label)->ResetDrawFunc();
-        (*label)->CalcSize();
-    }
+    ResetLabels();
 
     mLayout->Reset();
     mBeltLayout->Reset();
@@ -1197,22 +1201,22 @@ void WeatherAround::UpdateDrag() {
 }
 
 BOOL WeatherAround::CheckOverlap(CityLabel* a, CityLabel* b) {
-    f32 aLeft = a->mBounds.left;
-    f32 aw = a->mBounds.right - aLeft;
-    f32 aTop = a->mBounds.top;
-    f32 ah = a->mBounds.bottom - aTop;
     f32 bLeft = b->mBounds.left;
     f32 bw = b->mBounds.right - bLeft;
     f32 bTop = b->mBounds.top;
+    f32 aLeft = a->mBounds.left;
     f32 bh = b->mBounds.bottom - bTop;
-    f32 acx = 0.5f * aw + aLeft;
-    f32 acy = 0.5f * ah + aTop;
-    f32 bcx = 0.5f * bw + bLeft;
+    f32 aw = a->mBounds.right - aLeft;
     f32 bcy = 0.5f * bh + bTop;
-    f32 dx = __fabsf(acx - bcx);
-    f32 dy = __fabsf(acy - bcy);
+    f32 aTop = a->mBounds.top;
     f32 maxX = 0.5f * (aw + bw);
+    f32 acx = 0.5f * aw + aLeft;
+    f32 ah = a->mBounds.bottom - aTop;
+    f32 acy = 0.5f * ah + aTop;
+    f32 dy = __fabsf(acy - bcy);
     f32 maxY = 0.5f * (ah + bh);
+    f32 bcx = 0.5f * bw + bLeft;
+    f32 dx = __fabsf(acx - bcx);
 
     if ((a->mFlags & CITY_LABEL_HIDDEN) || dx > maxX || dy > maxY) {
         return FALSE;

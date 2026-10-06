@@ -81,6 +81,12 @@ void GlobeDots::UpdateAlpha(f32 speedX, f32 speedY) {
     }
 }
 
+static inline void SetDotColor(u8 alpha) {
+    GXColor color = {0, 0, 0, 0};
+    color.a = alpha;
+    GXSetTevColor(GX_TEVREG0, color);
+}
+
 void GlobeDots::Draw() {
     GlobeView* view = gSimpleGlobe->mView;
     nw4r::math::MTX34 viewMtx;
@@ -120,23 +126,23 @@ void GlobeDots::Draw() {
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_ONE, GX_CC_TEXC, GX_CC_ZERO);
     GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_A0, GX_CA_ZERO);
 
-    GXColor color = {0, 0, 0, 0};
-    color.a = mAlpha;
-    GXSetTevColor(GX_TEVREG0, color);
+    SetDotColor(mAlpha);
 
     GXBegin(GX_TRIANGLES, GX_VTXFMT0, GLOBE_DOT_COUNT * 3);
+    int v = 0;
     for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
         u8 colorIdx = gGlobeDotColorIndices[(u32)i];
 
-        GXPosition1x16(i * 3 + 0);
+        GXPosition1x16(v + 0);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(0);
-        GXPosition1x16(i * 3 + 1);
+        GXPosition1x16(v + 1);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(1);
-        GXPosition1x16(i * 3 + 2);
+        GXPosition1x16(v + 2);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(2);
+        v += 3;
     }
     GXEnd();
 }

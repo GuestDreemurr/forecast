@@ -39,8 +39,8 @@ void SimpleModel::UpdateMtx() {
     mScnMdl->SetMtx(nw4r::g3d::ScnObj::MTX_LOCAL, &mMtx);
 }
 
-nw4r::math::MTX34 SimpleModel::CalcMtx(const nw4r::math::VEC3& rot) {
-    nw4r::math::MTX34RotXYZFIdx(&gModelMtx, 0.0f, 0.7111111f * rot.y, 0.0f);
+nw4r::math::MTX34 SimpleModel::CalcMtx(nw4r::math::VEC3& rot) {
+    nw4r::math::MTX34RotXYZDeg(&gModelMtx, 0.0f, rot.y, 0.0f);
     f32 z = rot.z;
     f32 x = rot.x;
     RotateMtxDeg(&gModelMtx, x, 0.0f, z);
