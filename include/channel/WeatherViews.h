@@ -233,6 +233,7 @@ public:
     virtual ~WeatherAround();
 
     void Reset();
+    inline void ResetLabels();
     void Show();
     void UpdateButtonFade();
     void UpdateZoomButtons();

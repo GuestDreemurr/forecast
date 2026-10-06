@@ -153,6 +153,7 @@ public:
     ~ButtonGroup();
 
     void Reset();
+    inline void ResetButtons();
     void ReleaseAll();
     void Calc();
     void Draw();
@@ -165,6 +166,10 @@ public:
     void SetPaneAlpha(s32 alpha);
     void SetViewMtx(const nw4r::math::MTX34& mtx);
     void SetSlideOffset(f32 offset);
+
+    inline void UpdateAll();
+    inline void ApplySlide(f32 offset);
+    inline void ApplyAlpha(s32 alpha);
 
     nw4r::lyt::ArcResourceAccessor* mResAccessor;        // at 0x0
     nw4r::lyt::Layout* mLayout;                          // at 0x4

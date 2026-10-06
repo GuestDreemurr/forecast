@@ -19,7 +19,8 @@ extern "C" const u8 gGlobeDotSizes[GLOBE_DOT_COUNT];
 extern "C" const u8 gGlobeDotColorIndices[GLOBE_DOT_COUNT];
 extern "C" const u8 gGlobeDotColors[];
 
-static const Vec sBaseVerts[3] = {
+// HACK: non-const (so MWCC reloads the words inside the ctor loop like the target) but forced into .rodata.
+__declspec(section ".rodata") static Vec sBaseVerts[3] = {
     {0.0f, 0.0f, -100.0f},
     {0.0f, 0.0f, -100.0f},
     {0.0f, 0.0f, -100.0f},
@@ -40,7 +41,7 @@ static inline void TransformVert(Mtx mtx, const Vec& base, f32 x, f32 y, Vec* ou
 
 GlobeDots::GlobeDots() {
     const Vec* base = sBaseVerts;
-    for (u16 i = 0; i < GLOBE_DOT_COUNT; i++) {
+    for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
         Mtx rotX;
         Mtx rotY;
         Mtx mtx;
@@ -54,9 +55,12 @@ GlobeDots::GlobeDots() {
         PSMTXRotTrig(rotY, nw4r::math::SinIdx(lat), nw4r::math::CosIdx(lat), 'y');
         PSMTXConcat(rotY, rotX, mtx);
 
-        TransformVert(mtx, base[0], -size, -size, &mVerts[i * 3 + 0]);
-        TransformVert(mtx, base[1], far, -size, &mVerts[i * 3 + 1]);
-        TransformVert(mtx, base[2], -size, far, &mVerts[i * 3 + 2]);
+
+        f32* fv = (f32*)mVerts;
+        int n = i * 9;
+        TransformVert(mtx, base[0], -size, -size, (Vec*)&fv[n]);
+        TransformVert(mtx, base[1], far, -size, (Vec*)&fv[n + 3]);
+        TransformVert(mtx, base[2], -size, far, (Vec*)&fv[n + 6]);
     }
 }
 
@@ -79,6 +83,12 @@ void GlobeDots::UpdateAlpha(f32 speedX, f32 speedY) {
     } else {
         mAlpha += 2;
     }
+}
+
+static inline void SetDotColor(u8 alpha) {
+    GXColor color = {0, 0, 0, 0};
+    color.a = alpha;
+    GXSetTevColor(GX_TEVREG0, color);
 }
 
 void GlobeDots::Draw() {
@@ -120,23 +130,23 @@ void GlobeDots::Draw() {
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_ONE, GX_CC_TEXC, GX_CC_ZERO);
     GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_A0, GX_CA_ZERO);
 
-    GXColor color = {0, 0, 0, 0};
-    color.a = mAlpha;
-    GXSetTevColor(GX_TEVREG0, color);
+    SetDotColor(mAlpha);
 
     GXBegin(GX_TRIANGLES, GX_VTXFMT0, GLOBE_DOT_COUNT * 3);
+    int v = 0;
     for (int i = 0; i < GLOBE_DOT_COUNT; i++) {
         u8 colorIdx = gGlobeDotColorIndices[(u32)i];
 
-        GXPosition1x16(i * 3 + 0);
+        GXPosition1x16(v + 0);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(0);
-        GXPosition1x16(i * 3 + 1);
+        GXPosition1x16(v + 1);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(1);
-        GXPosition1x16(i * 3 + 2);
+        GXPosition1x16(v + 2);
         GXColor1x8(colorIdx);
         GXTexCoord1x8(2);
+        v += 3;
     }
     GXEnd();
 }

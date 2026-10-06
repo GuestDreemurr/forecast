@@ -392,37 +392,37 @@ void WeatherBaseDay::DrawDayJP(DayForecast* day, WeatherInfo* weather, s32 alpha
     PRINT_BOX(&boxes[1], L"\x6C17\x6E29 (\x524D\x65E5\x6BD4)", alpha);
 
     p = FormatNumber(hour, sTextBuf, 4, FALSE);
-    p[0] = L'-';
-    p[1] = L'\0';
-    p = FormatNumber(hour + 6, p + 1, 4, FALSE);
+    *p++ = L'-';
+    *p = L'\0';
+    p = FormatNumber(hour + 6, p, 4, FALSE);
     p[0] = L'\x6642';
     p[1] = L'\0';
     PRINT_BOX(&boxes[2], sTextBuf, alpha);
 
     p = FormatNumber(hour + 6, sTextBuf, 4, FALSE);
-    p[0] = L'-';
-    p[1] = L'\0';
-    p = FormatNumber(hour + 12, p + 1, 4, FALSE);
+    *p++ = L'-';
+    *p = L'\0';
+    p = FormatNumber(hour + 12, p, 4, FALSE);
     p[0] = L'\x6642';
     p[1] = L'\0';
     PRINT_BOX(&boxes[3], sTextBuf, alpha);
 
     p = FormatNumber(hour + 12, sTextBuf, 4, FALSE);
-    p[0] = L'-';
-    p[1] = L'\0';
-    p = FormatNumber(hour + 18, p + 1, 4, FALSE);
+    *p++ = L'-';
+    *p = L'\0';
+    p = FormatNumber(hour + 18, p, 4, FALSE);
     p[0] = L'\x6642';
     p[1] = L'\0';
     PRINT_BOX(&boxes[4], sTextBuf, alpha);
 
     p = FormatNumber(hour + 18, sTextBuf, 4, FALSE);
-    p[0] = L'-';
+    *p++ = L'-';
     s32 end = hour + 24;
-    p[1] = L'\0';
+    *p = L'\0';
     if (end > 24) {
         end -= 24;
     }
-    p = FormatNumber(end, p + 1, 4, FALSE);
+    p = FormatNumber(end, p, 4, FALSE);
     p[0] = L'\x6642';
     p[1] = L'\0';
     PRINT_BOX(&boxes[5], sTextBuf, alpha);
