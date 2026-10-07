@@ -240,7 +240,10 @@ SceneBase.cpp:
 	.sdata2     start:0x80332040 end:0x80332098
 
 revolution/CNT/cnt.c:
-	.text       start:0x80045CB0 end:0x80045E40
+	.text       start:0x80045ABC end:0x80045FD4
+	.rodata     start:0x8018F7B0 end:0x8018FA28
+	.data       start:0x801B3D98 end:0x801B3E78
+	.sbss       start:0x80330C88 end:0x80330C90
 
 revolution/VF/pf_clib.c:
 	.text       start:0x80045FD4 end:0x800462D4

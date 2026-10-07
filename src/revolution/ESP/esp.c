@@ -1,8 +1,10 @@
-#include <revolution/ESP.h>
+#include "revolution/ESP/esp.h"
+#include "revolution/IPC/ipcclt.h"
+#include "revolution/private/es_types.h"
 
 static s32 __esFd = -1;
 
-s32 ESP_ReadContentFile(s32 fd, void* dst, u32 len) {
+s32 ESP_ReadContentFile(ESFd fd, void* dst, u32 len) {
     u8 WORK[256] ALIGN(32);
 
     IPCIOVector* vecWork = (IPCIOVector*)(WORK + 0xE8);
@@ -27,7 +29,7 @@ s32 ESP_ReadContentFile(s32 fd, void* dst, u32 len) {
     return IOS_Ioctlv(__esFd, ES_IOCTLV_READ_CONTENT_FILE, 1, 1, vecWork);
 }
 
-s32 ESP_SeekContentFile(s32 fd, s32 offset, s32 origin) {
+s32 ESP_SeekContentFile(ESFd fd, s32 offset, u32 origin) {
     u8 WORK[256] ALIGN(32);
 
     IPCIOVector* vecWork = (IPCIOVector*)(WORK + 0xE8);

@@ -355,6 +355,15 @@ BOOL WeatherWeek::HasData(CityForecast* forecast) {
     return FALSE;
 }
 
+static inline void FormatTemperature(wchar_t*& buf, s32 temp) {
+    buf = sTextBuf;
+    if (temp <= -128) {
+        wcscpy(buf, L"--");
+    } else {
+        FormatNumber(temp, buf, 4, FALSE);
+    }
+}
+
 void WeatherWeek::DrawWeekJP(const s32& alpha) {
     CityInfo* cityInfo = gCurrentCity->GetInfo();
     CityForecast* forecast = gCurrentCity->GetForecast();
@@ -425,11 +434,7 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
         } else {
             temp = week->mMaxF;
         }
-        if (temp <= -128) {
-            wcscpy(buf, L"--");
-        } else {
-            FormatNumber(temp, buf, 4, FALSE);
-        }
+        FormatTemperature(buf, temp);
         len = wcslen(buf);
         box = &mBoxes[sDayBoxesJP[day][3]];
         pos.x = box->mX + mPos.x;
@@ -446,11 +451,7 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
         } else {
             temp = week->mMinF;
         }
-        if (temp <= -128) {
-            wcscpy(buf, L"--");
-        } else {
-            FormatNumber(temp, buf, 4, FALSE);
-        }
+        FormatTemperature(buf, temp);
         len = wcslen(buf);
         box = &mBoxes[sDayBoxesJP[day][4]];
         pos.x = box->mX + mPos.x;
@@ -530,15 +531,6 @@ void WeatherWeek::DrawWeekJP(const s32& alpha) {
     }
 }
 
-static inline void FormatTemp(wchar_t*& buf, s32 temp) {
-    buf = sTextBuf;
-    if (temp <= -128) {
-        wcscpy(buf, L"--");
-    } else {
-        FormatNumber(temp, buf, 4, FALSE);
-    }
-}
-
 void WeatherWeek::DrawWeek(const s32& alpha) {
     CityForecast* forecast = gCurrentCity->mForecast;
     OSCalendarTime time;
@@ -565,9 +557,9 @@ void WeatherWeek::DrawWeek(const s32& alpha) {
         SetOrthoProjection();
 
         if (gTempUnit == 0) {
-            FormatTemp(buf, week->mMaxC);
+            FormatTemperature(buf, week->mMaxC);
         } else {
-            FormatTemp(buf, week->mMaxF);
+            FormatTemperature(buf, week->mMaxF);
         }
         len = wcslen(buf);
         if (gRegion == 2) {
@@ -586,9 +578,9 @@ void WeatherWeek::DrawWeek(const s32& alpha) {
         DrawTempCentered(sTextBuf, &pos, box->mScaleX, box->mScaleY, &box->mColor, &box->mShadowColor);
 
         if (gTempUnit == 0) {
-            FormatTemp(buf, week->mMinC);
+            FormatTemperature(buf, week->mMinC);
         } else {
-            FormatTemp(buf, week->mMinF);
+            FormatTemperature(buf, week->mMinF);
         }
         len = wcslen(buf);
         if (gRegion == 2) {

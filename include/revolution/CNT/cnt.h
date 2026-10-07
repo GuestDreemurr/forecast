@@ -1,5 +1,6 @@
 #ifndef RVL_SDK_CNT_H
 #define RVL_SDK_CNT_H
+#include "revolution/private/es_types.h"
 #include <types.h>
 
 #include <revolution/ARC.h>
@@ -10,7 +11,8 @@ extern "C" {
 
 typedef struct CNTHandle {
     ARCHandle arcHandle; // at 0x0
-    s32 fd;              // at 0x1C
+    ESFd fd;             // at 0x1C
+    void *allocator;     // at 0x20
 } CNTHandle;
 
 typedef struct CNTFileInfo {
@@ -23,6 +25,9 @@ typedef struct CNTFileInfo {
 typedef enum {
     CNT_RESULT_OK = 0,
 } CNTResult;
+
+void CNTInit(void);
+int CNTShutdown(void);
 
 s32 contentFastOpenNAND(CNTHandle* handle, s32 entrynum, CNTFileInfo* info);
 s32 contentConvertPathToEntrynumNAND(CNTHandle* handle, const char* path);
