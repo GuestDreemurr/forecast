@@ -3247,10 +3247,6 @@ BT_HDR *l2cu_get_next_buffer_to_send (tL2C_LCB *p_lcb)
         p_buf = (BT_HDR *)GKI_dequeue (&p_ccb->xmit_hold_q);
     }
 
-    if ( p_ccb->p_rcb && p_ccb->p_rcb->api.pL2CA_TxComplete_Cb && (p_ccb->peer_cfg.fcr.mode != L2CAP_FCR_ERTM_MODE) )
-        (*p_ccb->p_rcb->api.pL2CA_TxComplete_Cb)(p_ccb->local_cid, 1);
-
-
     l2cu_check_channel_congestion (p_ccb);
 
     l2cu_set_acl_hci_header (p_buf, p_ccb);

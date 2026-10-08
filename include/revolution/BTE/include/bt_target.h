@@ -1654,12 +1654,12 @@ and USER_HW_DISABLE_API macros */
 
 /* The maximum number of ports supported. */
 #ifndef MAX_RFC_PORTS
-#define MAX_RFC_PORTS               30
+#define MAX_RFC_PORTS               5
 #endif
 
 /* The maximum simultaneous links to different devices. */
 #ifndef MAX_ACL_CONNECTIONS
-#define MAX_BD_CONNECTIONS          7
+#define MAX_BD_CONNECTIONS          1
 #else
 #define MAX_BD_CONNECTIONS          MAX_ACL_CONNECTIONS
 #endif

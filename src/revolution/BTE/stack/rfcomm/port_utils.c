@@ -212,12 +212,7 @@ void port_select_mtu (tPORT *p_port)
 void port_release_port (tPORT *p_port)
 {
     BT_HDR *p_buf;
-    UINT32 mask;
-    tPORT_CALLBACK *p_port_cb;
-    tPORT_STATE user_port_pars;
 
-    PORT_SCHEDULE_LOCK;
-    debug("port_release_port, p_port:%p", p_port);
     while ((p_buf = (BT_HDR *)GKI_dequeue (&p_port->rx.queue)) != NULL)
         GKI_freebuf (p_buf);
 
@@ -227,8 +222,6 @@ void port_release_port (tPORT *p_port)
         GKI_freebuf (p_buf);
 
     p_port->tx.queue_size = 0;
-
-    PORT_SCHEDULE_UNLOCK;
 
     p_port->state = PORT_STATE_CLOSED;
 
@@ -243,35 +236,7 @@ void port_release_port (tPORT *p_port)
             rfc_check_mcb_active (p_port->rfc.p_mcb);
         }
         rfc_port_timer_stop (p_port);
-
-        if( p_port->keep_port_handle )
-        {
-            RFCOMM_TRACE_DEBUG1 ("port_release_port:Initialize handle:%d", p_port->inx);
-            /* save event mask and callback */
-            mask = p_port->ev_mask;
-            p_port_cb = p_port->p_callback;
-            user_port_pars = p_port->user_port_pars;
-
-            port_set_defaults(p_port);
-            /* restore */
-            p_port->ev_mask         = mask;
-            p_port->p_callback      = p_port_cb;
-            p_port->user_port_pars  = user_port_pars;
-            p_port->mtu             = p_port->keep_mtu;
-
-            p_port->state           = PORT_STATE_OPENING;
-            p_port->rfc.p_mcb       = NULL;
-            if(p_port->is_server)
-                p_port->dlci       &= 0xfe;
-
-            p_port->local_ctrl.modem_signal = p_port->default_signal_state;
-            memcpy (p_port->bd_addr, BT_BD_ANY, BD_ADDR_LEN);
-        }
-        else
-        {
-            RFCOMM_TRACE_DEBUG1 ("port_release_port:Clean-up handle:%d", p_port->inx);
-            memset (p_port, 0, sizeof (tPORT));
-        }
+        memset (p_port, 0, sizeof (tPORT));
     }
 }
 
@@ -526,7 +491,7 @@ void port_flow_control_peer(tPORT *p_port, BOOLEAN enable, UINT16 count)
         else
         {
             /* if client registered data callback, just do what they want */
-            if (p_port->p_data_callback || p_port->p_data_co_callback)
+            if (p_port->p_data_callback)
             {
                 p_port->rx.peer_fc = TRUE;
             }
@@ -560,7 +525,7 @@ void port_flow_control_peer(tPORT *p_port, BOOLEAN enable, UINT16 count)
         else
         {
             /* if client registered data callback, just do what they want */
-            if (p_port->p_data_callback || p_port->p_data_co_callback)
+            if (p_port->p_data_callback)
             {
                 p_port->rx.peer_fc = TRUE;
                 RFCOMM_FlowReq (p_port->rfc.p_mcb, p_port->dlci, FALSE);

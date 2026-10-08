@@ -997,6 +997,26 @@ static void __SCFlushSyncCallback(SCStatus status) {
     OSWakeupThread(&Control.threadQueue);
 }
 
+s32 SCFlushSync(void) {
+    SCControl* ctrl;
+    BOOL enabled;
+    s32 status;
+
+    SCFlushAsync(__SCFlushSyncCallback);
+
+    enabled = OSDisableInterrupts();
+    ctrl = &Control;
+
+    while (ctrl->flushCallback != NULL) {
+        OSSleepThread(&ctrl->threadQueue);
+    }
+
+    status = ctrl->flushStatus;
+    OSRestoreInterrupts(enabled);
+
+    return status;
+}
+
 void SCFlushAsync(SCFlushCallback callback) {
     SCControl* ctrl;
     BOOL enabled;

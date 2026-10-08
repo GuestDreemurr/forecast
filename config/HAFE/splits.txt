@@ -1339,10 +1339,12 @@ revolution/BTE/bta/sys/ptim.c:
 
 revolution/BTE/stack/rfcomm/rfc_port_fsm.c:
 	.text       start:0x80157ABC end:0x80158C5C
-	.data       start:0x801D5470 end:0x801D5870
+	.data       start:0x801D5470 end:0x801D5798
 
 revolution/BTE/stack/rfcomm/rfc_ts_frames.c:
 	.text       start:0x80159188 end:0x8015A7D0
+	.data       start:0x801D5798 end:0x801D5870
+	.sdata      start:0x80330928 end:0x80330938
 
 revolution/BTE/stack/rfcomm/rfc_utils.c:
 	.text       start:0x8015A7D0 end:0x8015AFB0

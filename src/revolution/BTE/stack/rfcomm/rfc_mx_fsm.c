@@ -212,39 +212,7 @@ void rfc_mx_sm_state_wait_conn_cnf (tRFC_MCB *p_mcb, UINT16 event, void *p_data)
     case RFC_EVENT_TIMEOUT:
         p_mcb->state = RFC_MX_STATE_IDLE;
         L2CA_DisconnectReq (p_mcb->lcid);
-
-        /* we gave up outgoing connection request then try peer's request */
-        if (p_mcb->pending_lcid)
-        {
-            UINT16 i;
-            UINT8  idx;
-
-            RFCOMM_TRACE_DEBUG2 ("RFCOMM MX retry as acceptor in collision case - evt:%d in state:%d", event, p_mcb->state);
-
-            rfc_save_lcid_mcb (NULL, p_mcb->lcid);
-            p_mcb->lcid = p_mcb->pending_lcid;
-            rfc_save_lcid_mcb (p_mcb, p_mcb->lcid);
-
-            p_mcb->is_initiator = FALSE;
-
-            /* update direction bit */
-            for (i = 0; i < RFCOMM_MAX_DLCI; i += 2)
-            {
-                if ((idx = p_mcb->port_inx[i]) != 0)
-                {
-                    p_mcb->port_inx[i] = 0;
-                    p_mcb->port_inx[i+1] = idx;
-                    rfc_cb.port.port[idx - 1].dlci += 1;
-                    RFCOMM_TRACE_DEBUG2 ("RFCOMM MX - DLCI:%d -> %d", i, rfc_cb.port.port[idx - 1].dlci);
-                }
-            }
-
-            rfc_mx_sm_execute (p_mcb, RFC_MX_EVENT_CONN_IND, &(p_mcb->pending_id));
-        }
-        else
-        {
-            PORT_CloseInd (p_mcb);
-        }
+        PORT_CloseInd (p_mcb);
         return;
     }
     RFCOMM_TRACE_EVENT2 ("RFCOMM MX ignored - evt:%d in state:%d", event, p_mcb->state);
@@ -378,25 +346,8 @@ void rfc_mx_sm_state_wait_sabme (tRFC_MCB *p_mcb, UINT16 event, void *p_data)
         return;
 
     case RFC_EVENT_SABME:
-        /* if we gave up outgoing connection request */
-        if (p_mcb->pending_lcid)
-        {
-            p_mcb->pending_lcid = 0;
-
-            rfc_send_ua (p_mcb, RFCOMM_MX_DLCI);
-
-            rfc_timer_stop (p_mcb);
-            p_mcb->state      = RFC_MX_STATE_CONNECTED;
-            p_mcb->peer_ready = TRUE;
-
-            /* MX channel collision has been resolved, continue to open ports */
-            PORT_StartCnf (p_mcb, RFCOMM_SUCCESS);
-        }
-        else
-        {
-            rfc_timer_stop (p_mcb);
-            PORT_StartInd (p_mcb);
-        }
+        rfc_timer_stop (p_mcb);
+        PORT_StartInd (p_mcb);
         return;
 
     case RFC_MX_EVENT_START_RSP:

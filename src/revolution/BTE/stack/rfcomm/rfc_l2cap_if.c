@@ -68,7 +68,6 @@ void rfcomm_l2cap_if_init (void)
     p_l2c->pL2CA_QoSViolationInd_Cb  = RFCOMM_QoSViolationInd;
     p_l2c->pL2CA_DataInd_Cb          = RFCOMM_BufDataInd;
     p_l2c->pL2CA_CongestionStatus_Cb = RFCOMM_CongestionStatusInd;
-    p_l2c->pL2CA_TxComplete_Cb       = NULL;
 
 
     L2CA_Register (BT_PSM_RFCOMM, p_l2c);
@@ -88,35 +87,8 @@ void RFCOMM_ConnectInd (BD_ADDR bd_addr, UINT16 lcid, UINT16 psm, UINT8 id)
 {
     tRFC_MCB *p_mcb = rfc_alloc_multiplexer_channel(bd_addr, FALSE);
 
-    if ((p_mcb)&&(p_mcb->state != RFC_MX_STATE_IDLE))
-    {
-        /* if this is collision case */
-        if ((p_mcb->is_initiator)&&(p_mcb->state == RFC_MX_STATE_WAIT_CONN_CNF))
-        {
-            p_mcb->pending_lcid = lcid;
-            p_mcb->pending_id   = id;
-
-            /* wait random timeout (2 - 12) to resolve collision */
-            /* if peer gives up then local device rejects incoming connection and continues as initiator */
-            /* if timeout, local device disconnects outgoing connection and continues as acceptor */
-            RFCOMM_TRACE_DEBUG2 ("RFCOMM_ConnectInd start timer for collision, initiator's LCID(0x%x), acceptor's LCID(0x%x)",
-                                  p_mcb->lcid, p_mcb->pending_lcid);
-
-            rfc_timer_start(p_mcb, (UINT16)(GKI_get_tick_count()%10 + 2));
-            return;
-        }
-        else
-        {
-            /* we cannot accept connection request from peer at this state */
-            /* don't update lcid */
-            p_mcb = NULL;
-        }
-    }
-    else
-    {
-        /* store mcb even if null */
-        rfc_save_lcid_mcb (p_mcb, lcid);
-    }
+    /* store mcb even if null */
+    rfc_save_lcid_mcb (p_mcb, lcid);
 
     if (p_mcb == NULL)
     {
@@ -146,52 +118,6 @@ void RFCOMM_ConnectCnf (UINT16 lcid, UINT16 result)
     {
         RFCOMM_TRACE_ERROR1 ("RFCOMM_ConnectCnf LCID:0x%x", lcid);
         return;
-    }
-
-    if (p_mcb->pending_lcid)
-    {
-        /* if peer rejects our connect request but peer's connect request is pending */
-        if (result != L2CAP_CONN_OK )
-        {
-            UINT16 i;
-            UINT8  idx;
-
-            RFCOMM_TRACE_DEBUG1 ("RFCOMM_ConnectCnf retry as acceptor on pending LCID(0x%x)", p_mcb->pending_lcid);
-
-            /* remove mcb from mapping table */
-            rfc_save_lcid_mcb (NULL, p_mcb->lcid);
-
-            p_mcb->lcid         = p_mcb->pending_lcid;
-            p_mcb->is_initiator = FALSE;
-            p_mcb->state        = RFC_MX_STATE_IDLE;
-
-            /* store mcb into mapping table */
-            rfc_save_lcid_mcb (p_mcb, p_mcb->lcid);
-
-            /* update direction bit */
-            for (i = 0; i < RFCOMM_MAX_DLCI; i += 2)
-            {
-                if ((idx = p_mcb->port_inx[i]) != 0)
-                {
-                    p_mcb->port_inx[i] = 0;
-                    p_mcb->port_inx[i+1] = idx;
-                    rfc_cb.port.port[idx - 1].dlci += 1;
-                    RFCOMM_TRACE_DEBUG2 ("RFCOMM MX - DLCI:%d -> %d", i, rfc_cb.port.port[idx - 1].dlci);
-                }
-            }
-
-            rfc_mx_sm_execute (p_mcb, RFC_MX_EVENT_CONN_IND, &(p_mcb->pending_id));
-            return;
-        }
-        else
-        {
-            RFCOMM_TRACE_DEBUG1 ("RFCOMM_ConnectCnf peer gave up pending LCID(0x%x)", p_mcb->pending_lcid);
-
-            /* Peer gave up his connection request, make sure cleaning up L2CAP channel */
-            L2CA_ConnectRsp (p_mcb->bd_addr, p_mcb->pending_id, p_mcb->pending_lcid, L2CAP_CONN_NO_RESOURCES, 0);
-
-            p_mcb->pending_lcid = 0;
-        }
     }
 
     /* Save LCID to be used in all consecutive calls to L2CAP */

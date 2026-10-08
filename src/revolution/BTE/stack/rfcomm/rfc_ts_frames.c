@@ -581,11 +581,6 @@ UINT8 rfc_parse_data (tRFC_MCB *p_mcb, MX_FRAME *p_frame, BT_HDR *p_buf)
     }
 
     RFCOMM_PARSE_CTRL_FIELD (ead, p_frame->cr, p_frame->dlci, p_data);
-    if( !ead )
-    {
-        RFCOMM_TRACE_ERROR0 ("Bad Address(EA must be 1)");
-        return (RFC_EVENT_BAD_FRAME);
-    }
     RFCOMM_PARSE_TYPE_FIELD (p_frame->type, p_frame->pf, p_data);
     RFCOMM_PARSE_LEN_FIELD (eal, len, p_data);
 
