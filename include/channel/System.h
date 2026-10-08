@@ -2,6 +2,7 @@
 #define CHANNEL_SYSTEM_H
 #include <types.h>
 
+#include <revolution/CNT/cnt.h>
 #include <revolution/GX.h>
 #include <revolution/KPAD.h>
 #include <revolution/MEM.h>
@@ -114,7 +115,7 @@ extern u8 gFading;
 extern u8 gShutdownRequested;
 extern u32 gFrameCount;
 
-extern ContentHandle gContentHandles[CONTENT_HANDLE_MAX];
+extern CNTHandleNAND gContentHandles[CONTENT_HANDLE_MAX];
 
 extern u8 gUnk80330B40;
 extern s32 gUnk80330B64;

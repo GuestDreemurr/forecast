@@ -499,7 +499,7 @@ config.libs = [
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_utils.c"),
 
             # CNT
-            Object(NonMatching, "revolution/CNT/cnt.c"),
+            Object(Matching, "revolution/CNT/cnt.c"),
 
             # DB
             Object(Matching, "revolution/DB/db.c"),
@@ -742,7 +742,6 @@ config.libs = [
             Object(Matching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/e_exp.c"),
             Object(Matching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/e_fmod.c"),
             Object(Matching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/e_log.c"),
-            Object(NonMatching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/e_log10.c"),
             Object(Matching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/e_pow.c"),
             Object(Matching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/e_rem_pio2.c"),
             Object(Matching, "MSL_C/MSL_Common_Embedded/Math/Double_precision/k_cos.c"),
@@ -980,7 +979,7 @@ config.libs = [
                 Object(Matching, "WeatherOther.cpp", extra_cflags=["-ipa file"]),
                 Object(Matching, "WeatherToday.cpp"),
                 Object(Matching, "WeatherTomorrow.cpp"),
-                Object(NonMatching, "WeatherWeek.cpp"),
+                Object(Matching, "WeatherWeek.cpp"),
                 Object(Matching, "WeatherAddress.cpp", extra_cflags=["-ipa file"]),
                 Object(NonMatching, "WeatherAround.cpp"),
                 Object(Matching, "WeatherBase.cpp"),
