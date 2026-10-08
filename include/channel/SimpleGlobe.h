@@ -15,12 +15,14 @@ public:
 
     void unk10(Vec *);
 
+    nw4r::g3d::Camera *getCamera() { return &mCamera; }
     f32 getFOVy() { return mFOVy; }
     f32 getAspect() { return mAspect; }
     f32 getNear() { return mNear; }
     f32 getFar() { return mFar; }
     Vec *getPosition() { return &mPosition; }
     Vec *getOrientation() { return &mOrientation; }
+    u8 getResetting() { return mResetting; }
 
     void setZoom(f32 zoom) { mZoom = zoom; }
 

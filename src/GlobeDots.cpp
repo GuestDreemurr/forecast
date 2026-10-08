@@ -97,8 +97,8 @@ void GlobeDots::Draw() {
     SetDefaultGXState();
     GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
 
-    view->mCamera.GetCameraMtx(&viewMtx);
-    view->mCamera.GetProjectionMtx(&projMtx);
+    view->getCamera()->GetCameraMtx(&viewMtx);
+    view->getCamera()->GetProjectionMtx(&projMtx);
     f32 aspect = (f32)GetScreenWidth() / SCREEN_HEIGHT;
     C_MTXPerspective(projMtx, 40.0f, aspect, 1.0f, 1000.0f);
 
