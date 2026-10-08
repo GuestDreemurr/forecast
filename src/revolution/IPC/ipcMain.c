@@ -1,3 +1,4 @@
+#include "types.h"
 #include <revolution/IPC.h>
 #include <revolution/OS.h>
 
@@ -15,6 +16,14 @@ void IPCInit(void) {
         IPCCurrentBufferLo = IPCBufferLo;
         Initialized = TRUE;
     }
+}
+void IPCReInit(void) {
+    Initialized = FALSE;
+    IPCBufferHi = __OSGetIPCBufferHi();
+    IPCBufferLo = __OSGetIPCBufferLo();
+    IPCCurrentBufferHi = IPCBufferHi;
+    IPCCurrentBufferLo = IPCBufferLo;
+    Initialized = TRUE;
 }
 
 u32 IPCReadReg(s32 index) {
