@@ -67,6 +67,11 @@ u8 SCGetLanguage(void) {
     return item;
 }
 
+BOOL SCSetLanguage(u8 language) {
+#pragma unused(language)
+    return FALSE;
+}
+
 BOOL SCGetParentalControl(SCParentalControlsInfo* pcInfo) {
     return SCFindByteArrayItem(pcInfo, sizeof(*pcInfo), SC_ITEM_IPL_PC);
 }
@@ -126,6 +131,15 @@ void SCGetBtDeviceInfoArray(SCBtDeviceInfoArray* info) {
 BOOL SCSetBtDeviceInfoArray(const SCBtDeviceInfoArray* info) {
     return SCReplaceByteArrayItem(info, sizeof(SCBtDeviceInfoArray),
                                   SC_ITEM_BT_DINF);
+}
+
+void SCGetBtCmpDevInfoArray(SCBtCmpDevInfoArray* info) {
+    SCFindByteArrayItem(info, sizeof(SCBtCmpDevInfoArray), SC_ITEM_BT_CDIF);
+}
+
+BOOL SCSetBtCmpDevInfoArray(const SCBtCmpDevInfoArray* info) {
+    return SCReplaceByteArrayItem(info, sizeof(SCBtCmpDevInfoArray),
+                                  SC_ITEM_BT_CDIF);
 }
 
 u32 SCGetBtDpdSensibility(void) {

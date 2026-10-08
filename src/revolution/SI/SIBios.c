@@ -27,7 +27,7 @@ typedef struct SIPacket {
 } SIPacket;
 
 const char* __SIVersion =
-    "<< RVL_SDK - SI \trelease build: Nov 30 2006 03:31:44 (0x4199_60831) >>";
+    "<< RVL_SDK - SI \trelease build: May  8 2007 13:00:23 (0x4199_60831) >>";
 
 static SIMain Si = {SI_CHAN_NONE};
 static u32 Type[SI_MAX_CHAN] = {SI_ERROR_NOREP, SI_ERROR_NOREP, SI_ERROR_NOREP,
