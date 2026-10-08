@@ -1,30 +1,55 @@
 #ifndef CHANNEL_SIMPLE_GLOBE_H
 #define CHANNEL_SIMPLE_GLOBE_H
+#include "Vec3.h"
+#include "Vector2.h"
+#include "nw4r/g3d/g3d_scnroot.h"
 #include <types.h>
 #include <nw4r/g3d/g3d_camera.h>
 #include <revolution/MTX.h>
 
-namespace nw4r {
-namespace g3d {
-class ScnRoot;
-}
-}
-
 // Globe view state (d_weather_around)
-struct GlobeView {
-    u8 unk0[0x4];              // at 0x0
+class GlobeView {
+public:
+    GlobeView(nw4r::g3d::Camera camera);
+    virtual ~GlobeView();
+
+    void unk10(Vec *);
+
+    nw4r::g3d::Camera *getCamera() { return &mCamera; }
+    f32 getFOVy() { return mFOVy; }
+    f32 getAspect() { return mAspect; }
+    f32 getNear() { return mNear; }
+    f32 getFar() { return mFar; }
+    Vec *getPosition() { return &mPosition; }
+    Vec *getOrientation() { return &mOrientation; }
+    u8 getResetting() { return mResetting; }
+
+    void setZoom(f32 zoom) { mZoom = zoom; }
+
+private:
     nw4r::g3d::Camera mCamera; // at 0x4
     u8 unk8[0x90 - 0x8];       // at 0x8
-    f32 mLatitude;             // at 0x90
-    f32 mLongitude;            // at 0x94
-    u8 unk98[0x9C - 0x98];     // at 0x98
-    f32 mTilt;                 // at 0x9C
-    u8 unkA0[0xA4 - 0xA0];     // at 0xA0
-    f32 mRotation;             // at 0xA4
+    Vec mPosition;             // at 0x90
+    Vec mOrientation;          // at 0x9C
     u8 unkA8[0xC0 - 0xA8];     // at 0xA8
     u8 mResetting;             // at 0xC0
-    u8 unkC1[0xD4 - 0xC1];     // at 0xC1
+    u8 unkC1[0xC4 - 0xC1];     // at 0xC1
+    f32 mFOVy;                 // at 0xC4
+    f32 mAspect;               // at 0xC8
+    f32 mNear;                 // at 0xCC
+    f32 mFar;                  // at 0xD0
     f32 mZoom;                 // at 0xD4
+    u8 unkD8[0xEC - 0xD8];     // at 0xD8
+};
+
+// Hack
+class Vector3 : public Vec {
+public:
+    Vector3(f32 x, f32 y, f32 z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
 };
 
 // d_scene's m_pSimpleGlobe (size 0xD0)
@@ -61,19 +86,43 @@ public:
 
     nw4r::g3d::ScnRoot* mScnRoot; // at 0x0
     GlobeView* mView;             // at 0x4
-    u8 unk8[0x6C - 0x8];          // at 0x8
+    Vector3 mRotation;            // at 0x8
+    f32 unk14;                    // at 0x14
+    f32 unk18;                    // at 0x18
+    f32 unk1C;                    // at 0x1C
+    f32 unk20;                    // at 0x20
+    f32 unk24;                    // at 0x24
+    f32 unk28;                    // at 0x28
+    Vector2 unk2C[4];             // at 0x2C
+    Vector2 unk4C[4];             // at 0x4C
     Vec2 mSpeed;                  // at 0x6C, rotation speed
-    u8 unk74[0x8C - 0x74];        // at 0x74
+    f32 unk74;
+    f32 unk78;
+    f32 unk7C;
+    f32 unk80;
+    f32 unk84;
+    f32 unk88;
     u8 mGrabbed[4];               // at 0x8C
     u8 mSpinning;                 // at 0x90
     u8 mZoomIn;                   // at 0x91
     u8 mZoomOut;                  // at 0x92
     u8 mTiltUp;                   // at 0x93
     u8 mTiltDown;                 // at 0x94
-    u8 unk95[0x9C - 0x95];        // at 0x95
+    u8 unk95;
+    u8 unk96;
+    u8 unk97;
+    u8 unk98;
+    u8 unk99;
+    u8 unk9A;
+    u8 unk9B;
     s32 mZoomLevel;               // at 0x9C
     s32 mTiltLevel;               // at 0xA0
-    u8 unkA4[0xC8 - 0xA4];        // at 0xA4
+    u8 unkA4[0xB4 - 0xA4];        // at 0xA4
+    f32 unkB4;
+    f32 unkB8;
+    f32 unkBC;
+    f32 unkC0;
+    f32 unkC4;
     f32 mZoom;                    // at 0xC8
     u8 unkCC[0xD0 - 0xCC];        // at 0xCC
 };

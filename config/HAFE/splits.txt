@@ -13,6 +13,10 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+CityLabel.cpp:
+	.text       start:0x80006FC0 end:0x8000AA94
+	.ctors      start:0x80179244 end:0x80179248
+
 Connect.cpp:
 	.text       start:0x8000AA94 end:0x8000BAC8
 	.rodata     start:0x80179358 end:0x80179388
@@ -160,6 +164,13 @@ WeatherSetting.cpp:
 ForecastSummary.cpp:
 	.text       start:0x800289AC end:0x80028AA0
 
+LayoutObj.cpp:
+	.text       start:0x8002AF90 end:0x8002B734
+
+GlobeView.cpp:
+	.text       start:0x8002B734 end:0x8002C0CC
+	.ctors      start:0x80179274 end:0x80179278
+
 Region.cpp:
 	.text       start:0x8002C0CC end:0x8002C164
 	.data       start:0x8019B760 end:0x8019B78C
@@ -238,6 +249,12 @@ SceneBase.cpp:
 	.sdata      start:0x803301C0 end:0x803301E0
 	.sbss       start:0x80330BA0 end:0x80330C24
 	.sdata2     start:0x80332040 end:0x80332098
+
+SimpleGlobe.cpp:
+	.text       start:0x8003F628 end:0x800411B4
+	.rodata     start:0x8018F730 end:0x8018F7B0
+	.sdata      start:0x803301E0 end:0x803301F0
+	.sdata2     start:0x80332098 end:0x803320A8
 
 revolution/CNT/cnt.c:
 	.text       start:0x80045ABC end:0x80045FD4
@@ -1348,6 +1365,10 @@ revolution/NdevExi2AD/DebuggerDriver.c:
 
 revolution/NdevExi2AD/exi2.c:
 	.text       start:0x80160B60 end:0x801612EC
+
+Runtime.PPCEABI.H/__mem.c:
+	.init       start:0x80004338 end:0x8000446C
+	.text       start:0x801612EC end:0x80161308
 
 Runtime.PPCEABI.H/global_destructor_chain.c:
 	.text       start:0x801613D0 end:0x80161430

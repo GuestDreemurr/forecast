@@ -538,7 +538,7 @@ void WeatherAround::CalcActive() {
     GlobeView* view = gSimpleGlobe->mView;
     if (view == NULL) {
         reset = FALSE;
-    } else if (view->mResetting == 0 && CheckButtonPressed("reset", WPAD_BUTTON_A) >= 0) {
+    } else if (view->getResetting() == 0 && CheckButtonPressed("reset", WPAD_BUTTON_A) >= 0) {
         PlaySE(19);
         gSimpleGlobe->SetZoom(0, 1);
         reset = TRUE;
@@ -1171,7 +1171,7 @@ BOOL WeatherAround::StateGlobe() {
 void WeatherAround::UpdateDrag() {
     f32 top = 63.0f;
     f32 bottom = 393.0f;
-    f32 startRot = gSimpleGlobe->mView != NULL ? gSimpleGlobe->mView->mRotation : 0.0f;
+    f32 startRot = gSimpleGlobe->mView != NULL ? gSimpleGlobe->mView->getOrientation()->z : 0.0f;
     BOOL dragging = FALSE;
 
     for (s32 i = 0; i < 4; i++) {
@@ -1200,7 +1200,7 @@ void WeatherAround::UpdateDrag() {
         mRotateAmount = 0.0f;
     }
 
-    f32 rot = gSimpleGlobe->mView != NULL ? gSimpleGlobe->mView->mRotation : 0.0f;
+    f32 rot = gSimpleGlobe->mView != NULL ? gSimpleGlobe->mView->getOrientation()->z : 0.0f;
     f32 delta = __fabsf(rot - startRot);
     if (!IsNearZero(delta)) {
         if (IsNearZero(mRotateAmount)) {

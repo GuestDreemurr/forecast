@@ -30,4 +30,6 @@ public:
     nw4r::math::VEC3 mScale;           // at 0x58
 };
 
+extern const f32 gModelRange;
+
 #endif
