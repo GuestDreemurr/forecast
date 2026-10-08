@@ -6,7 +6,6 @@
 #include "revolution/OS/OS.h"
 #include "revolution/OS/OSInterrupt.h"
 #include "revolution/private/es_types.h"
-#include "utils.h"
 #include <revolution/CNT.h>
 #include <revolution/ESP.h>
 #include <revolution/OS.h>
@@ -21,8 +20,8 @@ static s32 __CNTConvertErrorCode(s32 error);
 const char* __CNTVersion =
     "<< RVL_SDK - CNT \trelease build: May 10 2007 19:28:13 (0x4199_60831) >>";
 
-DECOMP_FORCE_ACTIVE(CNTInitHandle, "/content%d");
-DECOMP_FORCE_ACTIVE(CNTInitHandle, "Warning: CNTInitHandle(): directory '%s' is not found under '/'\n");
+DECOMP_FORCEACTIVE(CNTInitHandle, "/content%d");
+DECOMP_FORCEACTIVE(CNTInitHandle, "Warning: CNTInitHandle(): directory '%s' is not found under '/'\n");
 
 unsigned int lbl_80330C88;
 
