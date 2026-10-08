@@ -13,6 +13,10 @@ Sections:
 	.sdata2     type:rodata align:16
 	.sbss2      type:bss align:32
 
+CityLabel.cpp:
+	.text       start:0x80006FC0 end:0x8000AA94
+	.ctors      start:0x80179244 end:0x80179248
+
 Connect.cpp:
 	.text       start:0x8000AA94 end:0x8000BAC8
 	.rodata     start:0x80179358 end:0x80179388
