@@ -23,7 +23,7 @@ static s32 _ES_GetTitleId(s32* fd, u64* tidOut);
 static s32 _ES_CloseLib(s32* fd);
 
 const char* __NANDVersion =
-    "<< RVL_SDK - NAND \trelease build: Nov 30 2006 03:32:57 (0x4199_60831) >>";
+    "<< RVL_SDK - NAND \trelease build: May  8 2007 13:01:45 (0x4199_60831) >>";
 
 static NANDLibState s_libState = NAND_LIB_UNINITIALIZED;
 static char s_currentDir[64] ALIGN(32) = "/";

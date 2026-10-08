@@ -389,7 +389,7 @@ config.libs = [
         "progress_category": "sdk",  # str | List[str]
         "objects": [
             # AI
-            Object(NonMatching, "revolution/AI/ai.c"),
+            Object(Matching, "revolution/AI/ai.c"),
 
             # ARC
             Object(NonMatching, "revolution/ARC/arc.c"),
@@ -400,7 +400,7 @@ config.libs = [
             Object(NonMatching, "revolution/AX/AXAux.c"),
             Object(NonMatching, "revolution/AX/AXCL.c"),
             Object(NonMatching, "revolution/AX/AXComp.c"),
-            Object(NonMatching, "revolution/AX/AXOut.c"),
+            Object(Matching, "revolution/AX/AXOut.c"),
             Object(Matching, "revolution/AX/AXProf.c"),
             Object(NonMatching, "revolution/AX/AXSPB.c"),
             Object(NonMatching, "revolution/AX/AXVPB.c"),
@@ -505,18 +505,18 @@ config.libs = [
             Object(Matching, "revolution/DB/db.c"),
 
             # DSP
-            Object(NonMatching, "revolution/DSP/dsp.c"),
+            Object(Matching, "revolution/DSP/dsp.c"),
             Object(NonMatching, "revolution/DSP/dsp_debug.c"),
-            Object(NonMatching, "revolution/DSP/dsp_task.c"),
+            Object(Matching, "revolution/DSP/dsp_task.c"),
 
             # DVD
             Object(NonMatching, "revolution/DVD/dvd.c"),
             Object(NonMatching, "revolution/DVD/dvd_broadway.c"),
             Object(NonMatching, "revolution/DVD/dvderror.c"),
-            Object(NonMatching, "revolution/DVD/dvdFatal.c"),
+            Object(Matching, "revolution/DVD/dvdFatal.c"),
             Object(NonMatching, "revolution/DVD/dvdfs.c"),
             Object(Matching, "revolution/DVD/dvdidutils.c"),
-            Object(NonMatching, "revolution/DVD/dvdqueue.c"),
+            Object(Matching, "revolution/DVD/dvdqueue.c"),
 
             # ESP
             Object(NonMatching, "revolution/ESP/esp.c"),
@@ -526,8 +526,8 @@ config.libs = [
 
             # EXI
             Object(NonMatching, "revolution/EXI/EXIBios.c"),
-            Object(NonMatching, "revolution/EXI/EXICommon.c"),
-            Object(NonMatching, "revolution/EXI/EXIUart.c"),
+            Object(Matching, "revolution/EXI/EXICommon.c"),
+            Object(Matching, "revolution/EXI/EXIUart.c"),
 
             # FS
             Object(NonMatching, "revolution/FS/fs.c"),
@@ -625,8 +625,8 @@ config.libs = [
             Object(Matching, "revolution/PAD/Pad.c"),
 
             # SC
-            Object(NonMatching, "revolution/SC/scapi.c"),
-            Object(NonMatching, "revolution/SC/scapi_prdinfo.c"),
+            Object(Matching, "revolution/SC/scapi.c"),
+            Object(Matching, "revolution/SC/scapi_prdinfo.c"),
             Object(NonMatching, "revolution/SC/scsystem.c"),
 
             # SI
@@ -661,7 +661,7 @@ config.libs = [
             Object(Matching, "revolution/VF/pf_fat32.c"),
             Object(Matching, "revolution/VF/pf_file.c"),
             Object(Matching, "revolution/VF/pf_sector.c"),
-            Object(NonMatching, "revolution/VF/pf_volume.c"),
+            Object(Matching, "revolution/VF/pf_volume.c"),
             Object(Matching, "revolution/VF/pf_cp932.c"),
             Object(Matching, "revolution/VF/pf_api_util.c"),
             Object(Matching, "revolution/VF/pf_attach.c"),

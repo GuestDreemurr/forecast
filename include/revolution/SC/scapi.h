@@ -10,6 +10,7 @@ extern "C" {
 #define SC_MAX_DEV_ENTRY_FOR_STD 10
 #define SC_MAX_DEV_ENTRY_FOR_SMP 6
 #define SC_MAX_DEV_ENTRY (SC_MAX_DEV_ENTRY_FOR_STD + SC_MAX_DEV_ENTRY_FOR_SMP)
+#define SC_MAX_DEV_ENTRY_FOR_CMP 6
 
 typedef enum { SC_ASPECT_STD, SC_ASPECT_WIDE } SCAspectRatio;
 
@@ -66,6 +67,17 @@ typedef struct SCBtDeviceInfoArray {
     };
 } SCBtDeviceInfoArray;
 
+typedef struct SCBtCmpDevInfo {
+    BD_ADDR addr;     // at 0x0
+    SCDevInfo info;   // at 0x6
+    LINK_KEY linkKey; // at 0x46
+} SCBtCmpDevInfo;
+
+typedef struct SCBtCmpDevInfoArray {
+    u8 num;                                           // at 0x0
+    SCBtCmpDevInfo devices[SC_MAX_DEV_ENTRY_FOR_CMP]; // at 0x1
+} SCBtCmpDevInfoArray;
+
 #define SC_PARENTAL_PASSWORD_LENGTH 4
 #define SC_PARENTAL_SECRET_ANSWER_LENGTH 32
 
@@ -114,6 +126,8 @@ u8 SCGetSoundMode(void);
 u32 SCGetCounterBias(void);
 void SCGetBtDeviceInfoArray(SCBtDeviceInfoArray* info);
 BOOL SCSetBtDeviceInfoArray(const SCBtDeviceInfoArray* info);
+void SCGetBtCmpDevInfoArray(SCBtCmpDevInfoArray* info);
+BOOL SCSetBtCmpDevInfoArray(const SCBtCmpDevInfoArray* info);
 u32 SCGetBtDpdSensibility(void);
 u8 SCGetWpadMotorMode(void);
 BOOL SCSetWpadMotorMode(u8 mode);

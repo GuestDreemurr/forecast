@@ -1149,10 +1149,11 @@ revolution/OS/__ppc_eabi_init.c:
 
 revolution/EXI/EXIUart.c:
 	.text       start:0x800F25EC end:0x800F2920
-	.sbss       start:0x80331338 end:0x80331360
+	.sbss       start:0x80331338 end:0x80331348
 
 revolution/EXI/EXICommon.c:
 	.text       start:0x800F2920 end:0x800F2AAC
+	.sdata2     start:0x80332DF8 end:0x80332E00
 
 revolution/DB/db.c:
 	.text       start:0x800F3B94 end:0x800F3C7C
@@ -1198,7 +1199,7 @@ revolution/GX/GXTransform.c:
 
 revolution/DVD/dvdqueue.c:
 	.text       start:0x80107E20 end:0x80108078
-	.bss        start:0x802D1FB0 end:0x802D1FE0
+	.bss        start:0x802D1FB0 end:0x802D1FD0
 
 revolution/DVD/dvdidutils.c:
 	.text       start:0x8010897C end:0x80108A6C
@@ -1206,13 +1207,15 @@ revolution/DVD/dvdidutils.c:
 revolution/DVD/dvdFatal.c:
 	.text       start:0x80108A6C end:0x80108BA8
 	.rodata     start:0x801972E8 end:0x80197308
+	.data       start:0x801C8810 end:0x801C8CC0
 	.sbss       start:0x80331568 end:0x80331570
 	.sdata2     start:0x80332F88 end:0x80332F90
 
 revolution/AI/ai.c:
 	.text       start:0x8010AE60 end:0x8010B3C4
+	.data       start:0x801C9B80 end:0x801C9BC8
 	.sdata      start:0x80330660 end:0x80330668
-	.sbss       start:0x80331598 end:0x803315E0
+	.sbss       start:0x80331598 end:0x803315D8
 
 revolution/AX/AXAlloc.c:
 	.text       start:0x8010B418 end:0x8010B8D0
@@ -1252,10 +1255,13 @@ revolution/MEM/mem_allocator.c:
 
 revolution/DSP/dsp.c:
 	.text       start:0x80111DE0 end:0x8011201C
+	.data       start:0x801CCE00 end:0x801CCE80
+	.sdata      start:0x80330680 end:0x80330688
 	.sbss       start:0x80331718 end:0x80331720
 
 revolution/DSP/dsp_task.c:
 	.text       start:0x8011206C end:0x80112900
+	.data       start:0x801CCE80 end:0x801CCFC0
 	.sbss       start:0x80331720 end:0x80331738
 
 revolution/SC/scsystem.c:
@@ -1268,10 +1274,10 @@ revolution/SC/scsystem.c:
 
 revolution/SC/scapi.c:
 	.text       start:0x8011731C end:0x80117940
-	.bss        start:0x802F0220 end:0x802F1240
+	.bss        start:0x802F0220 end:0x802F1228
 
 revolution/SC/scapi_prdinfo.c:
-	.text       start:0x80117940 end:0x80117B30
+	.text       start:0x80117940 end:0x80117BB4
 	.data       start:0x801CD370 end:0x801CD3C8
 	.sdata      start:0x803307C8 end:0x803307D8
 
