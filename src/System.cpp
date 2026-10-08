@@ -1,3 +1,4 @@
+#include "revolution/CNT/cnt.h"
 #include <channel/System.h>
 #include <channel/Scene.h>
 
@@ -13,10 +14,6 @@ extern "C" void InitDownloader(void);
 extern "C" void UpdateDownloader(void);
 
 // Not yet decompiled (libraries)
-extern "C" void CNTInit(void);
-extern "C" void CNTShutdown(void);
-extern "C" void contentInitHandleNAND(u32 content, ContentHandle* handle, MEMAllocator* allocator);
-extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
 extern "C" void VFInit(void);
 extern "C" void OSRestart(u32 arg0);
 extern "C" u32 VIGetNextField(void);
@@ -809,7 +806,7 @@ void* LoadContentFile(u32 content, const char* path, s32 align, u32* sizeOut, ME
     u32 size;
     void* buf;
     s32 read;
-    CNTFileInfo file;
+    CNTFileInfoNAND file;
 
     result = NULL;
     size = 0;
@@ -1343,6 +1340,6 @@ s32 gMotorTimer[WPAD_MAX_CONTROLLERS];
 s32 gMotorCooldown[WPAD_MAX_CONTROLLERS];
 const char* gMotorPattern[WPAD_MAX_CONTROLLERS];
 s32 gMotorPatternPos[WPAD_MAX_CONTROLLERS];
-ContentHandle gContentHandles[CONTENT_HANDLE_MAX];
+CNTHandleNAND gContentHandles[CONTENT_HANDLE_MAX];
 
 u8 gUnblackNextFrame = TRUE;

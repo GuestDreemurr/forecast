@@ -499,7 +499,7 @@ config.libs = [
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_utils.c"),
 
             # CNT
-            Object(NonMatching, "revolution/CNT/cnt.c"),
+            Object(Matching, "revolution/CNT/cnt.c"),
 
             # DB
             Object(Matching, "revolution/DB/db.c"),

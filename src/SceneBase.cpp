@@ -1,4 +1,5 @@
 // d_scene.cpp: base class of the channel's scenes and the resources they share
+#include "revolution/CNT/cnt.h"
 #include <channel/SceneBase.h>
 #include <channel/Color.h>
 #include <channel/Fade.h>
@@ -38,8 +39,6 @@ struct DragScroll {
 };
 
 void PlaySE(s32 id);
-
-extern "C" s32 contentOpenNAND(ContentHandle* handle, const char* path, CNTFileInfo* file);
 
 void UpdateSound();
 void CalcSound();
@@ -960,7 +959,7 @@ BOOL SceneBase::StateFatal() {
 static void* EarthLoadThread(void* arg);
 
 BOOL LoadEarthModel() {
-    CNTFileInfo file;
+    CNTFileInfoNAND file;
     u8 header[32] ATTRIBUTE_ALIGN(32);
     s32 result;
 
@@ -1002,7 +1001,7 @@ BOOL LoadEarthModel() {
 }
 
 static void* EarthLoadThread(void* arg) {
-    CNTFileInfo file;
+    CNTFileInfoNAND file;
     CXUncompContextLZ ctx;
     s32 result;
 
