@@ -486,10 +486,10 @@ config.libs = [
             Object(NonMatching, "revolution/BTE/stack/rfcomm/port_utils.c"),
             Object(NonMatching, "revolution/BTE/stack/rfcomm/rfc_l2cap_if.c"),
             Object(NonMatching, "revolution/BTE/stack/rfcomm/rfc_mx_fsm.c"),
-            Object(NonMatching, "revolution/BTE/stack/rfcomm/rfc_port_fsm.c"),
+            Object(Matching, "revolution/BTE/stack/rfcomm/rfc_port_fsm.c"),
             Object(NonMatching, "revolution/BTE/stack/rfcomm/rfc_port_if.c"),
-            Object(NonMatching, "revolution/BTE/stack/rfcomm/rfc_ts_frames.c"),
-            Object(NonMatching, "revolution/BTE/stack/rfcomm/rfc_utils.c"),
+            Object(Matching, "revolution/BTE/stack/rfcomm/rfc_ts_frames.c"),
+            Object(Matching, "revolution/BTE/stack/rfcomm/rfc_utils.c"),
 
             # BTE/stack/sdp
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_api.c"),
@@ -628,7 +628,7 @@ config.libs = [
             # SC
             Object(Matching, "revolution/SC/scapi.c"),
             Object(Matching, "revolution/SC/scapi_prdinfo.c"),
-            Object(NonMatching, "revolution/SC/scsystem.c"),
+            Object(Matching, "revolution/SC/scsystem.c"),
 
             # SI
             Object(NonMatching, "revolution/SI/SIBios.c"),

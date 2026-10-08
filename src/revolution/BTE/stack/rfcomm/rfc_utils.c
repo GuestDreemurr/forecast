@@ -141,8 +141,7 @@ tRFC_MCB *rfc_alloc_multiplexer_channel (BD_ADDR bd_addr, BOOLEAN is_initiator)
         {
             /* Multiplexer channel found do not change anything */
             /* If there was an inactivity timer running stop it now */
-            if (rfc_cb.port.rfc_mcb[i].state == RFC_MX_STATE_CONNECTED)
-                rfc_timer_stop (&rfc_cb.port.rfc_mcb[i]);
+            rfc_timer_stop (&rfc_cb.port.rfc_mcb[i]);
             return (&rfc_cb.port.rfc_mcb[i]);
         }
     }
@@ -374,6 +373,7 @@ void rfc_port_closed (tPORT *p_port)
     if (p_mcb)
     {
         p_mcb->port_inx[p_port->dlci] = 0;
+        p_port->dlci = 0;
 
         /* If there are no more ports opened on this MCB release it */
         rfc_check_mcb_active (p_mcb);

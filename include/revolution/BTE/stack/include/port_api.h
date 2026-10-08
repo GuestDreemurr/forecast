@@ -98,11 +98,6 @@ typedef struct
 */
 typedef int  (tPORT_DATA_CALLBACK) (UINT16 port_handle, void *p_data, UINT16 len);
 
-#define DATA_CO_CALLBACK_TYPE_INCOMING          1
-#define DATA_CO_CALLBACK_TYPE_OUTGOING_SIZE     2
-#define DATA_CO_CALLBACK_TYPE_OUTGOING          3
-typedef int  (tPORT_DATA_CO_CALLBACK) (UINT16 port_handle, UINT8* p_buf, UINT16 len, int type);
-
 typedef void (tPORT_CALLBACK) (UINT32 code, UINT16 port_handle);
 
 /*
@@ -276,7 +271,6 @@ RFC_API extern int PORT_SetEventCallback (UINT16 port_handle,
 RFC_API extern int PORT_SetDataCallback (UINT16 port_handle,
                                          tPORT_DATA_CALLBACK *p_cb);
 
-RFC_API extern int PORT_SetDataCOCallback (UINT16 port_handle, tPORT_DATA_CO_CALLBACK *p_port_cb);
 /*******************************************************************************
 **
 ** Function         PORT_SetEventMask
@@ -578,18 +572,6 @@ RFC_API extern int PORT_Write (UINT16 handle, BT_HDR *p_buf);
 *******************************************************************************/
 RFC_API extern int PORT_WriteData (UINT16 handle, char *p_data, UINT16 max_len,
                                    UINT16 *p_len);
-
-/*******************************************************************************
-**
-** Function         PORT_WriteDataCO
-**
-** Description      Normally not GKI aware application will call this function
-**                  to send data to the port by callout functions.
-**
-** Parameters:      handle     - Handle returned in the RFCOMM_CreateConnection
-**
-*******************************************************************************/
-RFC_API extern int PORT_WriteDataCO (UINT16 handle, int* p_len);
 
 /*******************************************************************************
 **

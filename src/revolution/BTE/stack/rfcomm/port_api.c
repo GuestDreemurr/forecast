@@ -166,15 +166,6 @@ int RFCOMM_CreateConnection (UINT16 uuid, UINT8 scn, BOOLEAN is_server,
     else
         p_port->mtu      = rfcomm_mtu;
 
-    /* server doesn't need to release port when closing */
-    if( is_server )
-    {
-        p_port->keep_port_handle = TRUE;
-
-        /* keep mtu that user asked, p_port->mtu could be updated during param negotiation */
-        p_port->keep_mtu         = p_port->mtu;
-    }
-
     p_port->local_ctrl.modem_signal = p_port->default_signal_state;
     p_port->local_ctrl.fc           = FALSE;
 
@@ -262,8 +253,6 @@ int RFCOMM_RemoveServer (UINT16 handle)
         return (PORT_SUCCESS);
     }
 
-    /* this port will be deallocated after closing */
-    p_port->keep_port_handle = FALSE;
     p_port->state = PORT_STATE_CLOSING;
 
     port_start_close (p_port);
@@ -347,45 +336,6 @@ int PORT_SetDataCallback (UINT16 port_handle, tPORT_DATA_CALLBACK *p_port_cb)
 
     return (PORT_SUCCESS);
 }
-/*******************************************************************************
-**
-** Function         PORT_SetCODataCallback
-**
-** Description      This function is when a data packet is received
-**
-** Parameters:      handle     - Handle returned in the RFCOMM_CreateConnection
-**                  p_callback - address of the callback function which should
-**                               be called from the RFCOMM when data packet
-**                               is received.
-**
-**
-*******************************************************************************/
-int PORT_SetDataCOCallback (UINT16 port_handle, tPORT_DATA_CO_CALLBACK *p_port_cb)
-{
-    tPORT  *p_port;
-
-    RFCOMM_TRACE_API2 ("PORT_SetDataCOCallback() handle:%d cb 0x%x", port_handle, p_port_cb);
-
-    /* Check if handle is valid to avoid crashing */
-    if ((port_handle == 0) || (port_handle > MAX_RFC_PORTS))
-    {
-        return (PORT_BAD_HANDLE);
-    }
-
-    p_port = &rfc_cb.port.port[port_handle - 1];
-
-    if (!p_port->in_use || (p_port->state == PORT_STATE_CLOSED))
-    {
-        return (PORT_NOT_OPENED);
-    }
-
-    p_port->p_data_co_callback = p_port_cb;
-
-    return (PORT_SUCCESS);
-}
-
-
-
 /*******************************************************************************
 **
 ** Function         PORT_SetEventMask
@@ -1361,157 +1311,6 @@ int PORT_Write (UINT16 handle, BT_HDR *p_buf)
 
     return (PORT_SUCCESS);
 }
-/*******************************************************************************
-**
-** Function         PORT_WriteDataCO
-**
-** Description      Normally not GKI aware application will call this function
-**                  to send data to the port by callout functions
-**
-** Parameters:      handle     - Handle returned in the RFCOMM_CreateConnection
-**                  fd         - socket fd
-**                  p_len      - Byte count returned
-**
-*******************************************************************************/
-int PORT_WriteDataCO (UINT16 handle, int* p_len)
-{
-
-    tPORT      *p_port;
-    BT_HDR     *p_buf;
-    UINT32     event = 0;
-    int        rc = 0;
-    UINT16     length;
-
-    RFCOMM_TRACE_API1 ("PORT_WriteDataCO() handle:%d", handle);
-    int written;
-    *p_len = 0;
-
-    /* Check if handle is valid to avoid crashing */
-    if ((handle == 0) || (handle > MAX_RFC_PORTS))
-    {
-        return (PORT_BAD_HANDLE);
-    }
-    p_port = &rfc_cb.port.port[handle - 1];
-
-    if (!p_port->in_use || (p_port->state == PORT_STATE_CLOSED))
-    {
-        RFCOMM_TRACE_WARNING1 ("PORT_WriteDataByFd() no port state:%d", p_port->state);
-        return (PORT_NOT_OPENED);
-    }
-
-    if (!p_port->peer_mtu)
-    {
-        RFCOMM_TRACE_ERROR1 ("PORT_WriteDataByFd() peer_mtu:%d", p_port->peer_mtu);
-        return (PORT_UNKNOWN_ERROR);
-    }
-    int available = 0;
-    //if(ioctl(fd, FIONREAD, &available) < 0)
-    if(p_port->p_data_co_callback(handle, (UINT8*)&available, sizeof(available),
-                                DATA_CO_CALLBACK_TYPE_OUTGOING_SIZE) == FALSE)
-    {
-        RFCOMM_TRACE_ERROR1("p_data_co_callback DATA_CO_CALLBACK_TYPE_INCOMING_SIZE failed, available:%d", available);
-        return (PORT_UNKNOWN_ERROR);
-    }
-    /* Length for each buffer is the smaller of GKI buffer, peer MTU, or max_len */
-    length = RFCOMM_DATA_POOL_BUF_SIZE -
-            (UINT16)(sizeof(BT_HDR) + L2CAP_MIN_OFFSET + RFCOMM_DATA_OVERHEAD);
-
-    /* If there are buffers scheduled for transmission check if requested */
-    /* data fits into the end of the queue */
-    PORT_SCHEDULE_LOCK;
-
-    if (((p_buf = (BT_HDR *)p_port->tx.queue.p_last) != NULL)
-     && (((int)p_buf->len + available) <= (int)p_port->peer_mtu)
-     && (((int)p_buf->len + available) <= (int)length))
-    {
-        //if(recv(fd, (UINT8 *)(p_buf + 1) + p_buf->offset + p_buf->len, available, 0) != available)
-        if(p_port->p_data_co_callback(handle, (UINT8 *)(p_buf + 1) + p_buf->offset + p_buf->len,
-                                    available, DATA_CO_CALLBACK_TYPE_OUTGOING) == FALSE)
-
-        {
-            error("p_data_co_callback DATA_CO_CALLBACK_TYPE_OUTGOING failed, available:%d", available);
-            return (PORT_UNKNOWN_ERROR);
-        }
-        //memcpy ((UINT8 *)(p_buf + 1) + p_buf->offset + p_buf->len, p_data, max_len);
-        p_port->tx.queue_size += (UINT16)available;
-
-        *p_len = available;
-        p_buf->len += (UINT16)available;
-
-        PORT_SCHEDULE_UNLOCK;
-
-        return (PORT_SUCCESS);
-    }
-
-    PORT_SCHEDULE_UNLOCK;
-
-    //int max_read = length < p_port->peer_mtu ? length : p_port->peer_mtu;
-
-    //max_read = available < max_read ? available : max_read;
-
-    while (available)
-    {
-        /* if we're over buffer high water mark, we're done */
-        if ((p_port->tx.queue_size  > PORT_TX_HIGH_WM)
-         || (p_port->tx.queue.count > PORT_TX_BUF_HIGH_WM))
-            break;
-
-        /* continue with rfcomm data write */
-        p_buf = (BT_HDR *)GKI_getpoolbuf (RFCOMM_DATA_POOL_ID);
-        if (!p_buf)
-            break;
-
-        p_buf->offset         = L2CAP_MIN_OFFSET + RFCOMM_MIN_OFFSET;
-        p_buf->layer_specific = handle;
-
-        if (p_port->peer_mtu < length)
-            length = p_port->peer_mtu;
-        if (available < (int)length)
-            length = (UINT16)available;
-        p_buf->len = length;
-        p_buf->event          = BT_EVT_TO_BTU_SP_DATA;
-
-        //memcpy ((UINT8 *)(p_buf + 1) + p_buf->offset, p_data, length);
-        //if(recv(fd, (UINT8 *)(p_buf + 1) + p_buf->offset, (int)length, 0) != (int)length)
-        if(p_port->p_data_co_callback(handle, (UINT8 *)(p_buf + 1) + p_buf->offset, length,
-                                      DATA_CO_CALLBACK_TYPE_OUTGOING) == FALSE)
-        {
-            error("p_data_co_callback DATA_CO_CALLBACK_TYPE_OUTGOING failed, length:%d", length);
-            return (PORT_UNKNOWN_ERROR);
-        }
-
-
-        RFCOMM_TRACE_EVENT1 ("PORT_WriteData %d bytes", length);
-
-        rc = port_write (p_port, p_buf);
-
-        /* If queue went below the threashold need to send flow control */
-        event |= port_flow_control_user (p_port);
-
-        if (rc == PORT_SUCCESS)
-            event |= PORT_EV_TXCHAR;
-
-        if ((rc != PORT_SUCCESS) && (rc != PORT_CMD_PENDING))
-            break;
-
-        *p_len  += length;
-        available -= (int)length;
-    }
-    if (!available && (rc != PORT_CMD_PENDING) && (rc != PORT_TX_QUEUE_DISABLED))
-        event |= PORT_EV_TXEMPTY;
-
-    /* Mask out all events that are not of interest to user */
-    event &= p_port->ev_mask;
-
-    /* Send event to the application */
-    if (p_port->p_callback && event)
-        (p_port->p_callback)(event, p_port->inx);
-
-    return (PORT_SUCCESS);
-}
-
-
-
 /*******************************************************************************
 **
 ** Function         PORT_WriteData

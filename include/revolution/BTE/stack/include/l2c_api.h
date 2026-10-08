@@ -35,7 +35,7 @@
 /* Define the minimum offset that L2CAP needs in a buffer. This is made up of
 ** HCI type(1), len(2), handle(2), L2CAP len(2) and CID(2) => 9
 */
-#define L2CAP_MIN_OFFSET    13     /* plus control(2), SDU length(2) */
+#define L2CAP_MIN_OFFSET    9
 
 /* Minimum offset for broadcast needs another two bytes for the PSM */
 #define L2CAP_BCST_MIN_OFFSET       11
@@ -281,15 +281,6 @@ typedef void (tL2CA_CONGESTION_STATUS_CB) (UINT16, BOOLEAN);
 */
 typedef void (tL2CA_NOCP_CB) (BD_ADDR);
 
-/* Transmit complete callback protype. This callback is optional. If
-** set, L2CAP will call it when packets are sent or flushed. If the
-** count is 0xFFFF, it means all packets are sent for that CID (eRTM
-** mode only). The parameters are:
-**              Local CID
-**              Number of SDUs sent or dropped
-*/
-typedef void (tL2CA_TX_COMPLETE_CB) (UINT16, UINT16);
-
 /* Define the structure that applications use to register with
 ** L2CAP. This structure includes callback functions. All functions
 ** MUST be provided, with the exception of the "connect pending"
@@ -307,7 +298,6 @@ typedef struct
     tL2CA_QOS_VIOLATION_IND_CB  *pL2CA_QoSViolationInd_Cb;
     tL2CA_DATA_IND_CB           *pL2CA_DataInd_Cb;
     tL2CA_CONGESTION_STATUS_CB  *pL2CA_CongestionStatus_Cb;
-    tL2CA_TX_COMPLETE_CB        *pL2CA_TxComplete_Cb;
 
 } tL2CAP_APPL_INFO;
 

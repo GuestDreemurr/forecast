@@ -127,9 +127,6 @@ void rfc_port_sm_state_closed (tPORT *p_port, UINT16 event, void *p_data)
         break;
 
     case RFC_EVENT_SABME:
-        /* make sure the multiplexer disconnect timer is not running (reconnect case) */
-        rfc_timer_stop(p_port->rfc.p_mcb );
-
         /* Open will be continued after security checks are passed */
         p_port->rfc.state = RFC_STATE_TERM_WAIT_SEC_CHECK;
         btm_sec_mx_access_request (p_port->rfc.p_mcb->bd_addr, BT_PSM_RFCOMM, FALSE,
@@ -204,7 +201,6 @@ void rfc_port_sm_sabme_wait_ua (tPORT *p_port, UINT16 event, void *p_data)
         return;
 
     case RFC_EVENT_DM:
-        p_port->rfc.p_mcb->is_disc_initiator = TRUE;
         PORT_DlcEstablishCnf (p_port->rfc.p_mcb, p_port->dlci, p_port->rfc.p_mcb->peer_l2cap_mtu, RFCOMM_ERROR);
         rfc_port_closed (p_port);
         return;
@@ -257,7 +253,6 @@ void rfc_port_sm_term_wait_sec_check (tPORT *p_port, UINT16 event, void *p_data)
             if (p_port->rfc.p_mcb)
             {
                 rfc_send_dm (p_port->rfc.p_mcb, p_port->dlci, TRUE);
-                p_port->rfc.p_mcb->is_disc_initiator = TRUE;
                 port_rfc_closed (p_port, PORT_SEC_FAILED);
             }
         }
@@ -333,7 +328,6 @@ void rfc_port_sm_orig_wait_sec_check (tPORT *p_port, UINT16 event, void *p_data)
     case RFC_EVENT_SEC_COMPLETE:
         if (*((UINT8 *)p_data) != BTM_SUCCESS)
         {
-            p_port->rfc.p_mcb->is_disc_initiator = TRUE;
             PORT_DlcEstablishCnf (p_port->rfc.p_mcb, p_port->dlci, 0, RFCOMM_SECURITY_ERR);
             rfc_port_closed (p_port);
             return;
@@ -430,14 +424,7 @@ void rfc_port_sm_opened (tPORT *p_port, UINT16 event, void *p_data)
     case RFC_EVENT_DISC:
         p_port->rfc.state = RFC_STATE_CLOSED;
         rfc_send_ua (p_port->rfc.p_mcb, p_port->dlci);
-        if(p_port->rx.queue.count)
-        {
-            /* give a chance to upper stack to close port properly */
-            RFCOMM_TRACE_DEBUG0("port queue is not empty");
-            rfc_port_timer_start (p_port, RFC_DISC_TIMEOUT);
-        }
-        else
-            PORT_DlcReleaseInd (p_port->rfc.p_mcb, p_port->dlci);
+        PORT_DlcReleaseInd (p_port->rfc.p_mcb, p_port->dlci);
         return;
 
     case RFC_EVENT_UIH:

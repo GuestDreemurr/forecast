@@ -106,8 +106,6 @@ typedef struct
     UINT8     flow;            /* flow control mechanism for this mux */
     BOOLEAN   l2cap_congested; /* TRUE if L2CAP is congested */
     BOOLEAN   is_disc_initiator; /* TRUE if initiated disc of port */
-    UINT16    pending_lcid;    /* store LCID for incoming connection while connecting */
-    UINT8     pending_id;      /* store l2cap ID for incoming connection while connecting */
 } tRFC_MCB;
 
 
@@ -194,16 +192,12 @@ struct t_port_info
     tPORT_CALLBACK      *p_callback;        /* Pointer to users callback function */
     tPORT_CALLBACK      *p_mgmt_callback;   /* Callback function to receive connection up/down */
     tPORT_DATA_CALLBACK *p_data_callback;   /* Callback function to receive data indications */
-    tPORT_DATA_CO_CALLBACK *p_data_co_callback;   /* Callback function with callouts and flowctrl */
     UINT16      credit_tx;                  /* Flow control credits for tx path */
     UINT16      credit_rx;                  /* Flow control credits for rx path, this is */
                                             /* number of buffers peer is allowed to sent */
     UINT16      credit_rx_max;              /* Max number of credits we will allow this guy to sent */
     UINT16      credit_rx_low;              /* Number of credits when we send credit update */
     UINT16      rx_buf_critical;            /* port receive queue critical watermark level */
-    BOOLEAN     keep_port_handle;           /* TRUE if port is not deallocated when closing */
-                                            /* it is set to TRUE for server when allocating port */
-    UINT16      keep_mtu;                   /* Max MTU that port can receive by server */
 };
 typedef struct t_port_info tPORT;
 

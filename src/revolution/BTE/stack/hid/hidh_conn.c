@@ -69,8 +69,7 @@ static const tL2CAP_APPL_INFO hst_reg_info =
     hidh_l2cif_disconnect_cfm,
     NULL,
     hidh_l2cif_data_ind,
-    hidh_l2cif_cong_ind,
-    NULL                        /* tL2CA_TX_COMPLETE_CB */
+    hidh_l2cif_cong_ind
 };
 
 /*******************************************************************************
