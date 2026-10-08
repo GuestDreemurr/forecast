@@ -1,34 +1,53 @@
 #ifndef CHANNEL_SIMPLE_GLOBE_H
 #define CHANNEL_SIMPLE_GLOBE_H
+#include "Vec3.h"
 #include "Vector2.h"
 #include "nw4r/g3d/g3d_scnroot.h"
 #include <types.h>
 #include <nw4r/g3d/g3d_camera.h>
 #include <revolution/MTX.h>
 
-// TODO move this to whereever it goes
-struct UnkC {
-    void unkFunc(void *);
-};
-
 // Globe view state (d_weather_around)
-struct GlobeView {
-    UnkC unk0;              // at 0x0
+class GlobeView {
+public:
+    GlobeView(nw4r::g3d::Camera camera);
+    virtual ~GlobeView();
+
+    void unk10(Vec *);
+
+    f32 getFOVy() { return mFOVy; }
+    f32 getAspect() { return mAspect; }
+    f32 getNear() { return mNear; }
+    f32 getFar() { return mFar; }
+    Vec *getPosition() { return &mPosition; }
+    Vec *getOrientation() { return &mOrientation; }
+
+    void setZoom(f32 zoom) { mZoom = zoom; }
+
+private:
     nw4r::g3d::Camera mCamera; // at 0x4
     u8 unk8[0x90 - 0x8];       // at 0x8
-    f32 mLatitude;             // at 0x90
-    f32 mLongitude;            // at 0x94
-    u8 unk98[0x9C - 0x98];     // at 0x98
-    f32 mTilt;                 // at 0x9C
-    u8 unkA0[0xA4 - 0xA0];     // at 0xA0
-    f32 mRotation;             // at 0xA4
+    Vec mPosition;             // at 0x90
+    Vec mOrientation;          // at 0x9C
     u8 unkA8[0xC0 - 0xA8];     // at 0xA8
     u8 mResetting;             // at 0xC0
-    u8 unkC1[0xD4 - 0xC1];     // at 0xC1
+    u8 unkC1[0xC4 - 0xC1];     // at 0xC1
+    f32 mFOVy;                 // at 0xC4
+    f32 mAspect;               // at 0xC8
+    f32 mNear;                 // at 0xCC
+    f32 mFar;                  // at 0xD0
     f32 mZoom;                 // at 0xD4
     u8 unkD8[0xEC - 0xD8];     // at 0xD8
+};
 
-    GlobeView(nw4r::g3d::Camera camera);
+// Hack
+class Vector3 : public Vec {
+public:
+    Vector3(f32 x, f32 y, f32 z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
 };
 
 // d_scene's m_pSimpleGlobe (size 0xD0)
@@ -65,9 +84,7 @@ public:
 
     nw4r::g3d::ScnRoot* mScnRoot; // at 0x0
     GlobeView* mView;             // at 0x4
-    f32 unk8;                     // at 0x8
-    f32 unkC;                     // at 0xC
-    f32 unk10;                    // at 0x10
+    Vector3 mRotation;            // at 0x8
     f32 unk14;                    // at 0x14
     f32 unk18;                    // at 0x18
     f32 unk1C;                    // at 0x1C

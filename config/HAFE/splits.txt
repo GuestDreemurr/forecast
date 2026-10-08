@@ -160,6 +160,13 @@ WeatherSetting.cpp:
 ForecastSummary.cpp:
 	.text       start:0x800289AC end:0x80028AA0
 
+LayoutObj.cpp:
+	.text       start:0x8002AF90 end:0x8002B734
+
+GlobeView.cpp:
+	.text       start:0x8002B734 end:0x8002C0CC
+	.ctors      start:0x80179274 end:0x80179278
+
 Region.cpp:
 	.text       start:0x8002C0CC end:0x8002C164
 	.data       start:0x8019B760 end:0x8019B78C
@@ -241,8 +248,9 @@ SceneBase.cpp:
 
 SimpleGlobe.cpp:
 	.text       start:0x8003F628 end:0x800411B4
-	.rodata     start:0x8018F730 end:0x8018FA88
-	.sdata2     start:0x80332098 end:0x803320A0
+	.rodata     start:0x8018F730 end:0x8018F7B0
+	.sdata      start:0x803301E0 end:0x803301F0
+	.sdata2     start:0x80332098 end:0x803320A8
 
 revolution/CNT/cnt.c:
 	.text       start:0x80045ABC end:0x80045FD4
