@@ -239,6 +239,11 @@ SceneBase.cpp:
 	.sbss       start:0x80330BA0 end:0x80330C24
 	.sdata2     start:0x80332040 end:0x80332098
 
+SimpleGlobe.cpp:
+	.text       start:0x8003F628 end:0x800411B4
+	.rodata     start:0x8018F730 end:0x8018FA88
+	.sdata2     start:0x80332098 end:0x803320A0
+
 revolution/CNT/cnt.c:
 	.text       start:0x80045ABC end:0x80045FD4
 	.rodata     start:0x8018F7B0 end:0x8018FA28
@@ -1348,6 +1353,10 @@ revolution/NdevExi2AD/DebuggerDriver.c:
 
 revolution/NdevExi2AD/exi2.c:
 	.text       start:0x80160B60 end:0x801612EC
+
+Runtime.PPCEABI.H/__mem.c:
+	.init       start:0x80004338 end:0x8000446C
+	.text       start:0x801612EC end:0x80161308
 
 Runtime.PPCEABI.H/global_destructor_chain.c:
 	.text       start:0x801613D0 end:0x80161430
