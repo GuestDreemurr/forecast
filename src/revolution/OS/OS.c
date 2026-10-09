@@ -351,7 +351,7 @@ static void CheckTargets(void) {
         OSReport("OS ERROR: boot program is not for RVL target. Please use "
                  "correct boot program.\n");
         // clang-format off
-#line 1112
+#line 1135
         OS_ERROR("Failed to run app");
         // clang-format on
         break;
@@ -365,7 +365,7 @@ static void CheckTargets(void) {
         OSReport("OS ERROR: apploader[D].img is not for RVL target. Please use "
                  "correct apploader[D].img.\n");
         // clang-format off
-#line 1130
+#line 1153
         OS_ERROR("Failed to run app");
         // clang-format on
         break;
@@ -521,7 +521,7 @@ void OSInit(void) {
                  */
                 if (BootInfo->arenaLo == NULL && BI2DebugFlag != NULL &&
                     *BI2DebugFlag < 2) {
-                    mem1lo = ROUND_UP_PTR(_db_stack_end, 32);
+                    mem1lo = ROUND_UP_PTR(_stack_addr, 32);
                 }
             } else {
                 // ???
@@ -548,7 +548,7 @@ void OSInit(void) {
 
                 // Use debugger stack if it would be wasted
                 if (BI2DebugFlag != NULL && *BI2DebugFlag < 2) {
-                    mem2lo = ROUND_UP_PTR(_db_stack_end, 32);
+                    mem2lo = ROUND_UP_PTR(_stack_addr, 32);
                 }
             }
             // First 2K of MEM2 is reserved?

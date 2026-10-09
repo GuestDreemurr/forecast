@@ -167,6 +167,7 @@ void GXSetCurrentMtx(u32 id) {
 void GXLoadTexMtxImm(const Mtx mtx, u32 id, GXMtxType type) {
     u32 addr;
     u32 num;
+    u32 reg;
 
     // Base row address in XF memory
     addr = id >= GX_PTTEXMTX0
@@ -176,7 +177,9 @@ void GXLoadTexMtxImm(const Mtx mtx, u32 id, GXMtxType type) {
     // Number of elements in matrix
     num = type == GX_MTX_2x4 ? (u64)(2 * 4) : 3 * 4;
 
-    GX_XF_LOAD_REGS(num - 1, addr);
+    reg = addr;
+    reg |= (num - 1) << 16;
+    GX_XF_LOAD_REG_HDR(reg);
 
     if (type == GX_MTX_3x4) {
         WriteMTXPS4x3(&WGPIPE, mtx);

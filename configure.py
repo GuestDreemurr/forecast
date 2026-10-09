@@ -397,13 +397,13 @@ config.libs = [
 
             # AX
             Object(NonMatching, "revolution/AX/AX.c"),
-            Object(NonMatching, "revolution/AX/AXAlloc.c"),
+            Object(Matching, "revolution/AX/AXAlloc.c"),
             Object(NonMatching, "revolution/AX/AXAux.c"),
-            Object(NonMatching, "revolution/AX/AXCL.c"),
+            Object(Matching, "revolution/AX/AXCL.c"),
             Object(NonMatching, "revolution/AX/AXComp.c"),
             Object(Matching, "revolution/AX/AXOut.c"),
             Object(Matching, "revolution/AX/AXProf.c"),
-            Object(NonMatching, "revolution/AX/AXSPB.c"),
+            Object(Matching, "revolution/AX/AXSPB.c"),
             Object(NonMatching, "revolution/AX/AXVPB.c"),
             Object(NonMatching, "revolution/AX/DSPCode.c"),
 
@@ -446,7 +446,7 @@ config.libs = [
 
             # BTE/main
             Object(NonMatching, "revolution/BTE/main/bte_init.c"),
-            Object(NonMatching, "revolution/BTE/main/bte_logmsg.c"),
+            Object(Matching, "revolution/BTE/main/bte_logmsg.c"),
 
             # BTE/rvl
             Object(Matching, "revolution/BTE/rvl/gki_ppc.c"),
@@ -541,11 +541,11 @@ config.libs = [
             Object(Matching, "revolution/GX/GXGeometry.c"),
             Object(Matching, "revolution/GX/GXLight.c"),
             Object(NonMatching, "revolution/GX/GXPixel.c"),
-            Object(NonMatching, "revolution/GX/GXTransform.c"),
+            Object(Matching, "revolution/GX/GXTransform.c"),
 
             # IPC
             Object(NonMatching, "revolution/IPC/ipcclt.c"),
-            Object(NonMatching, "revolution/IPC/ipcMain.c"),
+            Object(Matching, "revolution/IPC/ipcMain.c"),
             Object(Matching, "revolution/IPC/ipcProfile.c"),
             Object(Matching, "revolution/IPC/memory.c"),
 
@@ -594,7 +594,7 @@ config.libs = [
             # OS
             Object(Matching, "revolution/OS/__ppc_eabi_init.c"),
             Object(Matching, "revolution/OS/__start.c"),
-            Object(NonMatching, "revolution/OS/OS.c"),
+            Object(Matching, "revolution/OS/OS.c"),
             Object(NonMatching, "revolution/OS/OSAlarm.c"),
             Object(Matching, "revolution/OS/OSAlloc.c"),
             Object(Matching, "revolution/OS/OSArena.c"),
@@ -614,7 +614,7 @@ config.libs = [
             Object(NonMatching, "revolution/OS/OSNet.c"),
             Object(Matching, "revolution/OS/OSPlayRecord.c"),
             Object(NonMatching, "revolution/OS/OSReset.c"),
-            Object(NonMatching, "revolution/OS/OSRtc.c"),
+            Object(Matching, "revolution/OS/OSRtc.c"),
             Object(Matching, "revolution/OS/OSStateFlags.c"),
             Object(Matching, "revolution/OS/OSStateTM.c"),
             Object(Matching, "revolution/OS/OSSync.c"),
@@ -671,7 +671,7 @@ config.libs = [
             Object(Matching, "revolution/VF/pf_filelock.c"),
             Object(Matching, "revolution/VF/pf_system.c"),
             Object(Matching, "revolution/VF/d_vf.c"),
-            Object(NonMatching, "revolution/VF/d_vf_sys.c"),
+            Object(Matching, "revolution/VF/d_vf_sys.c"),
             Object(Matching, "revolution/VF/d_hash.c"),
             Object(Matching, "revolution/VF/nand_drv.c"),
 
@@ -688,7 +688,7 @@ config.libs = [
             # WUD
             Object(NonMatching, "revolution/WUD/debug_msg.c"),
             Object(NonMatching, "revolution/WUD/WUD.c"),
-            Object(NonMatching, "revolution/WUD/WUDHidHost.c"),
+            Object(Matching, "revolution/WUD/WUDHidHost.c"),
         ],
     },
     {

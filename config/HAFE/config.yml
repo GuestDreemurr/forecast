@@ -32,6 +32,9 @@ clean_extab: false
 
 block_relocations:
 - source: 0x80192B28
+# OS.c OSInit: the constant 0x80004000 happens to equal _f_init
+- source: 0x800E401C
+- source: 0x800E4094
 
 # System.cpp: lis/addi pairs split by register spills, which analysis cannot pair
 add_relocations:

@@ -34,8 +34,9 @@ int VFipf2_format(s8 drive, const s8* param);
 static union VFSysDeviceTableEntry* l_vfsys_dev_table[26];
 static struct PDM_INIT_DISK l_dev_init_info_table[26];
 
-static struct PDM_INIT_DISK l_dev_nandflash_init_info;
+static struct PDM_INIT_DISK l_dev_nandflash_init_info = {VFi_nanddrv_init_drv_tbl, 0};
 
+static VFSysTimeStampCallback l_timestamp_callback;
 static struct VF_HANDLE_TYPE* l_sys_handle_table_p;
 static s32 l_vfsys_dev_table_init;
 static struct MEMiHeapHead* l_vfsys_exp_heap_handle;
@@ -1096,4 +1097,14 @@ static inline u32 VFSysGetSyncMode(s32 i_handle_idx) {
     }
 
     return handle_p->device_p->sync_mode;
+}
+
+VFSysTimeStampCallback VFSysSetTimeStampCallback(VFSysTimeStampCallback i_timestamp_callback) {
+    VFSysTimeStampCallback old = l_timestamp_callback;
+    l_timestamp_callback = i_timestamp_callback;
+    return old;
+}
+
+VFSysTimeStampCallback VFSysGetTimeStampCallback(void) {
+    return l_timestamp_callback;
 }

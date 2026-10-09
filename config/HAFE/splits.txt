@@ -363,9 +363,10 @@ revolution/VF/d_vf.c:
 	.sbss       start:0x80330C98 end:0x80330CA0
 
 revolution/VF/d_vf_sys.c:
-	.text       start:0x8005FED8 end:0x80062284
+	.text       start:0x8005FED8 end:0x8006229C
 	.data       start:0x801B3F48 end:0x801B3F58
 	.bss        start:0x80288280 end:0x802883B8
+	.sdata      start:0x80330258 end:0x80330260
 	.sbss       start:0x80330CA0 end:0x80330CB8
 
 revolution/VF/d_hash.c:
@@ -1207,7 +1208,7 @@ revolution/GX/GXBump.c:
 
 revolution/GX/GXDraw.c:
 	.text       start:0x801003A8 end:0x801017EC
-	.bss        start:0x802CD068 end:0x802CD300
+	.bss        start:0x802CD068 end:0x802CD2F0
 	.sdata2     start:0x80332F48 end:0x80332F78
 
 revolution/GX/GXTransform.c:
@@ -1237,12 +1238,12 @@ revolution/AI/ai.c:
 revolution/AX/AXAlloc.c:
 	.text       start:0x8010B418 end:0x8010B8D0
 	.bss        start:0x802D23E0 end:0x802D24E0
-	.sbss       start:0x803315E0 end:0x803315E8
+	.sbss       start:0x803315E0 end:0x803315E4
 
 revolution/AX/AXCL.c:
 	.text       start:0x8010C0E8 end:0x8010CB6C
 	.bss        start:0x802D5660 end:0x802D5760
-	.sbss       start:0x80331630 end:0x80331650
+	.sbss       start:0x80331630 end:0x8033164C
 
 revolution/AX/AXOut.c:
 	.text       start:0x8010CB6C end:0x8010D358
@@ -1251,7 +1252,7 @@ revolution/AX/AXOut.c:
 
 revolution/AX/AXSPB.c:
 	.text       start:0x8010D358 end:0x8010D778
-	.bss        start:0x802D6560 end:0x802D65E0
+	.bss        start:0x802D6560 end:0x802D65D8
 	.sbss       start:0x80331690 end:0x803316E0
 
 revolution/AX/AXProf.c:
@@ -1300,7 +1301,7 @@ revolution/SC/scapi_prdinfo.c:
 
 revolution/IPC/ipcMain.c:
 	.text       start:0x801188A4 end:0x80118970
-	.sbss       start:0x80331768 end:0x80331790
+	.sbss       start:0x80331768 end:0x8033177C
 
 revolution/IPC/memory.c:
 	.text       start:0x8011A2E0 end:0x8011A804
@@ -1313,6 +1314,7 @@ revolution/IPC/ipcProfile.c:
 
 revolution/PAD/Pad.c:
 	.text       start:0x8011BF9C end:0x8011BFF8
+	.sbss       start:0x803317B0 end:0x803317B4
 
 revolution/EUART/euart.c:
 	.text       start:0x8012CC94 end:0x8012D004
@@ -1328,7 +1330,7 @@ revolution/BTE/rvl/gki_ppc.c:
 
 revolution/BTE/main/bte_logmsg.c:
 	.text       start:0x8013601C end:0x80136180
-	.bss        start:0x80322C40 end:0x80323420
+	.bss        start:0x80322C40 end:0x80323410
 	.sdata      start:0x803308D8 end:0x803308DC
 
 revolution/BTE/bta/sys/bta_sys_conn.c:
