@@ -165,7 +165,11 @@ ForecastSummary.cpp:
 	.text       start:0x800289AC end:0x80028AA0
 
 LayoutObj.cpp:
-	.text       start:0x8002AF90 end:0x8002B734
+	.text       start:0x80028AA0 end:0x8002B734
+	.data       start:0x8019B720 end:0x8019B74C
+	.sdata      start:0x803300F8 end:0x80330138
+	.sbss       start:0x80330AB8 end:0x80330AB9
+	.sdata2     start:0x80331D38 end:0x80331DC0
 
 GlobeView.cpp:
 	.text       start:0x8002B734 end:0x8002C0CC

@@ -9,6 +9,8 @@ class TextTagProcessor : public nw4r::ut::TagProcessorBase<wchar_t> {
 public:
     TextTagProcessor();
     virtual ~TextTagProcessor();
+    virtual Operation Process(u16 ch, ContextType* pCtx);                 // at 0xC
+    virtual Operation CalcRect(nw4r::ut::Rect* pRect, u16 ch, ContextType* pCtx); // at 0x10
 
     nw4r::ut::Color mSavedColor; // at 0x4
 };
