@@ -206,16 +206,9 @@ WeatherAround::WeatherAround(void* arc)
     if (gLanguage == 0) {
         f32 centerX = 0.5f * GetScreenWidth();
         f32 scaleX = gWidescreen ? 1.3684211f : 1.0f;
-        const char** name;
-        const f32* titleScale;
-        s32 t;
-        TextBox* box;
-        box = mTitles;
-        name = sTitleNames;
-        t = 0;
-        titleScale = sTitleScales;
-        for (; t < 3; t++, name++, titleScale++, box++) {
-            box->mPane = mBeltLayout->FindButton(*name);
+        TextBox* box = mTitles;
+        for (i = 0; i < 3; i++, box++) {
+            box->mPane = mBeltLayout->FindButton(sTitleNames[i]);
             if (box->mPane != NULL) {
                 SetBoxPos(box, centerX, scaleX, centerY);
                 LayoutButton* pane = box->mPane;
@@ -223,13 +216,13 @@ WeatherAround::WeatherAround(void* arc)
                 f32 w = pane->mRight - pane->mLeft;
                 box->mWidth = w;
                 box->mHeight = __fabsf(h);
-                box->mScaleX = *titleScale;
-                box->mScaleY = *titleScale;
+                box->mScaleX = sTitleScales[i];
+                box->mScaleY = sTitleScales[i];
                 SET_COLOR(box->mColor, gColorWhite);
                 SET_COLOR(box->mShadowColor, gColorDarkGray);
             } else {
                 OSReport("%s[%d]: ", "d_weather_around.cpp", 296);
-                OSReport("WARNING!! ...%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1!!\n", *name);
+                OSReport("WARNING!! ...%s\x82\xAA\x8C\xA9\x82\xC2\x82\xA9\x82\xE8\x82\xDC\x82\xB9\x82\xF1!!\n", sTitleNames[i]);
                 OSPanic("d_weather_around.cpp", 298, "");
             }
         }
@@ -407,8 +400,9 @@ void WeatherAround::UpdateButtonFade() {
     }
 
     s32 minAlpha = 32;
-    mLayout->SetButtonParams(minAlpha + (s32)(255.0f - minAlpha) * nw4r::math::SinRad((1.5708f * (15 - mHoverTimer)) / 15.0f),
-                             mHoverTimer, 15);
+    s32 alpha = minAlpha;
+    alpha += (s32)(255.0f - minAlpha) * nw4r::math::SinRad((1.5708f * (15 - mHoverTimer)) / 15.0f);
+    mLayout->SetButtonParams(alpha, mHoverTimer, 15);
     UpdateZoomButtons();
 }
 
@@ -893,13 +887,11 @@ inline s32 WeatherAround::FindPressedTouch() {
     return -1;
 }
 
-static inline void GetHitBox(CityLabel* label, Vec2& pos) {
-    Vec2F box = label->GetBoxPos();
+static inline void GetHitBox(Vec2& pos, const Vec2F& box) {
     pos.x = box.x;
     pos.y = box.y;
 }
-static inline void GetHitSize(CityLabel* label, Vec2& half) {
-    Vec2F boxSize = label->GetSize();
+static inline void GetHitSize(Vec2& half, const Vec2F& boxSize) {
     half.x = boxSize.x / 2.0f;
     half.y = boxSize.y / 2.0f;
 }
@@ -1085,8 +1077,8 @@ void WeatherAround::UpdateLabels() {
         }
 
         if ((*label)->mInputFlags & CITY_LABEL_HIT) {
-            GetHitBox(*label, pos);
-            GetHitSize(*label, half);
+            GetHitBox(pos, (*label)->GetBoxPos());
+            GetHitSize(half, (*label)->GetSize());
             mHitIndex = i;
             mHitRect.left = pos.x - half.x;
             mHitRect.right = pos.x + half.x;
@@ -1216,23 +1208,39 @@ void WeatherAround::UpdateDrag() {
     }
 }
 
+#pragma scheduling once
 BOOL WeatherAround::CheckOverlap(CityLabel* a, CityLabel* b) {
-    f32 bLeft = b->mBounds.left;
-    f32 bw = b->mBounds.right - bLeft;
-    f32 bTop = b->mBounds.top;
-    f32 aLeft = a->mBounds.left;
-    f32 bh = b->mBounds.bottom - bTop;
-    f32 aw = a->mBounds.right - aLeft;
-    f32 bcy = 0.5f * bh + bTop;
-    f32 aTop = a->mBounds.top;
-    f32 maxX = 0.5f * (aw + bw);
-    f32 acx = 0.5f * aw + aLeft;
-    f32 ah = a->mBounds.bottom - aTop;
-    f32 acy = 0.5f * ah + aTop;
-    f32 dy = __fabsf(acy - bcy);
-    f32 maxY = 0.5f * (ah + bh);
-    f32 bcx = 0.5f * bw + bLeft;
-    f32 dx = __fabsf(acx - bcx);
+    f32 aRight, aBottom, bRight, bBottom, bw, bh, hbh, hah, hbw, haw, half, bTop, aTop, bLeft, aLeft, aw, ah, acx, sumW,
+        bcx, sumH, diffX, bcy, acy, diffY, dy, maxX, dx, maxY;
+    aLeft = a->mBounds.left;
+    aRight = a->mBounds.right;
+    bLeft = b->mBounds.left;
+    aw = aRight - aLeft;
+    aTop = a->mBounds.top;
+    aBottom = a->mBounds.bottom;
+    bRight = b->mBounds.right;
+    ah = aBottom - aTop;
+    half = 0.5f;
+    bTop = b->mBounds.top;
+    bBottom = b->mBounds.bottom;
+    bw = bRight - bLeft;
+    haw = half * aw;
+    bh = bBottom - bTop;
+    hah = half * ah;
+    hbw = half * bw;
+    hbh = half * bh;
+    acx = haw + aLeft;
+    sumW = aw + bw;
+    bcx = hbw + bLeft;
+    bcy = hbh + bTop;
+    acy = hah + aTop;
+    sumH = ah + bh;
+    diffX = acx - bcx;
+    diffY = acy - bcy;
+    maxX = half * sumW;
+    dx = __fabsf(diffX);
+    dy = __fabsf(diffY);
+    maxY = half * sumH;
 
     if ((a->mFlags & CITY_LABEL_HIDDEN) || dx > maxX || dy > maxY) {
         return FALSE;
@@ -1257,6 +1265,7 @@ BOOL WeatherAround::CheckOverlap(CityLabel* a, CityLabel* b) {
     b->mFlags |= CITY_LABEL_HIDDEN;
     return FALSE;
 }
+#pragma scheduling reset
 
 void WeatherAround::UpdateTouch() {
     s32 i;
@@ -1617,7 +1626,12 @@ Vec2F WeatherAround::GetTempSizeLarge(CityLabel* label) {
     return label->GetTempSizeLarge(mDay);
 }
 
-void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom);
+inline void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom) {
+    // TextBox::mTextColors is protected
+    nw4r::ut::Color* colors = (nw4r::ut::Color*)((u8*)textBox + 0xD8);
+    colors[0] = top;
+    colors[1] = bottom;
+}
 
 static void ZoomOutColorCallback(nw4r::lyt::Pane* pane, const GXColor* color) {
     char name[100] = "zoom_outT";
@@ -1630,13 +1644,6 @@ static void ZoomOutColorCallback(nw4r::lyt::Pane* pane, const GXColor* color) {
         c.a = c.a * brightness;
         SetTextBoxColors(textBox, c, c);
     }
-}
-
-inline void SetTextBoxColors(nw4r::lyt::TextBox* textBox, nw4r::ut::Color top, nw4r::ut::Color bottom) {
-    // TextBox::mTextColors is protected
-    nw4r::ut::Color* colors = (nw4r::ut::Color*)((u8*)textBox + 0xD8);
-    colors[0] = top;
-    colors[1] = bottom;
 }
 
 static void ZoomOutCalcCallback(void* arg) {

@@ -982,7 +982,7 @@ config.libs = [
                 Object(Matching, "WeatherTomorrow.cpp"),
                 Object(Matching, "WeatherWeek.cpp"),
                 Object(Matching, "WeatherAddress.cpp", extra_cflags=["-ipa file"]),
-                Object(NonMatching, "WeatherAround.cpp"),
+                Object(Matching, "WeatherAround.cpp", extra_cflags=["-ipa file"]),
                 Object(Matching, "WeatherBase.cpp"),
                 Object(Matching, "WeatherBaseDay.cpp"),
                 Object(Matching, "ForecastData.cpp", extra_cflags=["-ipa file"]),
