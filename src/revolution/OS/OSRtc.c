@@ -60,7 +60,7 @@ static void WriteSramCallback(EXIChannel chan, OSContext* ctx) {
 
 static BOOL WriteSram(const void* src, u32 pos, s32 size) {
     u32 imm;
-    BOOL error = FALSE;
+    BOOL error;
 
     if (!EXILock(EXI_CHAN_0, EXI_DEV_INT, WriteSramCallback)) {
         return FALSE;
@@ -72,6 +72,7 @@ static BOOL WriteSram(const void* src, u32 pos, s32 size) {
     }
 
     imm = pos * 0x40 + 0x100 | 0xA0000000;
+    error = FALSE;
     error |= !EXIImm(EXI_CHAN_0, &imm, sizeof(imm), EXI_WRITE, NULL);
     error |= !EXISync(EXI_CHAN_0);
     error |= !EXIImmEx(EXI_CHAN_0, (void*)src, size, EXI_WRITE);

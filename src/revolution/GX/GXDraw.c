@@ -5,6 +5,22 @@
 static GXVtxDescList vcd[GX_VA_MAX_ATTR + 1];
 static GXVtxAttrFmtList vat[GX_VA_MAX_ATTR + 1];
 
+static void GetVertState(void) {
+    GXGetVtxDescv(vcd);
+    GXGetVtxAttrFmtv(GX_VTXFMT3, vat);
+
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_NRM, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+}
+
+static void RestoreVertState(void) {
+    GXSetVtxDescv(vcd);
+    GXSetVtxAttrFmtv(GX_VTXFMT3, vat);
+}
+
 void GXDrawCylinder(u8 sides) {
     // Unit-circle vertices
     f32 vx[100];
@@ -18,16 +34,7 @@ void GXDrawCylinder(u8 sides) {
     z = 1.0f;
     zn = -z;
 
-    // Backup VAT/VCD
-    GXGetVtxDescv(vcd);
-    GXGetVtxAttrFmtv(GX_VTXFMT3, vat);
-
-    // Set custom VAT/VCD
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_NRM, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+    GetVertState();
 
     // Calculate vertices
     for (i = 0; i <= sides; i++) {
@@ -72,9 +79,7 @@ void GXDrawCylinder(u8 sides) {
     }
     GXEnd();
 
-    // Restore old VAT/VCD
-    GXSetVtxDescv(vcd);
-    GXSetVtxAttrFmtv(GX_VTXFMT3, vat);
+    RestoreVertState();
 }
 // https://github.com/doldecomp/melee/blob/43c7de326a8192cac8eccd0af8272933e16a4e7d/libs/dolphin/src/dolphin/gx/GXDraw.c#L160
 void GXDrawTorus(f32 rc, u8 numc, u8 numt)
@@ -85,8 +90,6 @@ void GXDrawTorus(f32 rc, u8 numc, u8 numt)
     f32 x, y, z;
     f32 twopi = 6.2831855f;
     f32 rt;
-
-    ASSERTMSGLINE(0x13C, rc < 1.0f, "GXDrawTorus: doughnut too fat");
 
     rt = 1.0f - rc;
     GXGetVtxDesc(GX_VA_TEX0, &ttype);
@@ -139,16 +142,7 @@ void GXDrawSphere(u32 stacks, u32 sectors) {
     // Check texcoord attributes
     GXGetVtxDesc(GX_VA_TEX0, &tex0);
 
-    // Backup VAT/VCD
-    GXGetVtxDescv(vcd);
-    GXGetVtxAttrFmtv(GX_VTXFMT3, vat);
-
-    // Set custom VAT/VCD
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_NRM, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+    GetVertState();
 
     // Setup texcoord VAT/VCD if enabled
     if (tex0 != GX_NONE) {
@@ -200,9 +194,7 @@ void GXDrawSphere(u32 stacks, u32 sectors) {
         GXEnd();
     }
 
-    // Restore old VAT/VCD
-    GXSetVtxDescv(vcd);
-    GXSetVtxAttrFmtv(GX_VTXFMT3, vat);
+    RestoreVertState();
 }
 
 static void GXDrawCubeFace(f32 nx, f32 ny, f32 nz, f32 tx, f32 ty, f32 tz,

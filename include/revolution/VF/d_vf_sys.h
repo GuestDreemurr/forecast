@@ -53,6 +53,7 @@ u32 VFSysGetSyncMode(s32 i_handle_idx);
 
 typedef void (*VFSysTimeStampCallback)(void* time);
 VFSysTimeStampCallback VFSysSetTimeStampCallback(VFSysTimeStampCallback i_timestamp_callback);
+VFSysTimeStampCallback VFSysGetTimeStampCallback(void);
 
 #ifdef __cplusplus
 }
