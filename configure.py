@@ -1006,7 +1006,7 @@ config.libs = [
                 Object(Matching, "Fade.cpp"),
                 Object(Matching, "WorkerThread.cpp"),
                 Object(Matching, "LoopSound.cpp"),
-                Object(NonMatching, "SceneBase.cpp"),
+                Object(Matching, "SceneBase.cpp", extra_cflags=["-ipa file"]),
                 Object(NonMatching, "SimpleGlobe.cpp"),
             ],
     },
