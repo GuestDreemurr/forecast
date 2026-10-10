@@ -125,7 +125,8 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
 
         if (i == first) {
             swap(*i, *lm1);
-            j = last - 1;
+            j = last;
+            --j;
             ++i;
 
             if (!comp(*first, *j)) {
