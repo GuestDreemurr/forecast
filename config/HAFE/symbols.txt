@@ -2341,7 +2341,7 @@ ProductTexSrtMtx_RT__Q54nw4r3g3d6detail3dcc24@unnamed@g3d_3dsmax_cpp@FPQ34nw4r4m
 ProductTexSrtMtx_ST__Q54nw4r3g3d6detail3dcc24@unnamed@g3d_3dsmax_cpp@FPQ34nw4r4math5MTX34RCQ34nw4r3g3d6TexSrt = .text:0x800B0418; // type:function size:0x94 scope:local
 ProductTexSrtMtx_SRT__Q54nw4r3g3d6detail3dcc24@unnamed@g3d_3dsmax_cpp@FPQ34nw4r4math5MTX34RCQ34nw4r3g3d6TexSrt = .text:0x800B04AC; // type:function size:0x164 scope:local
 CalcTexMtx_3dsmax__Q44nw4r3g3d6detail3dccFPQ34nw4r4math5MTX34bRCQ34nw4r3g3d6TexSrtQ44nw4r3g3d6TexSrt4Flag = .text:0x800B0610; // type:function size:0x9C
-fn_800B06AC = .text:0x800B06AC; // type:function size:0x64
+CalcWorldMtx__Q34nw4r3g3d6ScnObjFPCQ34nw4r4math5MTX34PUl = .text:0x800B06AC; // type:function size:0x64 scope:global
 CalcViewMtx__Q34nw4r3g3d6ScnObjFPCQ34nw4r4math5MTX34 = .text:0x800B0710; // type:function size:0x14
 __ct__Q34nw4r3g3d6ScnObjFP12MEMAllocator = .text:0x800B0724; // type:function size:0x88
 __dt__Q34nw4r3g3d6ScnObjFv = .text:0x800B07AC; // type:function size:0x84 scope:global

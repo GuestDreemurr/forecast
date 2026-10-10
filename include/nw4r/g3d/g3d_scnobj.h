@@ -428,7 +428,6 @@ protected:
     void DefG3dProcScnGroup(u32 task, u32 param, void* pInfo);
 
 private:
-    void ScnGroup_G3DPROC_GATHER_SCNOBJ(u32 param, IScnObjGather* pCollection);
     void ScnGroup_G3DPROC_CALC_WORLD(u32 param, const math::MTX34* pParent);
     void ScnGroup_G3DPROC_CALC_MAT(u32 param, void* pInfo);
     void ScnGroup_G3DPROC_CALC_VIEW(u32 param, const math::MTX34* pCamera);

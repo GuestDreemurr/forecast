@@ -649,7 +649,7 @@ nw4r/g3d/g3d_3dsmax.cpp:
 	.sdata2     start:0x803329B0 end:0x803329C8
 
 nw4r/g3d/g3d_scnobj.cpp:
-	.text       start:0x800B0710 end:0x800B1B38
+	.text       start:0x800B06AC end:0x800B1B38
 	.rodata     start:0x801957E0 end:0x80195810
 	.data       start:0x801B6E88 end:0x801B6F48
 	.sdata2     start:0x803329C8 end:0x803329D0
