@@ -62,18 +62,19 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
             }
 
             It lm1 = last - 1;
+            It* pm;
             for (; first != lm1; ++first) {
                 It m = first;
                 if (first != last) {
                     for (It k = first + 1; k != last; ++k) {
-                        if (comp(*k, *m)) {
+                        if (comp(*k, **(pm = &m))) {
                             m = k;
                         }
                     }
                 }
 
-                if (m != first) {
-                    swap(*m, *first);
+                if (*pm != first) {
+                    swap(**pm, *first);
                 }
             }
             return;
