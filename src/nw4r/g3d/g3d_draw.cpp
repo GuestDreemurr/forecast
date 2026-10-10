@@ -237,10 +237,45 @@ void SetupDraw1Mat1ShpSwap(Draw1Mat1ShpSwap* pSwap,
     pSwap->vtxClrTable = pReplacement->vtxClrTable;
 }
 
-bool FrontToBack(const detail::workmem::MdlZ& rLhs,
-                 const detail::workmem::MdlZ& rRhs);
-bool BackToFront(const detail::workmem::MdlZ& rLhs,
-                 const detail::workmem::MdlZ& rRhs);
+inline bool FrontToBack(const detail::workmem::MdlZ& rLhs,
+                        const detail::workmem::MdlZ& rRhs) {
+
+    if (rLhs.priority < rRhs.priority) {
+        return true;
+    }
+
+    if (rLhs.priority > rRhs.priority) {
+        return false;
+    }
+
+    if (rLhs.Z > rRhs.Z) {
+        return true;
+    }
+
+    return false;
+}
+
+inline bool BackToFront(const detail::workmem::MdlZ& rLhs,
+                        const detail::workmem::MdlZ& rRhs) {
+
+    if (rLhs.priority < rRhs.priority) {
+        return true;
+    }
+
+    if (rLhs.priority > rRhs.priority) {
+        return false;
+    }
+
+    if (rLhs.Z < rRhs.Z) {
+        return true;
+    }
+
+    if (rLhs.Z == rRhs.Z && rLhs.matID < rRhs.matID) {
+        return true;
+    }
+
+    return false;
+}
 
 void DrawResMdlLoop(const ResMdl mdl, const u8* pByteCode, u32 drawMode) {
 
@@ -519,50 +554,6 @@ void DrawResMdlDirectly(const ResMdl mdl, const math::MTX34* pViewPosMtxArray,
 
     G3DState::SetViewPosNrmMtxArray(NULL, NULL, NULL);
 }
-
-namespace {
-
-bool FrontToBack(const detail::workmem::MdlZ& rLhs,
-                        const detail::workmem::MdlZ& rRhs) {
-
-    if (rLhs.priority < rRhs.priority) {
-        return true;
-    }
-
-    if (rLhs.priority > rRhs.priority) {
-        return false;
-    }
-
-    if (rLhs.Z > rRhs.Z) {
-        return true;
-    }
-
-    return false;
-}
-
-bool BackToFront(const detail::workmem::MdlZ& rLhs,
-                        const detail::workmem::MdlZ& rRhs) {
-
-    if (rLhs.priority < rRhs.priority) {
-        return true;
-    }
-
-    if (rLhs.priority > rRhs.priority) {
-        return false;
-    }
-
-    if (rLhs.Z < rRhs.Z) {
-        return true;
-    }
-
-    if (rLhs.Z == rRhs.Z && rLhs.matID < rRhs.matID) {
-        return true;
-    }
-
-    return false;
-}
-
-} // namespace
 
 } // namespace g3d
 } // namespace nw4r

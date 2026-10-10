@@ -13,6 +13,10 @@ template <typename It, typename T> inline It find(It first, It last, const T& v)
 }
 template <typename It> inline long distance(It first, It last) { return last - first; }
 // Quicksort (selection sort below 21 elements) with a rotating pivot index.
+inline long __pivot_ofs(long n, int idx) {
+    return n / 4 + idx % 5;
+}
+
 template <typename Cmp, typename It>
 void __sort132(It x, It y, It z, Cmp comp) {
     bool a = !comp(*z, *x);
@@ -46,6 +50,7 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
         It i;
         It j;
         It lm1;
+        It* pi;
 
         if (len <= 1) {
             return;
@@ -74,11 +79,11 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
             return;
         }
 
-        It p1 = first + (len / 4 + sIdx % 5);
+        It p1 = first + __pivot_ofs(len, sIdx);
         if (++sIdx >= 5) {
             sIdx = -4;
         }
-        It p2 = first + (len * 3 / 4 + sIdx % 5);
+        It p2 = first + __pivot_ofs(len * 3, sIdx);
         if (++sIdx >= 5) {
             sIdx = -4;
         }
@@ -128,14 +133,15 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
                     ++i;
                 }
 
+                pi = &i;
                 if (i < j) {
-                    swap(*i, *j);
+                    swap(**pi, *j);
                 }
             }
 
             if (i < j) {
                 while (true) {
-                    while (!comp(*first, *i)) {
+                    while (!comp(*first, **pi)) {
                         ++i;
                     }
 
@@ -143,25 +149,25 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
                         --j;
                     } while (comp(*first, *j));
 
-                    if (i >= j) {
+                    if (*pi >= j) {
                         break;
                     }
 
-                    swap(*i, *j);
+                    swap(**pi, *j);
                     ++i;
                 }
             }
 
-            first = i;
+            first = *pi;
             continue;
         }
 
-        if (i - first < last - i) {
-            sort<It, Cmp&>(first, i, comp);
+        if (*pi - first < last - *pi) {
+            sort<It, Cmp&>(first, *pi, comp);
             first = i;
         } else {
-            sort<It, Cmp&>(i, last, comp);
-            last = i;
+            sort<It, Cmp&>(*pi, last, comp);
+            last = *pi;
         }
     }
 }
