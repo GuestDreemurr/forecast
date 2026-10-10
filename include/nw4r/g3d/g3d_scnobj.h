@@ -222,7 +222,7 @@ public:
 public:
     virtual ~IScnObjGather() {} // at 0x8
 
-    virtual CullingStatus Add(ScnObj* pObj, bool opa, bool xlu) = 0; // at 0xC
+    virtual void Add(ScnObj* pObj, bool opa, bool xlu) = 0; // at 0xC
     virtual void Clear() = 0;                                        // at 0x10
     virtual void ZSort() = 0;                                        // at 0x14
 
