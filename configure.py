@@ -1008,8 +1008,9 @@ config.libs = [
                 Object(Matching, "WorkerThread.cpp"),
                 Object(Matching, "LoopSound.cpp"),
                 Object(Matching, "LayoutObj.cpp", extra_cflags=["-ipa file"]),
+                Object(Matching, "GlobeView.cpp"),
                 Object(Matching, "SceneBase.cpp", extra_cflags=["-ipa file"]),
-                Object(NonMatching, "SimpleGlobe.cpp"),
+                Object(Matching, "SimpleGlobe.cpp", extra_cflags=["-ipa file"]),
             ],
     },
 ]
