@@ -8,7 +8,7 @@ template <typename T> inline const T& min(const T& a, const T& b) { return b < a
 template <typename T> inline const T& max(const T& a, const T& b) { return a < b ? b : a; }
 template <typename T> inline void swap(T& a, T& b) { T t = a; a = b; b = t; }
 template <typename It, typename T> inline It find(It first, It last, const T& v) {
-    for (; first != last; ++first) if (*first == v) break;
+    for (; first != last && !(*first == v); ++first) {}
     return first;
 }
 template <typename It> inline long distance(It first, It last) { return last - first; }
