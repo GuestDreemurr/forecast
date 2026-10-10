@@ -13,7 +13,7 @@ public:
     GlobeView(nw4r::g3d::Camera camera);
     virtual ~GlobeView();
 
-    void unk10(Vec *);
+    void Setup(Vec* position);
     void CalcCamera();
     void StartReset();
     BOOL IsSettled();
@@ -52,7 +52,7 @@ public:
     f32 mViewportY;            // at 0xDC
     f32 mViewportW;            // at 0xE0
     f32 mViewportH;            // at 0xE4
-    u16 unkE8;                 // at 0xE8
+    u16 mUnusedE8;             // at 0xE8, only cleared
     u8 unkEA[0xEC - 0xEA];     // at 0xEA
 };
 
@@ -102,44 +102,40 @@ public:
     nw4r::g3d::ScnRoot* mScnRoot; // at 0x0
     GlobeView* mView;             // at 0x4
     Vector3 mRotation;            // at 0x8
-    f32 unk14;                    // at 0x14
-    f32 unk18;                    // at 0x18
-    f32 unk1C;                    // at 0x1C
-    f32 unk20;                    // at 0x20
-    f32 unk24;                    // at 0x24
-    f32 unk28;                    // at 0x28
-    Vector2 unk2C[4];             // at 0x2C
-    Vector2 unk4C[4];             // at 0x4C
+    Vector3 mNorthPole;           // at 0x14
+    Vector3 mSouthPole;           // at 0x20
+    Vector2 mGrabPos[4];             // at 0x2C
+    Vector2 mGrabCursor[4];             // at 0x4C
     Vec2 mSpeed;                  // at 0x6C, rotation speed
-    f32 unk74;
-    f32 unk78;
-    f32 unk7C;
-    f32 unk80;
-    f32 unk84;
-    f32 unk88;
+    f32 mUnused74;                // at 0x74, only cleared
+    f32 mUnused78;                // at 0x78, only cleared
+    f32 mNorthScreen[2];          // at 0x7C, the north pole's screen position
+    f32 mSouthScreen[2];          // at 0x84
     u8 mGrabbed[4];               // at 0x8C
     u8 mSpinning;                 // at 0x90
     u8 mZoomIn;                   // at 0x91
     u8 mZoomOut;                  // at 0x92
     u8 mTiltUp;                   // at 0x93
     u8 mTiltDown;                 // at 0x94
-    u8 unk95;
-    u8 unk96;
-    u8 unk97;
-    u8 unk98;
-    u8 unk99;
-    u8 unk9A;
-    u8 unk9B;
+    u8 mCentering;                // at 0x95, easing the latitude back to the equator
+    // Set by UpdateFacing for each pole: its side of the globe faces the camera, its surface
+    // faces the camera ray, and it is behind the camera
+    u8 mNorthFacing;              // at 0x96
+    u8 mNorthVisible;             // at 0x97
+    u8 mSouthFacing;              // at 0x98
+    u8 mSouthVisible;             // at 0x99
+    u8 mNorthBehind;              // at 0x9A
+    u8 mSouthBehind;              // at 0x9B
     s32 mZoomLevel;               // at 0x9C
     s32 mTiltLevel;               // at 0xA0
     f32 mRoll[4];                 // at 0xA4, remote roll angle per controller
-    f32 unkB4;
-    f32 unkB8;
-    f32 unkBC;
-    f32 unkC0;
-    f32 unkC4;
+    f32 mZoomDist;
+    f32 mZoomDistTarget;
+    f32 mTilt;
+    f32 mTiltTarget;
+    f32 mGrabRoll;
     f32 mZoom;                    // at 0xC8
-    f32 unkCC;                    // at 0xCC
+    f32 mDragSign;                    // at 0xCC
 };
 
 

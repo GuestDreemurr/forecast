@@ -48,48 +48,48 @@ f32 speedY = 0.0f;
 SimpleGlobe::SimpleGlobe() :
 mScnRoot(NULL), mView(NULL),
 mRotation(0.0f, 0.0f, 0.0f),
-unk14(0.0f), unk18(gModelRange), unk1C(0.0f),
-unk20(0.0f), unk24(-gModelRange), unk28(0.0f)
+mNorthPole(0.0f, gModelRange, 0.0f),
+mSouthPole(0.0f, -gModelRange, 0.0f)
 {
     u32 val;
 
     this->mSpeed.x = 0.0f;
     this->mSpeed.y = 0.0f;
 
-    this->unk74 = 0.0f;
-    this->unk78 = 0.0f;
-    this->unk7C = 0.0f;
-    this->unk80 = 0.0f;
-    this->unk84 = 0.0f;
-    this->unk88 = 0.0f;
+    this->mUnused74 = 0.0f;
+    this->mUnused78 = 0.0f;
+    this->mNorthScreen[0] = 0.0f;
+    this->mNorthScreen[1] = 0.0f;
+    this->mSouthScreen[0] = 0.0f;
+    this->mSouthScreen[1] = 0.0f;
 
     this->mSpinning = 0;
     this->mZoomIn = 0;
     this->mZoomOut = 0;
     this->mTiltUp = 0;
     this->mTiltDown = 0;
-    this->unk95 = 0;
-    this->unk96 = 0;
-    this->unk97 = 0;
-    this->unk98 = 0;
-    this->unk99 = 0;
-    this->unk9A = 0;
-    this->unk9B = 0;
+    this->mCentering = 0;
+    this->mNorthFacing = 0;
+    this->mNorthVisible = 0;
+    this->mSouthFacing = 0;
+    this->mSouthVisible = 0;
+    this->mNorthBehind = 0;
+    this->mSouthBehind = 0;
 
     this->mZoomLevel = 0;
     this->mTiltLevel = 0;
 
-    this->unkB4 = sZoomDistances[8];
-    this->unkB8 = sZoomDistances[8];
-    this->unkBC = 0.0f;
-    this->unkC0 = 0.0f;
+    this->mZoomDist = sZoomDistances[8];
+    this->mZoomDistTarget = sZoomDistances[8];
+    this->mTilt = 0.0f;
+    this->mTiltTarget = 0.0f;
     this->mZoom = 1.0f;
 
     this->mScnRoot = nw4r::g3d::ScnRoot::Construct(&gMEM2Allocator, &val, 0x1F, 0x100, 0x80, 0x80);
     this->mScnRoot->SetCurrentCamera(0);
 
     this->mView = new GlobeView(this->mScnRoot->GetCurrentCamera());
-    this->mView->setZoom(this->unkB4);
+    this->mView->setZoom(this->mZoomDist);
 
     this->mGrabbed[0] = 0;
     this->mGrabbed[1] = 0;
@@ -135,12 +135,12 @@ void SimpleGlobe::SetRotation(const Vec* rotation, s32 frames) {
 
     this->mZoomLevel = frames;
 
-    this->unkB4 = sZoomDistances[frames];
-    this->unkB8 = sZoomDistances[frames];
+    this->mZoomDist = sZoomDistances[frames];
+    this->mZoomDistTarget = sZoomDistances[frames];
 
     this->mView->setZoom(sZoomDistances[frames]);
 
-    this->mView->unk10(&this->mRotation);
+    this->mView->Setup(&this->mRotation);
 
     nw4r::g3d::Camera camera = this->mScnRoot->GetCamera(1);
     camera.Init(gRenderMode.fbWidth, gRenderMode.efbHeight, gRenderMode.fbWidth, gRenderMode.xfbHeight, (gWidescreen) ? 0x340 : 0x260, 0x1C8);
@@ -257,26 +257,26 @@ void SimpleGlobe::UpdateFacing() {
     GlobeView* view = mView;
     nw4r::math::VEC3 toTarget;
     toTarget = *(nw4r::math::VEC3*)&view->mTarget - *(nw4r::math::VEC3*)&view->mCameraPos;
-    nw4r::math::VEC3 a = *(nw4r::math::VEC3*)&unk14;
+    nw4r::math::VEC3 a = *(nw4r::math::VEC3*)&mNorthPole;
     nw4r::math::VEC3 b;
-    b = *(nw4r::math::VEC3*)&unk14 - *(nw4r::math::VEC3*)&view->mCameraPos;
+    b = *(nw4r::math::VEC3*)&mNorthPole - *(nw4r::math::VEC3*)&view->mCameraPos;
     nw4r::math::VEC3Normalize(&a, &a);
     nw4r::math::VEC3Normalize(&toTarget, &toTarget);
     nw4r::math::VEC3Normalize(&b, &b);
-    unk96 = Dot(&a, &toTarget) < 0.0f;
-    unk97 = Dot(&a, &b) < 0.0f;
-    unk9A = Dot(&toTarget, &b) < 0.0f;
+    mNorthFacing = Dot(&a, &toTarget) < 0.0f;
+    mNorthVisible = Dot(&a, &b) < 0.0f;
+    mNorthBehind = Dot(&toTarget, &b) < 0.0f;
 
-    a = *(nw4r::math::VEC3*)&unk20;
-    CopyVec(&b, *(nw4r::math::VEC3*)&unk20 - *(nw4r::math::VEC3*)&view->mCameraPos);
+    a = *(nw4r::math::VEC3*)&mSouthPole;
+    CopyVec(&b, *(nw4r::math::VEC3*)&mSouthPole - *(nw4r::math::VEC3*)&view->mCameraPos);
     nw4r::math::VEC3Normalize(&a, &a);
     nw4r::math::VEC3Normalize(&b, &b);
-    unk98 = Dot(&a, &toTarget) < 0.0f;
-    unk99 = Dot(&a, &b) < 0.0f;
-    unk9B = Dot(&toTarget, &b) < 0.0f;
+    mSouthFacing = Dot(&a, &toTarget) < 0.0f;
+    mSouthVisible = Dot(&a, &b) < 0.0f;
+    mSouthBehind = Dot(&toTarget, &b) < 0.0f;
 
-    mView->Project(&unk7C, (const Vec*)&unk14);
-    mView->Project(&unk84, (const Vec*)&unk20);
+    mView->Project(mNorthScreen, &mNorthPole);
+    mView->Project(mSouthScreen, &mSouthPole);
 }
 
 static inline u32 GetNumLights(nw4r::g3d::LightSet* lightSet) {
@@ -318,7 +318,7 @@ void SimpleGlobe::UpdateZoom(const s32* sounds) {
             if (mZoomLevel >= 10) {
                 mZoomLevel = 9;
             }
-            unkB8 = sZoomDistances[mZoomLevel];
+            mZoomDistTarget = sZoomDistances[mZoomLevel];
             if (mZoomLevel != prev) {
                 PlaySE(sounds[mZoomLevel]);
             }
@@ -327,15 +327,15 @@ void SimpleGlobe::UpdateZoom(const s32* sounds) {
             if (mZoomLevel < 0) {
                 mZoomLevel = 0;
             }
-            unkB8 = sZoomDistances[mZoomLevel];
+            mZoomDistTarget = sZoomDistances[mZoomLevel];
             if (mZoomLevel != prev) {
                 PlaySE(sounds[mZoomLevel]);
             }
         }
 
-        unkB4 = mView->mZoom;
-        SmoothApproach(&unkB4, unkB8, 0.1f, 100.0f, 0.001f);
-        mView->mZoom = unkB4;
+        mZoomDist = mView->mZoom;
+        SmoothApproach(&mZoomDist, mZoomDistTarget, 0.1f, 100.0f, 0.001f);
+        mView->mZoom = mZoomDist;
         if (mView != NULL) {
             mZoom = mView->mZoom;
         }
@@ -361,29 +361,29 @@ BOOL SimpleGlobe::UpdateGrab(s32 chan) {
         }
 
         mView->mResetting = FALSE;
-        unk95 = 0;
+        mCentering = 0;
         mSpinning = 0;
         f32 x = GetPosition(mView).x;
-        unk2C[chan].x = x;
+        mGrabPos[chan].x = x;
         f32 y = GetPosition(mView).y;
-        unk2C[chan].y = y;
-        unk4C[chan].x = gCursorX[chan];
-        unk4C[chan].y = gCursorY[chan];
-        unkC4 = GetOrientation(mView).z;
+        mGrabPos[chan].y = y;
+        mGrabCursor[chan].x = gCursorX[chan];
+        mGrabCursor[chan].y = gCursorY[chan];
+        mGrabRoll = GetOrientation(mView).z;
 
         // The original works on a local copy of the sample
         KPADStatus status;
         const KPADStatus& sample = gKPADStatus[chan][0];
         status = sample;
         mRoll[chan] = nw4r::math::Atan2Deg(status.horizon.x, -status.horizon.y);
-        unkCC = 1.0f;
-        if (unk97) {
-            if (!unk9A) {
-                unkCC = unk4C[chan].y < unk80 ? -1.0f : 1.0f;
+        mDragSign = 1.0f;
+        if (mNorthVisible) {
+            if (!mNorthBehind) {
+                mDragSign = mGrabCursor[chan].y < mNorthScreen[1] ? -1.0f : 1.0f;
             }
-        } else if (unk99) {
-            if (!unk9B) {
-                unkCC = unk4C[chan].y > unk88 ? -1.0f : 1.0f;
+        } else if (mSouthVisible) {
+            if (!mSouthBehind) {
+                mDragSign = mGrabCursor[chan].y > mSouthScreen[1] ? -1.0f : 1.0f;
             }
         }
         return TRUE;
@@ -415,7 +415,7 @@ s32 SimpleGlobe::UpdateDrag(s32 chan) {
             f32 roll = nw4r::math::Atan2Deg(status.horizon.x, -status.horizon.y);
             f32 rollTarget = roll - mRoll[chan];
             if (nw4r::math::FAbs(rollTarget) > 30.0f) {
-                rollTarget += unkC4;
+                rollTarget += mGrabRoll;
                 if (rollTarget < 0.0f) {
                     rollTarget += 360.0f;
                 } else if (rollTarget >= 360.0f) {
@@ -429,24 +429,24 @@ s32 SimpleGlobe::UpdateDrag(s32 chan) {
                 Vec2 last;
                 last.x = view->mPosition.x;
                 last.y = view->mPosition.y;
-                rollTarget = unkC4;
+                rollTarget = mGrabRoll;
 
-                drag.x = factor * (gCursorY[chan] - unk4C[chan].y);
+                drag.x = factor * (gCursorY[chan] - mGrabCursor[chan].y);
                 BOOL level = FALSE;
                 if (view->mOrientation.z < 0.0008f && view->mOrientation.z > -0.0008f) {
                     level = TRUE;
                 }
                 if (level) {
-                    drag.y = factor * (unkCC * (gCursorX[chan] - unk4C[chan].x));
+                    drag.y = factor * (mDragSign * (gCursorX[chan] - mGrabCursor[chan].x));
                 } else {
-                    drag.y = factor * (gCursorX[chan] - unk4C[chan].x);
+                    drag.y = factor * (gCursorX[chan] - mGrabCursor[chan].x);
                 }
                 drag.z = 0.0f;
                 SetRotateZ(gModelMtx, view->mOrientation.z);
                 PSMTXMultVec(gModelMtx, &drag, &drag);
 
-                view->mPosition.x = unk2C[chan].x + drag.x;
-                view->mPosition.y = unk2C[chan].y - drag.y;
+                view->mPosition.x = mGrabPos[chan].x + drag.x;
+                view->mPosition.y = mGrabPos[chan].y - drag.y;
                 if (view->mPosition.x > 89.0f) {
                     view->mPosition.x = 89.0f;
                 } else if (view->mPosition.x < -89.0f) {
@@ -480,10 +480,10 @@ s32 SimpleGlobe::UpdateDrag(s32 chan) {
 
 void SimpleGlobe::SetZoom(s32 level, s32 flag) {
     if (mZoomLevel >= 8) {
-        unk95 = flag;
+        mCentering = flag;
     }
     mTiltLevel = level;
-    unkC0 = gGlobeZooms[level];
+    mTiltTarget = gGlobeZooms[level];
     mView->StartReset();
 }
 
@@ -505,9 +505,9 @@ BOOL SimpleGlobe::IsDefaultView() {
 
 void SimpleGlobe::SetMode(s32 mode) {
     mTiltLevel = mode;
-    unkC0 = gGlobeZooms[mode];
-    unkBC = unkC0;
-    mView->mOrientation.x = unkC0;
+    mTiltTarget = gGlobeZooms[mode];
+    mTilt = mTiltTarget;
+    mView->mOrientation.x = mTiltTarget;
     mView->mResetting = FALSE;
 }
 
@@ -520,7 +520,7 @@ void SimpleGlobe::UpdateTilt(u32 arg, const s32* sounds) {
             if (mTiltLevel >= 6) {
                 mTiltLevel = 5;
             }
-            unkC0 = gGlobeZooms[mTiltLevel];
+            mTiltTarget = gGlobeZooms[mTiltLevel];
             mView->mResetting = FALSE;
             moving = TRUE;
             if (mTiltLevel != prev) {
@@ -531,7 +531,7 @@ void SimpleGlobe::UpdateTilt(u32 arg, const s32* sounds) {
             if (mTiltLevel < 0) {
                 mTiltLevel = 0;
             }
-            unkC0 = gGlobeZooms[mTiltLevel];
+            mTiltTarget = gGlobeZooms[mTiltLevel];
             mView->mResetting = FALSE;
             moving = TRUE;
             if (mTiltLevel != prev) {
@@ -540,27 +540,27 @@ void SimpleGlobe::UpdateTilt(u32 arg, const s32* sounds) {
         }
 
         if (!moving) {
-            unkBC = mView->mOrientation.x;
-            SmoothApproach(&unkBC, unkC0, 0.1f, 100.0f, 0.001f);
-            mView->mOrientation.x = unkBC;
+            mTilt = mView->mOrientation.x;
+            SmoothApproach(&mTilt, mTiltTarget, 0.1f, 100.0f, 0.001f);
+            mView->mOrientation.x = mTilt;
         }
 
-        if (unk95) {
+        if (mCentering) {
             f32* x = &mView->mPosition.x;
             BOOL near = FALSE;
             if (*x < 0.0008f && *x > -0.0008f) {
                 near = TRUE;
             }
             if (near) {
-                unk95 = 0;
+                mCentering = 0;
                 mView->mPosition.x = 0.0f;
             } else if (*x < 0.0f) {
                 if (!SmoothApproach(x, 0.0f, 0.1f, 100.0f, 0.001f)) {
-                    unk95 = 0;
+                    mCentering = 0;
                 }
             } else if (*x > 0.0f) {
                 if (!SmoothApproach(x, 0.0f, 0.1f, 100.0f, 0.001f)) {
-                    unk95 = 0;
+                    mCentering = 0;
                 }
             }
         }
@@ -653,7 +653,7 @@ void SimpleGlobe::UpdateRotation(u32 stop) {
 
 void SimpleGlobe::SetZoomLevel(s32 level) {
     mZoomLevel = level;
-    unkB8 = sZoomDistances[level];
+    mZoomDistTarget = sZoomDistances[level];
 }
 
 void SimpleGlobe::SetSpeed(f32 speed) {
@@ -701,11 +701,11 @@ void SimpleGlobe::UpdateWater() {
     nw4r::g3d::Camera::PostureInfo posture;
     Mtx look;
     Vec first, second, up, position, target, cameraUp;
-    f32 fade = nw4r::ut::Min(Clamp01((unkB4 - 2.0f) / 15.0f), Clamp01((100.0f - unkB4) / 35.0f));
+    f32 fade = nw4r::ut::Min(Clamp01((mZoomDist - 2.0f) / 15.0f), Clamp01((100.0f - mZoomDist) / 35.0f));
 
-    f32 ripple = Clamp01((unkB4 - 40.0f) / 20.0f);
+    f32 ripple = Clamp01((mZoomDist - 40.0f) / 20.0f);
     f32 waveScale = 0.85f + 0.15f * ripple;
-    f32 alphaScale = Clamp01((unkB4 - 2.0f) / 15.0f);
+    f32 alphaScale = Clamp01((mZoomDist - 2.0f) / 15.0f);
 
     s8 exponent = 0;
     f32 scale = 0.0f;

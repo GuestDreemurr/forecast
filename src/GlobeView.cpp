@@ -39,7 +39,7 @@ GlobeView::GlobeView(nw4r::g3d::Camera camera) : mCamera(camera) {
     mViewportY = 0.0f;
     mViewportW = 0.0f;
     mViewportH = 0.0f;
-    unkE8 = 0;
+    mUnusedE8 = 0;
     PSMTXIdentity(mCameraMtx);
     nw4r::math::MTX44Identity((nw4r::math::MTX44*)mProjMtx);
 }
@@ -48,7 +48,7 @@ Mtx34::~Mtx34() {}
 
 GlobeView::~GlobeView() {}
 
-void GlobeView::unk10(Vec* position) {
+void GlobeView::Setup(Vec* position) {
     mCamera.SetPerspective(mFOVy, mAspect, mNear, mFar);
     mCamera.SetScissor(0, 0, gRenderMode.fbWidth, gRenderMode.efbHeight);
     mCamera.SetViewport(0.0f, 0.0f, (f32)(s32)gRenderMode.fbWidth, (f32)(s32)gRenderMode.efbHeight);
