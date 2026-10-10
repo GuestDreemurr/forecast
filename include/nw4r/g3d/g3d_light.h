@@ -124,6 +124,7 @@ public:
         return mpSetting != NULL && mpLightSetData != NULL;
     }
 
+    LightObj* GetLightObj(u32 lightIdx) const;
     bool SelectLightObj(u32 lightIdx, int lightObjIdx);
     bool SelectAmbLightObj(int lightObjIdx);
 
