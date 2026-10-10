@@ -7,13 +7,19 @@
 #include <nw4r/g3d/g3d_camera.h>
 #include <revolution/MTX.h>
 
-// Globe view state (d_weather_around)
+// Camera that looks at the globe (d_weather_around)
 class GlobeView {
 public:
     GlobeView(nw4r::g3d::Camera camera);
     virtual ~GlobeView();
 
     void unk10(Vec *);
+    void CalcCamera();
+    void StartReset();
+    BOOL IsSettled();
+    BOOL UpdateReset();
+    BOOL Approach(f32 target, f32* value);
+    void Project(f32* screen, const Vec* world);
 
     nw4r::g3d::Camera *getCamera() { return &mCamera; }
     f32 getFOVy() { return mFOVy; }
@@ -26,12 +32,15 @@ public:
 
     void setZoom(f32 zoom) { mZoom = zoom; }
 
-private:
     nw4r::g3d::Camera mCamera; // at 0x4
-    u8 unk8[0x90 - 0x8];       // at 0x8
+    Mtx mCameraMtx;            // at 0x8
+    Mtx44 mProjMtx;            // at 0x38
+    Vec mUp;                   // at 0x78
+    Vec mTarget;               // at 0x84
     Vec mPosition;             // at 0x90
     Vec mOrientation;          // at 0x9C
-    u8 unkA8[0xC0 - 0xA8];     // at 0xA8
+    Vec mCameraPos;            // at 0xA8
+    Vec mDirection;            // at 0xB4
     u8 mResetting;             // at 0xC0
     u8 unkC1[0xC4 - 0xC1];     // at 0xC1
     f32 mFOVy;                 // at 0xC4
@@ -39,7 +48,12 @@ private:
     f32 mNear;                 // at 0xCC
     f32 mFar;                  // at 0xD0
     f32 mZoom;                 // at 0xD4
-    u8 unkD8[0xEC - 0xD8];     // at 0xD8
+    f32 mViewportX;            // at 0xD8
+    f32 mViewportY;            // at 0xDC
+    f32 mViewportW;            // at 0xE0
+    f32 mViewportH;            // at 0xE4
+    u16 unkE8;                 // at 0xE8
+    u8 unkEA[0xEC - 0xEA];     // at 0xEA
 };
 
 // Hack
@@ -79,6 +93,7 @@ public:
     void UpdateRotation(u32 stop);
     void SetZoomLevel(s32 level);
     void PlayRotateSound(u32 id);
+    void UpdateWater();
 
     GlobeView* GetView() {
         return mView;
@@ -117,14 +132,14 @@ public:
     u8 unk9B;
     s32 mZoomLevel;               // at 0x9C
     s32 mTiltLevel;               // at 0xA0
-    u8 unkA4[0xB4 - 0xA4];        // at 0xA4
+    f32 mRoll[4];                 // at 0xA4, remote roll angle per controller
     f32 unkB4;
     f32 unkB8;
     f32 unkBC;
     f32 unkC0;
     f32 unkC4;
     f32 mZoom;                    // at 0xC8
-    u8 unkCC[0xD0 - 0xCC];        // at 0xCC
+    f32 unkCC;                    // at 0xCC
 };
 
 
