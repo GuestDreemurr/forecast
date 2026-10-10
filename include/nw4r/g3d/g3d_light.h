@@ -124,6 +124,8 @@ public:
         return mpSetting != NULL && mpLightSetData != NULL;
     }
 
+    // Light object selected into slot lightIdx, or NULL (name not confirmed against NW4R)
+    LightObj* GetLightObj(u32 lightIdx);
     bool SelectLightObj(u32 lightIdx, int lightObjIdx);
     bool SelectAmbLightObj(int lightObjIdx);
 

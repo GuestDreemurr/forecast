@@ -18,7 +18,8 @@
 #include "nw4r/g3d/res/g3d_resmdl.h"
 #include "nw4r/g3d/res/g3d_resmat.h"
 
-const f32 lbl_8018F730[10] = {
+// Camera distance from the globe per zoom level
+const f32 sZoomDistances[10] = {
     1.0f, 2.0f, 5.0f, 8.0f, 12.0f,
     17.0f, 25.0f, 40.0f, 65.0f, 100.0f,
 };
@@ -29,13 +30,13 @@ extern const f32 gGlobeZooms[6] = {
 };
 
 // Spin damping per zoom level
-const f32 lbl_8018F770[10] = {
+const f32 sSpinDamping[10] = {
     0.85f, 0.9f, 0.95f, 0.97f, 0.98f,
     0.98f, 0.98f, 0.98f, 0.98f, 0.98f,
 };
 
 // Unused in this file; extern keeps -ipa file from dropping it, as the original kept it
-extern const f32 lbl_8018F798[6] = {
+extern const f32 gUnusedGlobeTable[6] = {
     0.1f, 2.1f, 0.6f, 0.4f, 0.1f, 0.2f,
 };
 
@@ -78,8 +79,8 @@ unk20(0.0f), unk24(-gModelRange), unk28(0.0f)
     this->mZoomLevel = 0;
     this->mTiltLevel = 0;
 
-    this->unkB4 = lbl_8018F730[8];
-    this->unkB8 = lbl_8018F730[8];
+    this->unkB4 = sZoomDistances[8];
+    this->unkB8 = sZoomDistances[8];
     this->unkBC = 0.0f;
     this->unkC0 = 0.0f;
     this->mZoom = 1.0f;
@@ -134,10 +135,10 @@ void SimpleGlobe::SetRotation(const Vec* rotation, s32 frames) {
 
     this->mZoomLevel = frames;
 
-    this->unkB4 = lbl_8018F730[frames];
-    this->unkB8 = lbl_8018F730[frames];
+    this->unkB4 = sZoomDistances[frames];
+    this->unkB8 = sZoomDistances[frames];
 
-    this->mView->setZoom(lbl_8018F730[frames]);
+    this->mView->setZoom(sZoomDistances[frames]);
 
     this->mView->unk10(&this->mRotation);
 
@@ -148,8 +149,6 @@ void SimpleGlobe::SetRotation(const Vec* rotation, s32 frames) {
     camera.SetViewport(0.0f, 0.0f, (int)gRenderMode.fbWidth, (int)gRenderMode.efbHeight);
 }
 
-// nw4r g3d: the light object selected into slot index of the light set (real name unknown)
-extern "C" nw4r::g3d::LightObj* fn_800B5B44(nw4r::g3d::LightSet* lightSet, u32 index);
 nw4r::snd::SoundHandle gRotateSoundHandle;
 Color gGlobeLightColor(0xFFFFFFFF);
 f32 SmoothApproach(f32* value, f32 target, f32 rate, f32 limit, f32 epsilon);
@@ -174,7 +173,7 @@ void SimpleGlobe::Setup(const Vec* rotation) {
     lightSet.SelectLightObj(7, -1);
     lightSet.SelectAmbLightObj(-1);
 
-    nw4r::g3d::LightObj* light = fn_800B5B44(&lightSet, 0);
+    nw4r::g3d::LightObj* light = lightSet.GetLightObj(0);
     light->Clear();
     light->InitLightColor((nw4r::ut::Color&)gGlobeLightColor);
     light->InitLightAttnA(1.0f, 0.0f, 0.0f);
@@ -290,7 +289,7 @@ void SimpleGlobe::UpdateLight() {
         nw4r::g3d::LightSet lightSet = mScnRoot->GetLightSet(0);
         if (GetNumLights(&lightSet) != 0) {
             for (u32 i = 0; i < GetNumLights(&lightSet); i++) {
-                nw4r::g3d::LightObj* light = fn_800B5B44(&lightSet, i);
+                nw4r::g3d::LightObj* light = lightSet.GetLightObj(i);
                 if (light != NULL) {
                     light->InitLightPos(view->mCameraPos.x, view->mCameraPos.y, view->mCameraPos.z);
                     light->InitLightDir(view->mDirection.x, view->mDirection.y, view->mDirection.z);
@@ -319,7 +318,7 @@ void SimpleGlobe::UpdateZoom(const s32* sounds) {
             if (mZoomLevel >= 10) {
                 mZoomLevel = 9;
             }
-            unkB8 = lbl_8018F730[mZoomLevel];
+            unkB8 = sZoomDistances[mZoomLevel];
             if (mZoomLevel != prev) {
                 PlaySE(sounds[mZoomLevel]);
             }
@@ -328,7 +327,7 @@ void SimpleGlobe::UpdateZoom(const s32* sounds) {
             if (mZoomLevel < 0) {
                 mZoomLevel = 0;
             }
-            unkB8 = lbl_8018F730[mZoomLevel];
+            unkB8 = sZoomDistances[mZoomLevel];
             if (mZoomLevel != prev) {
                 PlaySE(sounds[mZoomLevel]);
             }
@@ -612,7 +611,7 @@ void SimpleGlobe::UpdateRotation(u32 stop) {
                 view->mPosition.y -= 360.0f;
             }
 
-            f32 loss = mSpeed.y * (1.0f - lbl_8018F770[mZoomLevel]);
+            f32 loss = mSpeed.y * (1.0f - sSpinDamping[mZoomLevel]);
             mSpeed.y -= loss;
             if (IsNearZero(mSpeed.y)) {
                 mSpeed.y = 0.0f;
@@ -620,7 +619,7 @@ void SimpleGlobe::UpdateRotation(u32 stop) {
 
             f32 absLoss = nw4r::math::FAbs(loss);
             if (absLoss < 0.05f) {
-                mSpeed.x = mSpeed.x * lbl_8018F770[mZoomLevel];
+                mSpeed.x = mSpeed.x * sSpinDamping[mZoomLevel];
                 if (IsNearZero(mSpeed.x)) {
                     mSpeed.x = 0.0f;
                 }
@@ -654,7 +653,7 @@ void SimpleGlobe::UpdateRotation(u32 stop) {
 
 void SimpleGlobe::SetZoomLevel(s32 level) {
     mZoomLevel = level;
-    unkB8 = lbl_8018F730[level];
+    unkB8 = sZoomDistances[level];
 }
 
 void SimpleGlobe::SetSpeed(f32 speed) {
