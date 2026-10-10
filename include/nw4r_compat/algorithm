@@ -12,8 +12,158 @@ template <typename It, typename T> inline It find(It first, It last, const T& v)
     return first;
 }
 template <typename It> inline long distance(It first, It last) { return last - first; }
-template <typename It, typename Cmp> void sort(It first, It last, Cmp cmp) {
-    for (It i = first; i != last; ++i) for (It j = i + 1; j != last; ++j) if (cmp(*j, *i)) swap(*i, *j);
+// Quicksort (selection sort below 21 elements) with a rotating pivot index.
+template <typename Cmp, typename It>
+void __sort132(It x, It y, It z, Cmp comp) {
+    bool a = !comp(*z, *x);
+    bool b = !comp(*y, *z);
+
+    if (a && b) {
+        return;
+    }
+
+    if (!a && !b) {
+        swap(*x, *y);
+        return;
+    }
+
+    if (comp(*y, *x)) {
+        swap(*x, *y);
+    }
+
+    if (a) {
+        swap(*y, *z);
+    } else {
+        swap(*x, *z);
+    }
+}
+
+template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
+    static int sIdx = -4;
+
+    while (true) {
+        long len = last - first;
+        It i;
+        It j;
+        It lm1;
+
+        if (len <= 1) {
+            return;
+        }
+
+        if (len <= 20) {
+            if (first == last) {
+                return;
+            }
+
+            It lm1 = last - 1;
+            for (; first != lm1; ++first) {
+                It m = first;
+                if (first != last) {
+                    for (It k = first + 1; k != last; ++k) {
+                        if (comp(*k, *m)) {
+                            m = k;
+                        }
+                    }
+                }
+
+                if (m != first) {
+                    swap(*m, *first);
+                }
+            }
+            return;
+        }
+
+        It p1 = first + (len / 4 + sIdx % 5);
+        if (++sIdx >= 5) {
+            sIdx = -4;
+        }
+        It p2 = first + (len * 3 / 4 + sIdx % 5);
+        if (++sIdx >= 5) {
+            sIdx = -4;
+        }
+        lm1 = last - 1;
+        __sort132<Cmp&>(p1, p2, lm1, comp);
+
+        i = first;
+        j = lm1;
+
+        while (comp(*i, *lm1)) {
+            ++i;
+        }
+
+        do {
+            --j;
+        } while (i != j && !comp(*j, *lm1));
+
+        if (i < j) {
+            swap(*i, *j);
+            ++i;
+
+            while (true) {
+                while (comp(*i, *lm1)) {
+                    ++i;
+                }
+
+                do {
+                    --j;
+                } while (!comp(*j, *lm1));
+
+                if (i >= j) {
+                    break;
+                }
+
+                swap(*i, *j);
+                ++i;
+            }
+        }
+
+        if (i == first) {
+            swap(*i, *lm1);
+            j = last - 1;
+            ++i;
+
+            if (!comp(*first, *j)) {
+                while (i != last && !comp(*first, *i)) {
+                    ++i;
+                }
+
+                if (i < j) {
+                    swap(*i, *j);
+                }
+            }
+
+            if (i < j) {
+                while (true) {
+                    while (!comp(*first, *i)) {
+                        ++i;
+                    }
+
+                    do {
+                        --j;
+                    } while (comp(*first, *j));
+
+                    if (i >= j) {
+                        break;
+                    }
+
+                    swap(*i, *j);
+                    ++i;
+                }
+            }
+
+            first = i;
+            continue;
+        }
+
+        if (i - first < last - i) {
+            sort<It, Cmp&>(first, i, comp);
+            first = i;
+        } else {
+            sort<It, Cmp&>(i, last, comp);
+            last = i;
+        }
+    }
 }
 template <typename It> void sort(It first, It last) {
     for (It i = first; i != last; ++i) for (It j = i + 1; j != last; ++j) if (*j < *i) swap(*i, *j);

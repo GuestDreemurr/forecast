@@ -621,7 +621,7 @@ nw4r/g3d/g3d_calcworld.cpp:
 	.sdata2     start:0x80332938 end:0x80332940
 
 nw4r/g3d/g3d_draw.cpp:
-	.text       start:0x800ABB88 end:0x800AC6D4
+	.text       start:0x800ABB88 end:0x800AD4AC
 	.sdata      start:0x80330488 end:0x80330490
 	.sdata2     start:0x80332940 end:0x80332950
 
