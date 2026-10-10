@@ -538,7 +538,7 @@ nw4r/g3d/res/g3d_resshp.cpp:
 
 nw4r/g3d/res/g3d_restev.cpp:
 	.text       start:0x800A23B0 end:0x800A2408
-	.rodata     start:0x80195630 end:0x801956E8
+	.rodata     start:0x80195630 end:0x80195670
 
 nw4r/g3d/res/g3d_resmat.cpp:
 	.text       start:0x800A2408 end:0x800A32F0
@@ -559,22 +559,30 @@ nw4r/g3d/res/g3d_resanmtexpat.cpp:
 
 nw4r/g3d/g3d_anmvis.cpp:
 	.text       start:0x800A3A9C end:0x800A3B58
+	.rodata     start:0x80195670 end:0x80195680
 
 nw4r/g3d/g3d_anmclr.cpp:
 	.text       start:0x800A3B58 end:0x800A40C4
+	.rodata     start:0x80195680 end:0x80195698
 
 nw4r/g3d/g3d_anmtexpat.cpp:
 	.text       start:0x800A40C4 end:0x800A42D4
+	.rodata     start:0x80195698 end:0x801956B0
 
 nw4r/g3d/g3d_anmtexsrt.cpp:
 	.text       start:0x800A42D4 end:0x800A4508
+	.rodata     start:0x801956B0 end:0x801956C8
 	.sdata2     start:0x803328D8 end:0x803328E8
+
+nw4r/g3d/g3d_anmchr.cpp:
+	.rodata     start:0x801956C8 end:0x801956D8
 
 nw4r/g3d/g3d_anmscn.cpp:
 	.text       start:0x800A4508 end:0x800A4858
 
 nw4r/g3d/g3d_obj.cpp:
 	.text       start:0x800A4858 end:0x800A4974
+	.rodata     start:0x801956D8 end:0x801956E8
 	.data       start:0x801B6E40 end:0x801B6E60
 
 nw4r/g3d/g3d_anmobj.cpp:
@@ -616,11 +624,13 @@ nw4r/g3d/g3d_workmem.cpp:
 nw4r/g3d/g3d_calcworld.cpp:
 	.text       start:0x800AADFC end:0x800AB66C
 	.data       start:0x801B6E78 end:0x801B6E81
-	.sdata      start:0x80330480 end:0x80330490
-	.sdata2     start:0x80332938 end:0x80332950
+	.sdata      start:0x80330480 end:0x80330488
+	.sdata2     start:0x80332938 end:0x80332940
 
 nw4r/g3d/g3d_draw.cpp:
-	.text       start:0x800ABB88 end:0x800AC6D4
+	.text       start:0x800AB66C end:0x800AD4AC
+	.sdata      start:0x80330488 end:0x80330490
+	.sdata2     start:0x80332940 end:0x80332950
 
 nw4r/g3d/g3d_camera.cpp:
 	.text       start:0x800AD4AC end:0x800AE21C
@@ -641,12 +651,13 @@ nw4r/g3d/g3d_xsi.cpp:
 	.sdata2     start:0x803329A0 end:0x803329B0
 
 nw4r/g3d/g3d_3dsmax.cpp:
-	.text       start:0x800AFCF0 end:0x800B06AC
-	.rodata     start:0x801957A8 end:0x80195810
+	.text       start:0x800AFBFC end:0x800B06AC
+	.rodata     start:0x801957A8 end:0x801957E0
 	.sdata2     start:0x803329B0 end:0x803329C8
 
 nw4r/g3d/g3d_scnobj.cpp:
-	.text       start:0x800B0710 end:0x800B1B38
+	.text       start:0x800B06AC end:0x800B1B38
+	.rodata     start:0x801957E0 end:0x80195810
 	.data       start:0x801B6E88 end:0x801B6F48
 	.sdata2     start:0x803329C8 end:0x803329D0
 

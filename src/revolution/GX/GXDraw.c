@@ -85,6 +85,8 @@ void GXDrawCylinder(u8 sides) {
 void GXDrawTorus(f32 rc, u8 numc, u8 numt)
 {
     GXAttrType ttype;
+    GXAttrType tc;
+    GXAttrType* ptc;
     s32 i, j, k;
     f32 s, t;
     f32 x, y, z;
@@ -97,9 +99,11 @@ void GXDrawTorus(f32 rc, u8 numc, u8 numt)
     if (ttype != GX_NONE) {
         GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
         GXSetVtxAttrFmt(GX_VTXFMT3, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+        ptc = &tc;
     }
     for (i = 0; i < numc; i++) {
         GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT3, (numt + 1) * 2);
+        tc = ttype;
         for (j = 0; j <= numt; j++) {
             for (k = 1; k >= 0; k--) {
                 s = (i + k) % numc;
@@ -114,7 +118,7 @@ void GXDrawTorus(f32 rc, u8 numc, u8 numt)
                 y = -sinf(t * twopi / numt) * cosf(s * twopi / numc);
                 z = sinf(s * twopi / numc);
                 GXNormal3f32(x, y, z);
-                if (ttype != GX_NONE) {
+                if (*ptc != GX_NONE) {
                     GXTexCoord2f32((i + k) / (f32) numc, j / (f32) numt);
                 }
             }

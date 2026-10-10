@@ -87,7 +87,7 @@ void ScnRoot::G3dProc(u32 task, u32 param, void* pInfo) {
     switch (task) {
     case G3DPROC_CHILD_DETACHED: {
         if (mpAnmScn == pInfo) {
-            mpAnmScn->G3dProc(G3DPROC_DETACH_PARENT, 0, this);
+            mpAnmScn->G3dProc(task, 0, this);
             mpAnmScn = NULL;
             break;
         }
@@ -152,12 +152,6 @@ void ScnRoot::SetGlbSettings() {
                                    i == mCurrentCameraID);
     }
 
-    bool persp = cam.GetProjectionType() != GX_ORTHOGRAPHIC;
-    u32 projOrthoBit = persp ? 0 : GX_ORTHOGRAPHIC << 3;
-
-    f32 near = cam.ref().projNear;
-    f32 far = cam.ref().projFar;
-
     u16 width = 0;
     u16 center = 0;
 
@@ -166,12 +160,7 @@ void ScnRoot::SetGlbSettings() {
 
     for (i = 0; i < G3DState::NUM_FOG; i++) {
         Fog fog(&mFog[i]);
-        fog.SetNearFar(near, far);
-
-        if (fog.ref().type != GX_FOG_NONE) {
-            fog.ref().type = static_cast<GXFogType>(
-                (fog.ref().type & ~(GX_ORTHOGRAPHIC << 3)) | projOrthoBit);
-        }
+        fog.SetNearFar(cam.ref().projNear, cam.ref().projFar);
 
         if (fog.IsFogRangeAdjEnable()) {
             if (!fogRangeAdj) {
@@ -249,25 +238,7 @@ void ScnRoot::CalcView() {
 
 void ScnRoot::GatherDrawScnObj() {
     mpCollection->Clear();
-
-    math::FRUSTUM frustum;
-    Camera cam = GetCurrentCamera();
-
-    math::MTX34 mtx;
-    cam.GetCameraMtx(&mtx);
-
-    if (cam.ref().flags & CameraData::FLAG_PROJ_PERSP) {
-        frustum.Set(cam.ref().projFovy, cam.ref().projAspect,
-                    cam.ref().projNear, cam.ref().projFar, mtx);
-    } else {
-        frustum.Set(cam.ref().projTop, cam.ref().projBottom, cam.ref().projLeft,
-                    cam.ref().projRight, cam.ref().projNear, cam.ref().projFar,
-                    mtx);
-    }
-
-    gpCullingFrustum = &frustum;
     G3dProc(G3DPROC_GATHER_SCNOBJ, 0, mpCollection);
-    gpCullingFrustum = NULL;
 }
 
 void ScnRoot::ZSort() {
@@ -389,29 +360,18 @@ inline bool LessByGetValueForSortXlu(const ScnObj* pLhs, const ScnObj* pRhs) {
  * ScnObjGather
  *
  ******************************************************************************/
-IScnObjGather::CullingStatus ScnObjGather::Add(ScnObj* pObj, bool opa,
-                                               bool xlu) {
-    IScnObjGather::CullingStatus status =
-        IScnObjGather::CULLINGSTATUS_INTERSECT;
-
-
+void ScnObjGather::Add(ScnObj* pObj, bool opa, bool xlu) {
     if (opa) {
         if (mNumScnObjOpa < mSizeScnObj) {
             mpArrayOpa[mNumScnObjOpa++] = pObj;
-        } else {
-            return status;
         }
     }
 
     if (xlu) {
         if (mNumScnObjXlu < mSizeScnObj) {
             mpArrayXlu[mNumScnObjXlu++] = pObj;
-        } else {
-            return status;
         }
     }
-
-    return status;
 }
 
 void ScnObjGather::ZSort() {

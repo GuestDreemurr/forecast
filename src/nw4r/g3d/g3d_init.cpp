@@ -15,8 +15,6 @@ namespace nw4r {
 namespace g3d {
 
 void G3dInit(bool enableLockedCache) {
-    OSRegisterVersion(NW4R_G3D_Version_);
-
     if (enableLockedCache) {
         ut::LC::Enable();
     } else {

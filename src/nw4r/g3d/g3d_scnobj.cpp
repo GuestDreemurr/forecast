@@ -412,31 +412,7 @@ ScnObj::ForEachResult ScnGroup::ForEach(ForEachFunc pFunc, void* pInfo,
     }
 }
 
-void ScnGroup::ScnGroup_G3DPROC_GATHER_SCNOBJ(u32 param,
-                                              IScnObjGather* pCollection) {
-    IScnObjGather::CullingStatus status =
-        pCollection->Add(this, !TestScnObjFlag(SCNOBJFLAG_NOT_GATHER_DRAW_OPA),
-                         !TestScnObjFlag(SCNOBJFLAG_NOT_GATHER_DRAW_XLU));
-
-    if (status == IScnObjGather::CULLINGSTATUS_INTERSECT) {
-        for (u32 i = 0; i < mNumScnObj; i++) {
-            mpScnObjArray[i]->G3dProc(G3DPROC_GATHER_SCNOBJ, param,
-                                      pCollection);
-        }
-    } else if (status == IScnObjGather::CULLINGSTATUS_INSIDE) {
-        const math::FRUSTUM* pTemp = gpCullingFrustum;
-        gpCullingFrustum = NULL;
-        {
-            for (u32 i = 0; i < mNumScnObj; i++) {
-                mpScnObjArray[i]->G3dProc(G3DPROC_GATHER_SCNOBJ, param,
-                                          pCollection);
-            }
-        }
-        gpCullingFrustum = pTemp;
-    }
-}
-
-void ScnGroup::ScnGroup_G3DPROC_CALC_WORLD(u32 param,
+inline void ScnGroup::ScnGroup_G3DPROC_CALC_WORLD(u32 param,
                                            const math::MTX34* pParent) {
     CheckCallback_CALC_WORLD(CALLBACK_TIMING_A, param,
                              const_cast<math::MTX34*>(pParent));
@@ -446,9 +422,10 @@ void ScnGroup::ScnGroup_G3DPROC_CALC_WORLD(u32 param,
     CheckCallback_CALC_WORLD(CALLBACK_TIMING_B, param,
                              const_cast<math::MTX34*>(pParent));
 
+    u32 i;
     math::MTX34* pWorldMtx = const_cast<math::MTX34*>(GetMtxPtr(MTX_WORLD));
 
-    for (u32 i = 0; i < mNumScnObj; i++) {
+    for (i = 0; i < mNumScnObj; i++) {
         mpScnObjArray[i]->G3dProc(G3DPROC_CALC_WORLD, param, pWorldMtx);
     }
 
@@ -456,7 +433,7 @@ void ScnGroup::ScnGroup_G3DPROC_CALC_WORLD(u32 param,
                              const_cast<math::MTX34*>(pParent));
 }
 
-void ScnGroup::ScnGroup_G3DPROC_CALC_MAT(u32 param, void* pInfo) {
+inline void ScnGroup::ScnGroup_G3DPROC_CALC_MAT(u32 param, void* pInfo) {
     CheckCallback_CALC_MAT(CALLBACK_TIMING_A, param, pInfo);
 
     for (u32 i = 0; i < mNumScnObj; i++) {
@@ -466,7 +443,7 @@ void ScnGroup::ScnGroup_G3DPROC_CALC_MAT(u32 param, void* pInfo) {
     CheckCallback_CALC_MAT(CALLBACK_TIMING_C, param, pInfo);
 }
 
-void ScnGroup::ScnGroup_G3DPROC_CALC_VIEW(u32 param,
+inline void ScnGroup::ScnGroup_G3DPROC_CALC_VIEW(u32 param,
                                           const math::MTX34* pCamera) {
     CheckCallback_CALC_VIEW(CALLBACK_TIMING_A, param,
                             const_cast<math::MTX34*>(pCamera));
@@ -495,10 +472,16 @@ void ScnGroup::G3dProc(u32 task, u32 param, void* pInfo) {
 
 void ScnGroup::DefG3dProcScnGroup(u32 task, u32 param, void* pInfo) {
     switch (task) {
-    //! TODO(texline) This case is inlined in Rev 0
     case G3DPROC_GATHER_SCNOBJ: {
-        ScnGroup_G3DPROC_GATHER_SCNOBJ(param,
-                                       static_cast<IScnObjGather*>(pInfo));
+        IScnObjGather* pCollection = static_cast<IScnObjGather*>(pInfo);
+
+        pCollection->Add(this, !TestScnObjFlag(SCNOBJFLAG_NOT_GATHER_DRAW_OPA),
+                         !TestScnObjFlag(SCNOBJFLAG_NOT_GATHER_DRAW_XLU));
+
+        for (u32 i = 0; i < mNumScnObj; i++) {
+            mpScnObjArray[i]->G3dProc(G3DPROC_GATHER_SCNOBJ, param,
+                                      pCollection);
+        }
         break;
     }
 

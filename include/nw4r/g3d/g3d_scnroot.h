@@ -109,7 +109,7 @@ public:
 
     virtual ~ScnObjGather() {} // at 0x8
 
-    virtual CullingStatus Add(ScnObj* pObj, bool opa, bool xlu); // at 0xC
+    virtual void Add(ScnObj* pObj, bool opa, bool xlu); // at 0xC
     virtual void Clear() {
         mNumScnObjOpa = mNumScnObjXlu = 0;
     } // at 0x10
