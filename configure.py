@@ -708,6 +708,7 @@ config.libs = [
             Object(Matching, "MSL_C/ansi_files.c"),
             Object(Matching, "MSL_C/ansi_fp.c"),
             Object(Matching, "MSL_C/arith.c"),
+            Object(Matching, "MSL_C/bsearch.c"),
             Object(Matching, "MSL_C/buffer_io.c"),
             Object(Matching, "MSL_C/ctype.c"),
             Object(Matching, "MSL_C/direct_io.c"),

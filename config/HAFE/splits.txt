@@ -1505,7 +1505,14 @@ MSL_C/locale.c:
 	.sdata2     start:0x80333188 end:0x8033319B
 
 MSL_C/arith.c:
-	.text       start:0x801642EC end:0x801642FC
+	extab       start:0x80006748 end:0x80006758
+	extabindex  start:0x80006CAC end:0x80006CC4
+	.text       start:0x801642EC end:0x80164550
+
+MSL_C/bsearch.c:
+	extab       start:0x80006758 end:0x80006760
+	extabindex  start:0x80006CC4 end:0x80006CD0
+	.text       start:0x80164550 end:0x80164640
 
 MSL_C/buffer_io.c:
 	extab       start:0x80006760 end:0x80006768
