@@ -1451,6 +1451,13 @@ Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
 	.dtors      start:0x80179320 end:0x80179328
 	.sdata      start:0x80330948 end:0x80330950
 
+Runtime.PPCEABI.H/Gecko_setjmp.c:
+	.text       start:0x80162028 end:0x8016223C
+
+Runtime.PPCEABI.H/Gecko_ExceptionPPC.cp:
+	.text       start:0x8016223C end:0x801622A0
+	.bss        start:0x8032CC78 end:0x8032CC84
+
 MSL_C/alloc.c:
 	extab       start:0x800066E8 end:0x80006700
 	extabindex  start:0x80006C1C end:0x80006C40
