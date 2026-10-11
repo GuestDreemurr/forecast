@@ -1437,6 +1437,11 @@ Runtime.PPCEABI.H/global_destructor_chain.c:
 	.text       start:0x801613D0 end:0x80161430
 	.sbss       start:0x803318B8 end:0x803318C0
 
+Runtime.PPCEABI.H/NMWException.cp:
+	extab       start:0x800066D8 end:0x800066E0
+	extabindex  start:0x80006C04 end:0x80006C10
+	.text       start:0x801616E8 end:0x80161760
+
 Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
 	.text       start:0x80161FB8 end:0x80162028
 	.ctors      start:0x80179240 end:0x80179244
