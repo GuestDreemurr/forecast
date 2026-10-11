@@ -342,3 +342,25 @@ long strtol(const char *str, char **end, int base) {
 int atoi(const char *str) {
     return (strtol(str, 0, 10));
 }
+
+long atol(const char *str) {
+    unsigned long uvalue;
+    long svalue;
+    int overflow, negative, count;
+
+    __InStrCtrl isc;
+    isc.NextChar = (char*)str;
+    isc.NullCharDetected = 0;
+
+    uvalue = __strtoul(10, 0x7FFFFFFF, &__StringRead, (void*)&isc, &count, &negative, &overflow);
+
+    if (overflow || (!negative && uvalue > LONG_MAX) || (negative && uvalue > -LONG_MIN)) {
+        svalue = (negative ? -LONG_MIN : LONG_MAX);
+        errno = 0x22;
+    }
+    else {
+        svalue = (negative ? (long)-uvalue : (long)uvalue);
+    }
+
+    return svalue;
+}
