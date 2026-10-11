@@ -1627,6 +1627,9 @@ MSL_C/wstring.c:
 MSL_C/wchar_io.c:
 	.text       start:0x8016F5FC end:0x8016F680
 
+MSL_C/getenv.c:
+	.text       start:0x8016F688 end:0x8016F690
+
 MSL_C/uart_console_io_gcn.c:
 	extab       start:0x80006928 end:0x80006930
 	extabindex  start:0x80006F7C end:0x80006F88
