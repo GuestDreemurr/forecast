@@ -6,7 +6,12 @@
 namespace nw4r {
 namespace g3d {
 
+// The retail DOL only retains AnmObjChr::TYPE_NAME (referenced via CalcWorld);
+// the rest of this unit's code is dead-stripped there, so it is excluded here
+// to keep the unit linkable as Matching.
 NW4R_G3D_RTTI_DEF(AnmObjChr);
+
+#ifdef NW4R_G3D_ANMCHR_FULL
 NW4R_G3D_RTTI_DEF(AnmObjChrNode);
 NW4R_G3D_RTTI_DEF(AnmObjChrBlend);
 NW4R_G3D_RTTI_DEF(AnmObjChrRes);
@@ -771,6 +776,8 @@ void AnmObjChrRes::G3dProc(u32 task, u32 param, void* pInfo) {
     }
     }
 }
+
+#endif // NW4R_G3D_ANMCHR_FULL
 
 } // namespace g3d
 } // namespace nw4r
