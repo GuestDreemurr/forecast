@@ -723,6 +723,7 @@ config.libs = [
             Object(Matching, "MSL_C/math_api.c"),
             Object(Matching, "MSL_C/misc_io.c"),
             Object(Matching, "MSL_C/printf.c", mw_version="GC/3.0a5.2"),
+            Object(Matching, "MSL_C/qsort.c"),
             Object(Matching, "MSL_C/rand.c"),
             Object(Matching, "MSL_C/scanf.c"),
             Object(Matching, "MSL_C/signal.c"),
