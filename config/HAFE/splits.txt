@@ -1445,6 +1445,14 @@ Runtime.PPCEABI.H/NMWException.cp:
 	extabindex  start:0x80006BE0 end:0x80006C1C
 	.text       start:0x80161430 end:0x801617E0
 
+Runtime.PPCEABI.H/ptmf.c:
+	.text       start:0x801617E0 end:0x8016189C
+	.rodata     start:0x801979A0 end:0x801979AC
+
+Runtime.PPCEABI.H/runtime.c:
+	.text       start:0x8016189C end:0x80161FB8
+	.rodata     start:0x801979B0 end:0x801979C8
+
 Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
 	.text       start:0x80161FB8 end:0x80162028
 	.ctors      start:0x80179240 end:0x80179244
