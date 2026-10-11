@@ -1627,6 +1627,9 @@ MSL_C/wstring.c:
 MSL_C/wchar_io.c:
 	.text       start:0x8016F5FC end:0x8016F680
 
+MSL_C/time_zone.c:
+	.text       start:0x8016F680 end:0x8016F688
+
 MSL_C/getenv.c:
 	.text       start:0x8016F688 end:0x8016F690
 
