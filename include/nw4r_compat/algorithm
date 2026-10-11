@@ -42,41 +42,50 @@ void __sort132(It x, It y, It z, Cmp comp) {
     }
 }
 
+// Inline so its locals are inline-expansion variables (coloured between the quicksort's
+// named locals and its temporaries); declared k, m, lm1 so lm1 is coloured first, then m, then k.
+template <typename Cmp, typename It> inline void __selection_sort(It first, It last, Cmp comp) {
+    if (first == last) {
+        return;
+    }
+
+    It k;
+    It m;
+    It lm1 = last - 1;
+    for (; first != lm1; ++first) {
+        m = first;
+        if (first != last) {
+            for (k = first + 1; k != last; ++k) {
+                if (comp(*k, *m)) {
+                    m = k;
+                }
+            }
+        }
+        if (m != first) {
+            swap(*m, *first);
+        }
+    }
+}
+
 template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
     static int sIdx = -4;
 
     while (true) {
         long len = last - first;
+        // k is the right-hand iterator of the equal-keys pass (i == first). It must be its
+        // own local declared between i and j: reusing j makes MWCC split off a new web whose
+        // register order is wrong in g3d_draw's MdlZ sort.
         It i;
+        It k;
         It j;
         It lm1;
-        It* pi;
 
         if (len <= 1) {
             return;
         }
 
         if (len <= 20) {
-            if (first == last) {
-                return;
-            }
-
-            It lm1 = last - 1;
-            It* pm;
-            for (; first != lm1; ++first) {
-                It m = first;
-                if (first != last) {
-                    for (It k = first + 1; k != last; ++k) {
-                        if (comp(*k, **(pm = &m))) {
-                            m = k;
-                        }
-                    }
-                }
-
-                if (*pm != first) {
-                    swap(**pm, *first);
-                }
-            }
+            __selection_sort<Cmp&>(first, last, comp);
             return;
         }
 
@@ -126,50 +135,49 @@ template <typename It, typename Cmp> void sort(It first, It last, Cmp comp) {
 
         if (i == first) {
             swap(*i, *lm1);
-            j = last;
-            --j;
+            k = last;
+            --k;
             ++i;
 
-            if (!comp(*first, *j)) {
+            if (!comp(*first, *k)) {
                 while (i != last && !comp(*first, *i)) {
                     ++i;
                 }
 
-                pi = &i;
-                if (i < j) {
-                    swap(**pi, *j);
+                if (i < k) {
+                    swap(*i, *k);
                 }
             }
 
-            if (i < j) {
+            if (i < k) {
                 while (true) {
-                    while (!comp(*first, **pi)) {
+                    while (!comp(*first, *i)) {
                         ++i;
                     }
 
                     do {
-                        --j;
-                    } while (comp(*first, *j));
+                        --k;
+                    } while (comp(*first, *k));
 
-                    if (*pi >= j) {
+                    if (i >= k) {
                         break;
                     }
 
-                    swap(**pi, *j);
+                    swap(*i, *k);
                     ++i;
                 }
             }
 
-            first = *pi;
+            first = i;
             continue;
         }
 
-        if (*pi - first < last - *pi) {
-            sort<It, Cmp&>(first, *pi, comp);
+        if (i - first < last - i) {
+            sort<It, Cmp&>(first, i, comp);
             first = i;
         } else {
-            sort<It, Cmp&>(*pi, last, comp);
-            last = *pi;
+            sort<It, Cmp&>(i, last, comp);
+            last = i;
         }
     }
 }
