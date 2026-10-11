@@ -1525,9 +1525,9 @@ MSL_C/direct_io.c:
 	.text       start:0x80164720 end:0x80164A28
 
 MSL_C/file_io.c:
-	extab       start:0x80006770 end:0x80006780
-	extabindex  start:0x80006CE8 end:0x80006D00
-	.text       start:0x80164A28 end:0x80164CD8
+	extab       start:0x80006770 end:0x80006788
+	extabindex  start:0x80006CE8 end:0x80006D0C
+	.text       start:0x80164A28 end:0x80164DC8
 
 MSL_C/FILE_POS.c:
 	extab       start:0x80006788 end:0x80006790
@@ -1640,7 +1640,7 @@ MSL_C/math_sun.c:
 	.text       start:0x8016F79C end:0x8016F7DC
 
 MSL_C/extras.c:
-	.text       start:0x8016F7DC end:0x8016F888
+	.text       start:0x8016F7DC end:0x8016F88C
 
 MSL_C/MSL_Common_Embedded/Math/Double_precision/e_acos.c:
 	.text       start:0x8016F88C end:0x8016FB50

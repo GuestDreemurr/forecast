@@ -106,3 +106,44 @@ int __msl_strnicmp(const char* pStr1, const char* pStr2, int n) {
 
     return 0;
 }
+
+size_t strlen(const char*);
+
+// Writes num in the given radix (digits above 9 are capital letters), returns str
+char* __msl_itoa(int num, char* str, int radix) {
+    char c;
+    int sign = 0;
+    int i = 0;
+    int j;
+    int k;
+    unsigned int n = num;
+
+    if (num < 0) {
+        n = -num;
+        sign = 1;
+    }
+
+    do {
+        int rem = n % radix;
+
+        if (rem > 9) {
+            str[i++] = rem + 'A' - 10;
+        }
+        else {
+            str[i++] = rem + '0';
+        }
+    } while ((n /= radix) != 0);
+
+    if (sign) {
+        str[i++] = '-';
+    }
+    str[i] = '\0';
+
+    for (j = 0, k = strlen(str) - 1; j < k; j++, k--) {
+        c = str[j];
+        str[j] = str[k];
+        str[k] = c;
+    }
+
+    return str;
+}
