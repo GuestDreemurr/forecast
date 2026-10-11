@@ -703,6 +703,7 @@ config.libs = [
         "cflags": cflags_msl,
         "progress_category": "mslc",
         "objects": [
+            Object(Matching, "MSL_C/GCN_Mem_Alloc.c"),
             Object(Matching, "MSL_C/alloc.c"),
             Object(Matching, "MSL_C/ansi_files.c"),
             Object(Matching, "MSL_C/ansi_fp.c"),
