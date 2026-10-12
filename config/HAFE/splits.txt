@@ -943,7 +943,7 @@ nw4r/snd/snd_WaveFile.cpp:
 nw4r/snd/snd_WaveSound.cpp:
 	.text       start:0x800CE408 end:0x800CE6FC
 	.ctors      start:0x801792D4 end:0x801792D8
-	.data       start:0x801B76B8 end:0x801B7790
+	.data       start:0x801B76B8 end:0x801B7768
 	.sbss       start:0x80331180 end:0x80331188
 
 nw4r/snd/snd_WaveSoundHandle.cpp:
@@ -951,7 +951,7 @@ nw4r/snd/snd_WaveSoundHandle.cpp:
 
 nw4r/snd/snd_WsdFile.cpp:
 	.text       start:0x800CE734 end:0x800CEA7C
-	.sdata2     start:0x80332C30 end:0x80332C70
+	.sdata2     start:0x80332C30 end:0x80332C68
 
 nw4r/snd/snd_WsdPlayer.cpp:
 	.text       start:0x800CF07C end:0x800CF108
@@ -969,6 +969,11 @@ nw4r/ut/ut_binaryFileFormat.cpp:
 
 nw4r/ut/ut_CharStrmReader.cpp:
 	.text       start:0x800CFE88 end:0x800CFF98
+
+nw4r/ut/ut_TagProcessorBase.cpp:
+	.text       start:0x800CFF98 end:0x800D0758
+	.data       start:0x801B7768 end:0x801B7790
+	.sdata2     start:0x80332C68 end:0x80332C70
 
 nw4r/ut/ut_IOStream.cpp:
 	.text       start:0x800D0758 end:0x800D0780
@@ -999,16 +1004,16 @@ nw4r/ut/ut_LockedCache.cpp:
 	.bss        start:0x802CB378 end:0x802CB398
 
 nw4r/ut/ut_Font.cpp:
-	.text       start:0x800D1244 end:0x800D12EC
-	.data       start:0x801B7860 end:0x801B7890
+	.text       start:0x800D1244 end:0x800D132C
+	.data       start:0x801B7860 end:0x801B78E8
 
 nw4r/ut/ut_ResFontBase.cpp:
 	.text       start:0x800D132C end:0x800D19F0
-	.data       start:0x801B7890 end:0x801B7950
+	.data       start:0x801B78E8 end:0x801B7950
 
 nw4r/ut/ut_ResFont.cpp:
 	.text       start:0x800D19F0 end:0x800D1CF4
-	.data       start:0x801B7950 end:0x801B7A90
+	.data       start:0x801B7950 end:0x801B79A8
 
 nw4r/ut/ut_CharWriter.cpp:
 	.text       start:0x800D3A0C end:0x800D54CC
@@ -1017,11 +1022,11 @@ nw4r/ut/ut_CharWriter.cpp:
 	.sdata2     start:0x80332C70 end:0x80332C90
 
 nw4r/ut/ut_TextWriterBase.cpp:
-	.text       start:0x800D555C end:0x800D7A14
+	.text       start:0x800D54CC end:0x800D7A14
 	.ctors      start:0x801792F0 end:0x801792F4
 	.bss        start:0x802CB3B8 end:0x802CB3D0
 	.sdata      start:0x803304D0 end:0x803304D8
-	.sbss       start:0x803311B0 end:0x803311D0
+	.sbss       start:0x803311B0 end:0x803311C0
 	.sdata2     start:0x80332C90 end:0x80332CA8
 
 nw4r/math/math_arithmetic.cpp:

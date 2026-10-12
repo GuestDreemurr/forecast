@@ -105,6 +105,7 @@ public:
 
 protected:
     void SetResourceBuffer(void* pBuffer, FontInformation* pInfo);
+    void* RemoveResourceBuffer();
 
 private:
     u16 GetGlyphIndex(u16 ch) const;

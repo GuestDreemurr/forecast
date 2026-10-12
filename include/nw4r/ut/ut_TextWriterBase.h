@@ -52,10 +52,7 @@ public:
     TextWriterBase();
     ~TextWriterBase();
 
-    // No width limit in this version of nw4r
-    f32 GetWidthLimit() const {
-        return NW4R_MATH_FLT_MAX;
-    }
+    f32 GetLineHeight() const;
 
     void SetLineSpace(f32 space);
     void SetCharSpace(f32 space);
@@ -78,12 +75,12 @@ public:
         mTagProcessor = &mDefaultTagProcessor;
     }
 
-    f32 GetLineHeight() const;
-
     f32 CalcLineWidth(const T* pStr, int len);
     f32 CalcStringWidth(const T* pStr) const;
     f32 CalcStringWidth(const T* pStr, int len) const;
     f32 CalcStringHeight(const T* pStr) const;
+    f32 CalcStringHeight(const T* pStr, int len) const;
+    void CalcStringRect(Rect* pRect, const T* pStr) const;
     void CalcStringRect(Rect* pRect, const T* pStr, int len) const;
 
     int VSNPrintf(T* buffer, u32 count, const T* pStr, std::va_list args);
@@ -120,7 +117,7 @@ private:
         return (mDrawFlag & mask) == flag;
     }
 
-    bool CalcLineRectImpl(Rect* pRect, const T** ppStr, int len);
+    int CalcLineRectImpl(Rect* pRect, const T* pStr, int len);
     void CalcStringRectImpl(Rect* pRect, const T* pStr, int len);
 
     f32 PrintImpl(const T* pStr, int len);
