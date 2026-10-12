@@ -29,6 +29,7 @@ f32 FLog(f32 x);
  *
  ******************************************************************************/
 f32 FrSqrt(f32 x);
+u32 CntBit1(u32 x);
 
 inline f32 FAbs(register f32 x) {
     register f32 ax;

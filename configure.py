@@ -955,8 +955,8 @@ config.libs = [
             Object(Matching, "nw4r/ut/ut_CharWriter.cpp"),
             Object(Matching, "nw4r/ut/ut_TextWriterBase.cpp"),
             # math
-            Object(NonMatching, "nw4r/math/math_arithmetic.cpp"),
-            Object(NonMatching, "nw4r/math/math_triangular.cpp"),
+            Object(Matching, "nw4r/math/math_arithmetic.cpp"),
+            Object(Matching, "nw4r/math/math_triangular.cpp"),
             Object(Matching, "nw4r/math/math_types.cpp"),
             # lyt
             Object(NonMatching, "nw4r/lyt/lyt_pane.cpp"),

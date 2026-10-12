@@ -1030,7 +1030,7 @@ nw4r/ut/ut_TextWriterBase.cpp:
 	.sdata2     start:0x80332C90 end:0x80332CA8
 
 nw4r/math/math_arithmetic.cpp:
-	.text       start:0x800D7A14 end:0x800D7A38
+	.text       start:0x800D7A14 end:0x800D7A90
 	.sdata2     start:0x80332CA8 end:0x80332CB0
 
 nw4r/math/math_triangular.cpp:
