@@ -21,15 +21,14 @@ public:
     u32 GetRequiredMemSize();
 
     void Setup(void* pBuffer, u32 size);
-    void Shutdown();
-    void StopAllVoices();
 
     Voice* AllocVoice(int channels, int voices, int priority,
                       Voice::VoiceCallback pCallback, void* pCallbackArg);
     void FreeVoice(Voice* pVoice);
 
     void UpdateAllVoices();
-    void NotifyVoiceUpdate();
+    void DisableUpdateVoicePriority();
+    void EnableUpdateVoicePriority();
     void ChangeVoicePriority(Voice* pVoice);
     void UpdateAllVoicesSync(u32 syncFlag);
 
@@ -50,6 +49,7 @@ private:
 
 private:
     bool mInitialized;        // at 0x0
+    bool mUpdatePriorityFlag; // at 0x1
     VoiceList mPrioVoiceList; // at 0x4
     VoiceList mFreeVoiceList; // at 0x10
 };

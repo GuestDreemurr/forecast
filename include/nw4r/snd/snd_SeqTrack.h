@@ -33,7 +33,6 @@ public:
         bool silenceFlag;    // at 0xD
         bool noteFinishWait; // at 0xE
         bool portaFlag;      // at 0xF
-        bool damperFlag;     // at 0x10
 
         int bankNo; // at 0x14
         int prgNo;  // at 0x18
@@ -91,7 +90,6 @@ public:
     void Close();
 
     void UpdateChannelLength();
-    void UpdateChannelRelease(Channel* pChannel);
 
     int ParseNextTick(bool doNoteOn);
 

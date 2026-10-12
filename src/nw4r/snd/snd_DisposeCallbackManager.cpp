@@ -14,11 +14,13 @@ DisposeCallbackManager::DisposeCallbackManager() {}
 
 void DisposeCallbackManager::RegisterDisposeCallback(
     DisposeCallback* pCallback) {
+    ut::AutoInterruptLock lock;
     mCallbackList.PushBack(pCallback);
 }
 
 void DisposeCallbackManager::UnregisterDisposeCallback(
     DisposeCallback* pCallback) {
+    ut::AutoInterruptLock lock;
     mCallbackList.Erase(pCallback);
 }
 
@@ -28,13 +30,14 @@ void DisposeCallbackManager::Dispose(void* pData, u32 size, void* pArg) {
     const void* pStart = pData;
     const void* pEnd = static_cast<u8*>(pData) + size;
 
+    ut::AutoInterruptLock lock;
+
     DisposeCallbackList::Iterator it =
         GetInstance().mCallbackList.GetBeginIter();
 
     while (it != GetInstance().mCallbackList.GetEndIter()) {
         DisposeCallbackList::Iterator curr = it++;
-        // @bug Unnecessary iteration
-        curr++->InvalidateData(pStart, pEnd);
+        curr->InvalidateData(pStart, pEnd);
     }
 }
 
@@ -44,13 +47,14 @@ void DisposeCallbackManager::DisposeWave(void* pData, u32 size, void* pArg) {
     const void* pStart = pData;
     const void* pEnd = static_cast<u8*>(pData) + size;
 
+    ut::AutoInterruptLock lock;
+
     DisposeCallbackList::Iterator it =
         GetInstance().mCallbackList.GetBeginIter();
 
     while (it != GetInstance().mCallbackList.GetEndIter()) {
         DisposeCallbackList::Iterator curr = it++;
-        // @bug Unnecessary iteration
-        curr++->InvalidateWaveData(pStart, pEnd);
+        curr->InvalidateWaveData(pStart, pEnd);
     }
 }
 

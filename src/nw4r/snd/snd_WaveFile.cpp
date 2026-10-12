@@ -9,19 +9,21 @@ WaveFileReader::WaveFileReader(const WaveFile::WaveInfo* pWaveInfo)
 
 bool WaveFileReader::ReadWaveParam(WaveData* pWaveData,
                                    const void* pWaveAddr) const {
-    AxVoice::Format format =
-        GetAxVoiceFormatFromWaveFileFormat(mWaveInfo->format);
-
     pWaveData->sampleFormat = mWaveInfo->format;
     pWaveData->numChannels = mWaveInfo->numChannels;
     pWaveData->sampleRate =
         (mWaveInfo->sampleRate24 << 16) + mWaveInfo->sampleRate;
 
     pWaveData->loopFlag = mWaveInfo->loopFlag;
-    pWaveData->loopStart =
-        AxVoice::GetSampleByDspAddress(NULL, mWaveInfo->loopStart, format);
+    pWaveData->loopStart = AxVoice::GetSampleByDspAddress(
+        NULL, mWaveInfo->loopStart,
+        GetAxVoiceFormatFromWaveFileFormat(mWaveInfo->format));
+
     pWaveData->loopEnd =
-        AxVoice::GetSampleByDspAddress(NULL, mWaveInfo->loopEnd, format) + 1;
+        AxVoice::GetSampleByDspAddress(
+            NULL, mWaveInfo->loopEnd,
+            GetAxVoiceFormatFromWaveFileFormat(mWaveInfo->format)) +
+        1;
 
     const u32* pInfoOffsetTable = static_cast<const u32*>(
         ut::AddOffsetToPtr(mWaveInfo, mWaveInfo->channelInfoTableOffset));
@@ -51,18 +53,6 @@ bool WaveFileReader::ReadWaveParam(WaveData* pWaveData,
     }
 
     return true;
-}
-
-AxVoice::Format WaveFileReader::GetAxVoiceFormatFromWaveFileFormat(u32 format) {
-    if (format == WaveFile::FORMAT_PCM16) {
-        return AxVoice::FORMAT_PCM16;
-    }
-
-    if (format == WaveFile::FORMAT_PCM8) {
-        return AxVoice::FORMAT_PCM8;
-    }
-
-    return AxVoice::FORMAT_ADPCM;
 }
 
 } // namespace detail

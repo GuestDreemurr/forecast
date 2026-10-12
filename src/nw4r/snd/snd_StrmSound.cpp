@@ -12,23 +12,16 @@ StrmSound::StrmSound(SoundInstanceManager<StrmSound>* pManager)
 
 bool StrmSound::Prepare(StrmBufferPool* pPool,
                         StrmPlayer::StartOffsetType offsetType, s32 offset,
-                        int voices, ut::FileStream* pStream) {
+                        int voices, StrmPlayer::StrmLoader* pLoader,
+                        u32 userData) {
     if (pPool == NULL) {
         return false;
     }
 
     InitParam();
 
-    if (!mStrmPlayer.Setup(pPool)) {
-        return false;
-    }
-
-    if (!mStrmPlayer.Prepare(pStream, voices, offsetType, offset)) {
-        mStrmPlayer.Shutdown();
-        return false;
-    }
-
-    return true;
+    return mStrmPlayer.Prepare(pPool, offsetType, offset, voices, pLoader,
+                               userData);
 }
 
 void StrmSound::Shutdown() {

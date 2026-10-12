@@ -4,62 +4,53 @@ namespace nw4r {
 namespace snd {
 namespace detail {
 
-TaskThread::TaskThread()
-    : mStackEnd(NULL), mFinishFlag(false), mCreateFlag(false) {}
-
-TaskThread::~TaskThread() {
-    if (mCreateFlag) {
-        Destroy();
-    }
+TaskThread& TaskThread::GetInstance() {
+    static TaskThread instance;
+    return instance;
 }
 
 bool TaskThread::Create(s32 priority, void* pStack, u32 stackSize) {
     if (mCreateFlag) {
-        Destroy();
+        return true;
     }
 
-    if (!OSCreateThread(&mThread, ThreadFunc, &mThread,
-                        static_cast<u8*>(pStack) + stackSize, stackSize,
-                        priority, 0)) {
-        return false;
-    }
-
-    mStackEnd = static_cast<u32*>(pStack);
-    mFinishFlag = false;
     mCreateFlag = true;
 
-    OSResumeThread(&mThread);
-    return true;
-}
+    OSInitMessageQueue(&mMsgQueue, mMsgBuffer, MSG_QUEUE_CAPACITY);
+    OSInitThreadQueue(&mThreadQueue);
 
-void TaskThread::Destroy() {
-    if (!mCreateFlag) {
-        return;
+    mStack = pStack;
+
+    BOOL result = OSCreateThread(&mThread, ThreadFunc, &GetInstance(),
+                                 static_cast<u8*>(pStack) + stackSize,
+                                 stackSize, priority, 0);
+
+    if (result) {
+        OSResumeThread(&mThread);
     }
 
-    mFinishFlag = true;
-    TaskManager::GetInstance().CancelWaitTask();
-    OSJoinThread(&mThread, NULL);
-    mCreateFlag = false;
+    return result;
+}
+
+void TaskThread::SendWakeupMessage() {
+    OSSendMessage(&mMsgQueue, reinterpret_cast<OSMessage>(MSG_WAKEUP), 0);
 }
 
 void* TaskThread::ThreadFunc(void* pArg) {
     TaskThread* p = static_cast<TaskThread*>(pArg);
-    p->ThreadProc();
+    OSMessage msg;
 
-    return NULL;
-}
+    while (true) {
+        OSReceiveMessage(&p->mMsgQueue, &msg, OS_MSG_BLOCKING);
 
-void TaskThread::ThreadProc() {
-    while (!mFinishFlag) {
-        TaskManager::GetInstance().WaitTask();
-
-        if (mFinishFlag) {
+        if (reinterpret_cast<u32>(msg) == MSG_WAKEUP) {
+            TaskManager::GetInstance().Execute();
+        } else if (reinterpret_cast<u32>(msg) == MSG_SHUTDOWN) {
             break;
         }
-
-        TaskManager::GetInstance().ExecuteTask();
     }
+
+    return NULL;
 }
 
 } // namespace detail

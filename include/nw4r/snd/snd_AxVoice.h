@@ -22,127 +22,6 @@ inline u16 CalcMixVolume(f32 volume) {
     return ut::Min<u32>(USHRT_MAX, AX_MAX_VOLUME * volume);
 }
 
-/******************************************************************************
- *
- * AxVoiceParamBlock
- *
- ******************************************************************************/
-class AxVoiceParamBlock {
-public:
-    AxVoiceParamBlock();
-
-    operator AXVPB*() {
-        return mVpb;
-    }
-
-    bool IsAvailable() const {
-        return mVpb != NULL;
-    }
-
-    bool IsRun() const {
-        return IsAvailable() && mVpb->pb.state == AX_VOICE_RUN;
-    }
-
-    bool IsLpfEnable() const {
-        return IsAvailable() && mVpb->pb.lpf.on == AX_PB_LPF_ON;
-    }
-
-    bool IsBiquadEnable() const {
-        return IsAvailable() && mVpb->pb.biquad.on == AX_PB_BIQUAD_ON;
-    }
-
-    u32 GetCurrentAddress() const {
-        if (!IsAvailable()) {
-            return 0;
-        }
-
-        return (mVpb->pb.addr.currentAddressHi << 16) +
-               mVpb->pb.addr.currentAddressLo;
-    }
-
-    u32 GetLoopAddress() const {
-        if (!IsAvailable()) {
-            return 0;
-        }
-
-        return (mVpb->pb.addr.loopAddressHi << 16) +
-               mVpb->pb.addr.loopAddressLo;
-    }
-
-    u32 GetEndAddress() const {
-        if (!IsAvailable()) {
-            return 0;
-        }
-
-        return (mVpb->pb.addr.endAddressHi << 16) + mVpb->pb.addr.endAddressLo;
-    }
-
-    void SetVoiceAddr(const AXPBADDR& rAddr) {
-        if (IsAvailable()) {
-            // AXSetVoiceAddr doesn't actually modify the object
-            AXSetVoiceAddr(mVpb, const_cast<AXPBADDR*>(&rAddr));
-        }
-    }
-
-    void SetVoicePriority(u32 priority) {
-        if (IsAvailable()) {
-            AXSetVoicePriority(mVpb, priority);
-        }
-    }
-
-    void SetVoiceStateRun() {
-        if (IsAvailable()) {
-            AXSetVoiceState(mVpb, AX_VOICE_RUN);
-        }
-    }
-
-    void SetVoiceStateStop() {
-        if (IsRun()) {
-            AXSetVoiceState(mVpb, AX_VOICE_STOP);
-        }
-    }
-
-    void Sync();
-    bool IsRmtIirEnable() const;
-
-    void Set(AXVPB* pVpb);
-    void Clear();
-
-    void SetVoiceType(u16 type);
-    void SetVoiceVe(u16 volume, u16 initVolume);
-    void SetVoiceMix(const AXPBMIX& rMix, bool syncNow);
-    void SetVoiceLoop(u16 loop);
-    void SetVoiceLoopAddr(u32 addr);
-    void SetVoiceEndAddr(u32 addr);
-    void SetVoiceAdpcm(const AXPBADPCM& rAdpcm);
-    void SetVoiceSrcType(u32 type);
-    void SetVoiceSrc(const AXPBSRC& rSrc);
-    void SetVoiceSrcRatio(f32 ratio);
-    void SetVoiceAdpcmLoop(const AXPBADPCMLOOP& rLoop);
-    void SetVoiceLpf(const AXPBLPF& rLpf);
-    void SetVoiceLpfCoefs(u16 a0, u16 b0);
-    void SetVoiceRmtOn(u16 on);
-    void SetVoiceRmtMix(const AXPBRMTMIX& rMix);
-    void SetVoiceRmtIIR(const AXPBRMTIIR& rIir);
-    void SetVoiceRmtIIRCoefs(u16 type, ...);
-    void UpdateDelta();
-
-private:
-    static const u16 DEFAULT_VOLUME = AX_MAX_VOLUME;
-
-private:
-    AXVPB* mVpb;                    // at 0x0
-    u32 mSync;                      // at 0x4
-    volatile AXPBVE mPrevVeSetting; // at 0x8
-    bool mFirstVeUpdateFlag;        // at 0xC
-    u16 mVolume;                    // at 0xE
-};
-
-/******************************************************************************
- *
- * AxVoice
- *
- ******************************************************************************/
 class AxVoice {
     friend class AxVoiceManager;
 
@@ -203,23 +82,23 @@ public:
 
 public:
     AxVoice();
-    ~AxVoice();
 
     bool IsRun() const {
-        return mVpb.IsRun();
-    }
-    void Run() {
-        mVpb.SetVoiceStateRun();
-    }
-    void Stop() {
-        mVpb.SetVoiceStateStop();
-    }
-    void Sync() {
-        mVpb.Sync();
+        ut::AutoInterruptLock lock;
+
+        if (mVpb == NULL) {
+            return false;
+        }
+
+        return mVpb->pb.state == AX_VOICE_RUN;
     }
 
     Format GetFormat() const {
         return mFormat;
+    }
+
+    bool IsAvailable() const {
+        return mVpb != NULL;
     }
 
     void SetBaseAddress(const void* pBase) {
@@ -227,6 +106,7 @@ public:
     }
 
     f32 GetDspRatio(f32 ratio) const {
+        ut::AutoInterruptLock lock;
         return (ratio * mSampleRate) / AX_SAMPLE_RATE;
     }
 
@@ -237,56 +117,72 @@ public:
     void SetLoopEnd(const void* pBase, u32 samples);
     void SetLoopFlag(bool loop);
     void StopAtPoint(const void* pBase, u32 samples);
-
+    bool IsCurrentAddressCoverd(const void* pBegin, const void* pEnd) const;
     bool IsDataAddressCoverd(const void* pBegin, const void* pEnd) const;
+
     u32 GetCurrentPlayingSample() const;
-    u32 GetCurrentPlayingDspAddress() const;
-    u32 GetLoopEndDspAddress() const;
+
+    u32 GetCurrentPlayingDspAddress() const {
+        ut::AutoInterruptLock lock;
+
+        const AXPB* pPb = &mVpb->pb;
+        if (pPb == NULL) {
+            return 0;
+        }
+
+        return (pPb->addr.currentAddressHi << 16) + pPb->addr.currentAddressLo;
+    }
+
+    u32 GetLoopEndDspAddress() const {
+        ut::AutoInterruptLock lock;
+
+        const AXPB* pPb = &mVpb->pb;
+        if (pPb == NULL) {
+            return 0;
+        }
+
+        return (pPb->addr.endAddressHi << 16) + pPb->addr.endAddressLo;
+    }
+
+    void Run();
+    void Stop();
 
     void SetPriority(u32 priority);
     void SetVoiceType(VoiceType type);
-    void EnableRemote(bool enable);
-    void ResetDelta();
-    void SetAddr(bool loop, const void* pWave, u32 offset, u32 loopStart,
-                 u32 loopEnd);
+    void SetRmtMix(const AXPBRMTMIX& rMix);
+    void EnableRemote();
+    void DisableRemote();
+
+    void SetAddr(bool loop, const void* pWave, u32 loopStart, u32 loopEnd);
     void SetSrcType(SrcType type, f32 pitch);
     void SetAdpcm(const AdpcmParam* pParam);
     void SetAdpcmLoop(const AdpcmLoopParam* pParam);
     bool SetMix(const MixParam& rParam);
-    void SetRmtMix(const RemoteMixParam& rParam);
     void SetSrc(f32 ratio, bool initial);
-    void SetVe(f32 volume, f32 initVolume);
+    bool SetVe(f32 volume, f32 initVolume);
     void SetLpf(u16 freq);
-    void SetRemoteFilter(u8 filter);
 
     static u32 GetDspAddressBySample(const void* pBase, u32 samples,
                                      Format fmt);
     static u32 GetSampleByDspAddress(const void* pBase, u32 addr, Format fmt);
     static u32 GetSampleByByte(u32 addr, Format fmt);
 
-    static void CalcOffsetAdpcmParam(u16* pPredScale, u16* pYN1, u16* pYN2,
-                                     u32 offset, const void* pData,
-                                     const AdpcmParam& rParam);
-
 private:
     static void VoiceCallback(void* pArg);
 
 private:
-    AxVoiceParamBlock mVpb;    // at 0x0
-    const void* mWaveData;     // at 0x10
-    Format mFormat;            // at 0x14
-    int mSampleRate;           // at 0x18
-    bool mFirstMixUpdateFlag;  // at 0x1C
-    bool mReserveForFreeFlag;  // at 0x1D
-    MixParam mMixPrev;         // at 0x1E
-    AxVoiceCallback mCallback; // at 0x38
-    void* mCallbackData;       // at 0x3C
-
-public:
-    NW4R_UT_LINKLIST_NODE_DECL(); // at 0x40
+    AXVPB* mVpb;               // at 0x0
+    const void* mWaveData;     // at 0x4
+    Format mFormat;            // at 0x8
+    int mSampleRate;           // at 0xC
+    bool mActiveFlag;          // at 0x10
+    bool mFirstVeUpdateFlag;   // at 0x11
+    bool mFirstMixUpdateFlag;  // at 0x12
+    u16 mVolumePrev;           // at 0x14
+    MixParam mMixPrev;         // at 0x16
+    AxVoiceCallback mCallback; // at 0x30
+    void* mCallbackData;       // at 0x34
 };
-
-NW4R_UT_LINKLIST_TYPEDEF_DECL(AxVoice);
 
 } // namespace detail
 } // namespace snd

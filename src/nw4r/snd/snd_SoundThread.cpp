@@ -7,12 +7,6 @@ namespace nw4r {
 namespace snd {
 namespace detail {
 
-SoundThread::SoundThread() : mStackEnd(NULL), mCreateFlag(false) {
-    OSInitMessageQueue(&mMsgQueue, mMsgBuffer, MSG_QUEUE_CAPACITY);
-    OSInitThreadQueue(&mThreadQueue);
-    OSInitMutex(&mMutex);
-}
-
 SoundThread& SoundThread::GetInstance() {
     static SoundThread instance;
     return instance;
@@ -24,7 +18,12 @@ bool SoundThread::Create(s32 priority, void* pStack, u32 stackSize) {
     }
 
     mCreateFlag = true;
-    mStackEnd = pStack;
+
+    OSInitMessageQueue(&mMsgQueue, mMsgBuffer, MSG_QUEUE_CAPACITY);
+    OSInitThreadQueue(&mThreadQueue);
+    OSInitMutex(&mMutex);
+
+    mStack = pStack;
 
     BOOL success = OSCreateThread(&mThread, SoundThreadFunc, &GetInstance(),
                                   static_cast<u8*>(pStack) + stackSize,
@@ -37,29 +36,12 @@ bool SoundThread::Create(s32 priority, void* pStack, u32 stackSize) {
     return success;
 }
 
-void SoundThread::Shutdown() {
-    if (!mCreateFlag) {
-        return;
-    }
-
-    OSJamMessage(&GetInstance().mMsgQueue,
-                 reinterpret_cast<OSMessage>(MSG_SHUTDOWN), OS_MSG_BLOCKING);
-
-    OSJoinThread(&mThread, NULL);
-    mCreateFlag = false;
-}
-
 void SoundThread::AxCallbackFunc() {
-    GetInstance().AxCallbackProc();
-}
+    OSSendMessage(&GetInstance().mMsgQueue,
+                  reinterpret_cast<OSMessage>(MSG_AX_CALLBACK), 0);
 
-void SoundThread::AxCallbackProc() {
-    OSSendMessage(&mMsgQueue, reinterpret_cast<OSMessage>(MSG_AX_CALLBACK), 0);
-
-    NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPlayerCallbackList,
-                                   { it->OnUpdateVoiceSoundThread(); })
-
-    VoiceManager::GetInstance().NotifyVoiceUpdate();
+    WavePlayer::UpdateBufferAllPlayers();
+    StrmPlayer::UpdateBufferAllPlayers();
 }
 
 void* SoundThread::SoundThreadFunc(void* pArg) {
@@ -71,18 +53,7 @@ void* SoundThread::SoundThreadFunc(void* pArg) {
     p->SoundThreadProc();
 
     AxManager::GetInstance().UnregisterCallback(&p->mAxCallbackNode);
-
     return NULL;
-}
-
-void SoundThread::RegisterPlayerCallback(PlayerCallback* pCallback) {
-    ut::detail::AutoLock<OSMutex> lock(mMutex);
-    mPlayerCallbackList.PushBack(pCallback);
-}
-
-void SoundThread::UnregisterPlayerCallback(PlayerCallback* pCallback) {
-    ut::detail::AutoLock<OSMutex> lock(mMutex);
-    mPlayerCallbackList.Erase(pCallback);
 }
 
 void SoundThread::SoundThreadProc() {
@@ -94,36 +65,41 @@ void SoundThread::SoundThreadProc() {
         if (reinterpret_cast<u32>(msg) == MSG_AX_CALLBACK) {
             ut::detail::AutoLock<OSMutex> lock(mMutex);
 
-            NW4R_UT_LINKLIST_FOREACH_SAFE (it, mSoundFrameCallbackList,
-                                           { it->OnBeginSoundFrame(); })
-
             u32 start = OSGetTick();
             {
-                AxVoiceManager::GetInstance().FreeAllReservedAxVoice();
                 AxManager::GetInstance().Update();
 
-                if (!AxManager::GetInstance().IsDiskError()) {
-                    NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPlayerCallbackList,
-                                                   { it->OnUpdateFrameSoundThread(); })
+                SeqPlayer::UpdateAllPlayers();
+                WsdPlayer::UpdateAllPlayers();
+                StrmPlayer::UpdateAllPlayers();
+                WavePlayer::UpdateAllPlayers();
 
-                    ChannelManager::GetInstance().UpdateAllChannel();
+                NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPlayerCallbackList, {
+                    it->OnUpdateFrameSoundThread();
+                })
+
+                ChannelManager::GetInstance().UpdateAllChannel();
+                Util::CalcRandom();
+
+                {
+                    ut::AutoInterruptLock lock;
+                    VoiceManager::GetInstance().UpdateAllVoices();
                 }
-
-                (void)Util::CalcRandom();
-                VoiceManager::GetInstance().UpdateAllVoices();
             }
             mProcessTick = OSGetTick() - start;
 
-            NW4R_UT_LINKLIST_FOREACH_SAFE (it, mSoundFrameCallbackList,
-                                           { it->OnEndSoundFrame(); })
-
+            NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPlayerCallbackList, {
+                it->OnUpdateVoiceSoundThread();
+            })
         } else if (reinterpret_cast<u32>(msg) == MSG_SHUTDOWN) {
-            NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPlayerCallbackList,
-                                           { it->OnShutdownSoundThread(); })
-
             break;
         }
     }
+
+    SeqPlayer::StopAllPlayers();
+    WsdPlayer::StopAllPlayers();
+    StrmPlayer::StopAllPlayers();
+    WavePlayer::StopAllPlayers();
 }
 
 } // namespace detail

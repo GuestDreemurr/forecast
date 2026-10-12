@@ -19,19 +19,14 @@ class NoteOnCallback;
 class SeqTrack;
 class SeqTrackAllocator;
 
-class SeqPlayer : public BasicPlayer,
-                  public DisposeCallback,
-                  public SoundThread::PlayerCallback {
+class SeqPlayer : public BasicPlayer, public DisposeCallback {
 public:
     struct ParserPlayerParam {
         u8 volume;                // at 0x0
         u8 priority;              // at 0x1
-        u8 timebase;              // at 0x2
-        u16 tempo;                // at 0x4
-        NoteOnCallback* callback; // at 0x8
+        u16 tempo;                // at 0x2
+        NoteOnCallback* callback; // at 0x4
     };
-
-    enum OffsetType { OFFSET_TYPE_TICK, OFFSET_TYPE_MILLISEC };
 
     enum SetupResult {
         SETUP_SUCCESS,
@@ -56,52 +51,44 @@ public:
     virtual bool IsActive() const {
         return mActiveFlag;
     } // at 0x18
-
+    virtual bool IsPrepared() const {
+        return mPreparedFlag;
+    } // at 0x1C
     virtual bool IsStarted() const {
         return mStartedFlag;
-    } // at 0x1C
-
+    } // at 0x20
     virtual bool IsPause() const {
         return mPauseFlag;
-    } // at 0x20
+    } // at 0x24
 
     virtual void InvalidateData(const void* pStart,
-                                const void* pEnd); // at 0x50
-
+                                const void* pEnd); // at 0x34
     virtual void InvalidateWaveData(const void* /* pStart */,
-                                    const void* /* pEnd */) {} // at 0x54
+                                    const void* /* pEnd */) {} // at 0x38
 
-    virtual void ChannelCallback(Channel* /* pChannel */) {} // at 0x58
-
-    virtual void OnUpdateFrameSoundThread() {
-        Update();
-    } // at 0x5C
-
-    virtual void OnShutdownSoundThread() {
-        Stop();
-    } // at 0x60
+    virtual void ChannelCallback(Channel* pChannel); // at 0x3C
 
     void InitParam(int voices, NoteOnCallback* pCallback);
-
     SetupResult Setup(SeqTrackAllocator* pAllocator, u32 allocTrackFlags,
                       int voices, NoteOnCallback* pCallback);
-    void SetSeqData(const void* pBase, s32 offset);
 
-    void Skip(OffsetType type, int offset);
+    void SetSeqData(const void* pBase, s32 offset);
 
     void SetTempoRatio(f32 tempo);
     void SetChannelPriority(int priority);
-    void SetReleasePriorityFix(bool flag);
 
     void SetLocalVariable(int idx, s16 value);
     static void SetGlobalVariable(int idx, s16 value);
 
-    void SetTrackVolume(u32 trackFlags, f32 volume);
-    void SetTrackPitch(u32 trackFlags, f32 pitch);
+    void SetTrackMute(u32 trackFlags, SeqMute mute);
 
     SeqTrack* GetPlayerTrack(int idx);
     volatile s16* GetVariablePtr(int idx);
+
     void Update();
+
+    static void UpdateAllPlayers();
+    static void StopAllPlayers();
 
     Channel* NoteOn(int bankNo, const NoteOnInfo& rInfo);
 
@@ -122,17 +109,8 @@ public:
         }
     }
 
-    bool IsReleasePriorityFix() const {
-        return mReleasePriorityFixFlag;
-    }
-
     f32 GetPanRange() const {
         return mPanRange;
-    }
-
-    f32 GetBaseTempo() const {
-        return mTempoRatio * (mParserParam.timebase * mParserParam.tempo) /
-               60000.0f;
     }
 
     int GetVoiceOutCount() const {
@@ -145,11 +123,11 @@ public:
 
 private:
     static const int DEFAULT_TEMPO = 120;
-    static const int DEFAULT_TIMEBASE = 48;
     static const int DEFAULT_PRIORITY = 64;
     static const int DEFAULT_VARIABLE_VALUE = -1;
 
-    static const int MAX_SKIP_TICK_PER_FRAME = 768;
+    // Tempo units consumed by one tick
+    static const int TEMPO_BASE = 416;
 
 private:
     void CloseTrack(int idx);
@@ -159,32 +137,31 @@ private:
     void UpdateChannelParam();
     int ParseNextTick(bool doNoteOn);
 
-    void UpdateTick(int msec);
-    void SkipTick();
-
-    static void InitGlobalVariable();
 
 private:
-    bool mActiveFlag;             // at 0x8C
-    bool mStartedFlag;            // at 0x8D
-    bool mPauseFlag;              // at 0x8E
-    bool mReleasePriorityFixFlag; // at 0x8F
+    u8 mActiveFlag;                                  // at 0x7C
+    u8 mPreparedFlag;                                // at 0x7D
+    u8 mStartedFlag;                                 // at 0x7E
+    u8 mPauseFlag;                                   // at 0x7F
+    u8 mSkipFlag;                                    // at 0x80
+    f32 mPanRange;                                   // at 0x84
+    f32 mTempoRatio;                                 // at 0x88
+    u16 mTempoCounter;                               // at 0x8C
+    int mVoiceOutCount;                              // at 0x90
+    ParserPlayerParam mParserParam;                  // at 0x94
+    SeqTrackAllocator* mSeqTrackAllocator;           // at 0x9C
+    SeqTrack* mTracks[TRACK_NUM];                    // at 0xA0
+    volatile s16 mLocalVariable[LOCAL_VARIABLE_NUM]; // at 0xE0
+    u32 mTickCounter;                                // at 0x100
 
-    f32 mPanRange;                                   // at 0x90
-    f32 mTempoRatio;                                 // at 0x94
-    f32 mTickFraction;                               // at 0x98
-    u32 mSkipTickCounter;                            // at 0x9C
-    f32 mSkipTimeCounter;                            // at 0xA0
-    int mVoiceOutCount;                              // at 0xA4
-    ParserPlayerParam mParserParam;                  // at 0xA8
-    SeqTrackAllocator* mSeqTrackAllocator;           // at 0xB4
-    SeqTrack* mTracks[TRACK_NUM];                    // at 0xB8
-    volatile s16 mLocalVariable[LOCAL_VARIABLE_NUM]; // at 0xF8
-    u32 mTickCounter;                                // at 0x118
+public:
+    NW4R_UT_LINKLIST_NODE_DECL(); // at 0x104
 
+private:
     static volatile s16 mGlobalVariable[LOCAL_VARIABLE_NUM];
-    static bool mGobalVariableInitialized; // @typo
 };
+
+NW4R_UT_LINKLIST_TYPEDEF_DECL(SeqPlayer);
 
 } // namespace detail
 } // namespace snd

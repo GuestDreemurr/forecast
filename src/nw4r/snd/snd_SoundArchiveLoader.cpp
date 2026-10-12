@@ -38,7 +38,7 @@ void* SoundArchiveLoader::LoadGroup(u32 id,
     if (blockSize == 0) {
         s32 bytesRead = groupHandle->Read(pGroupBuffer, groupHandle->GetSize());
 
-        if (bytesRead < 0) {
+        if (bytesRead == 0) {
             mStream = NULL;
             return NULL;
         }
@@ -50,14 +50,14 @@ void* SoundArchiveLoader::LoadGroup(u32 id,
             s32 bytesRead =
                 groupHandle->Read(pReadPtr, ut::Min(blockSize, bytesLeft));
 
-            if (bytesRead < 0) {
+            if (bytesRead == 0) {
                 mStream = NULL;
                 return NULL;
             }
 
-            if (bytesLeft > bytesRead) {
-                bytesLeft -= bytesRead;
-                pReadPtr += bytesRead;
+            if (bytesLeft > blockSize) {
+                bytesLeft -= blockSize;
+                pReadPtr += blockSize;
             } else {
                 bytesLeft = 0;
             }
@@ -94,7 +94,7 @@ void* SoundArchiveLoader::LoadGroup(u32 id,
             s32 bytesRead =
                 waveHandle->Read(pWaveBuffer, waveHandle->GetSize());
 
-            if (bytesRead < 0) {
+            if (bytesRead == 0) {
                 mStream = NULL;
                 return NULL;
             }
@@ -106,14 +106,14 @@ void* SoundArchiveLoader::LoadGroup(u32 id,
                 s32 bytesRead =
                     waveHandle->Read(pReadPtr, ut::Min(blockSize, bytesLeft));
 
-                if (bytesRead < 0) {
+                if (bytesRead == 0) {
                     mStream = NULL;
                     return NULL;
                 }
 
-                if (bytesLeft > bytesRead) {
-                    bytesLeft -= bytesRead;
-                    pReadPtr += bytesRead;
+                if (bytesLeft > blockSize) {
+                    bytesLeft -= blockSize;
+                    pReadPtr += blockSize;
                 } else {
                     bytesLeft = 0;
                 }
@@ -130,6 +130,68 @@ void* SoundArchiveLoader::LoadGroup(u32 id,
     }
 
     return pGroupBuffer;
+}
+
+s32 SoundArchiveLoader::ReadFile(u32 id, void* pBuffer, s32 size, s32 offset) {
+    ut::detail::AutoLock<OSMutex> lock(mMutex);
+
+    FileStreamHandle fileHandle(
+        mArc.detail_OpenFileStream(id, mStreamArea, sizeof(mStreamArea)));
+
+    if (!fileHandle) {
+        return -1;
+    }
+
+    if (!fileHandle->CanSeek() || !fileHandle->CanRead()) {
+        return -1;
+    }
+
+    fileHandle->Seek(offset, ut::FileStream::SEEK_ORIGIN_BEG);
+
+    mStream = fileHandle.GetFileStream();
+    s32 bytesRead = fileHandle->Read(pBuffer, ut::RoundUp(size, 32));
+    mStream = NULL;
+
+    if (bytesRead == 0) {
+        return -1;
+    }
+
+    return size;
+}
+
+void* SoundArchiveLoader::LoadFile(u32 id,
+                                   SoundMemoryAllocatable* pAllocatable) {
+    SoundArchive::FileInfo fileInfo;
+    if (!mArc.detail_ReadFileInfo(id, &fileInfo)) {
+        return NULL;
+    }
+
+    u32 fileSize = fileInfo.fileSize;
+    if (fileSize == 0) {
+        return NULL;
+    }
+
+    void* pBuffer = pAllocatable->Alloc(fileSize);
+    if (pBuffer == NULL) {
+        return NULL;
+    }
+
+    if (ReadFile(id, pBuffer, fileSize, 0) != fileSize) {
+        return NULL;
+    }
+
+    DCStoreRange(pBuffer, fileSize);
+    return pBuffer;
+}
+
+void SoundArchiveLoader::Cancel() {
+    if (mStream != NULL && mStream->CanCancel()) {
+        if (mStream->CanAsync()) {
+            mStream->CancelAsync(NULL, NULL);
+        } else {
+            mStream->Cancel();
+        }
+    }
 }
 
 } // namespace detail

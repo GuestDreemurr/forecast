@@ -30,10 +30,6 @@ public:
     explicit StrmSound(SoundInstanceManager<StrmSound>* pManager);
 
     virtual void Shutdown(); // at 0x28
-    virtual bool IsPrepared() const {
-        return mStrmPlayer.IsPrepared();
-    } // at 0x2C
-
     virtual void SetPlayerPriority(int priority); // at 0x4C
     virtual bool IsAttachedTempSpecialHandle();   // at 0x5C
     virtual void DetachTempSpecialHandle();       // at 0x60
@@ -46,24 +42,16 @@ public:
     } // at 0x6C
 
     bool Prepare(StrmBufferPool* pPool, StrmPlayer::StartOffsetType offsetType,
-                 s32 offset, int voices, ut::FileStream* pStream);
-
-    void* GetFileStreamBuffer() {
-        return mFileStreamBuffer;
-    }
-    s32 GetFileStreamBufferSize() {
-        return sizeof(mFileStreamBuffer);
-    }
-
-private:
-    static const int FILE_STREAM_BUFFER_SIZE = 512;
+                 s32 offset, int voices, StrmPlayer::StrmLoader* pLoader,
+                 u32 userData);
 
 private:
     StrmPlayer mStrmPlayer;                    // at 0xD8
-    StrmSoundHandle* mTempSpecialHandle;       // at 0x920
-    SoundInstanceManager<StrmSound>* mManager; // at 0x924
-    char UNK_0x928[0x93C - 0x928];
-    char mFileStreamBuffer[FILE_STREAM_BUFFER_SIZE]; // at 0x93C
+    StrmSoundHandle* mTempSpecialHandle;       // at 0x5F8
+    SoundInstanceManager<StrmSound>* mManager; // at 0x5FC
+
+    // Never referenced by the linked code; the sound is 0x618 bytes
+    u8 UNK_0x600[0x618 - 0x600];
 };
 
 } // namespace detail

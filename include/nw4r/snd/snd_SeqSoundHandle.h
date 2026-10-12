@@ -30,18 +30,6 @@ public:
         }
     }
 
-    void SetTrackVolume(u32 trackFlags, f32 volume) {
-        if (IsAttachedSound()) {
-            mSound->SetTrackVolume(trackFlags, volume);
-        }
-    }
-
-    void SetTrackPitch(u32 trackFlags, f32 pitch) {
-        if (IsAttachedSound()) {
-            mSound->SetTrackPitch(trackFlags, pitch);
-        }
-    }
-
     void WriteVariable(int idx, s16 value) {
         if (IsAttachedSound()) {
             mSound->WriteVariable(idx, value);

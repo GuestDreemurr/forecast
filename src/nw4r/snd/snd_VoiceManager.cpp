@@ -12,10 +12,11 @@ VoiceManager& VoiceManager::GetInstance() {
     return instance;
 }
 
-VoiceManager::VoiceManager() : mInitialized(false) {}
+VoiceManager::VoiceManager()
+    : mInitialized(false), mUpdatePriorityFlag(true) {}
 
 u32 VoiceManager::GetRequiredMemSize() {
-    return AXGetMaxVoices() * sizeof(Voice);
+    return WORK_SIZE_MAX;
 }
 
 void VoiceManager::Setup(void* pBuffer, u32 size) {
@@ -35,43 +36,9 @@ void VoiceManager::Setup(void* pBuffer, u32 size) {
     mInitialized = true;
 }
 
-void VoiceManager::Shutdown() {
-    if (!mInitialized) {
-        return;
-    }
-
-    StopAllVoices();
-
-    while (!mFreeVoiceList.IsEmpty()) {
-        Voice& rVoice = mFreeVoiceList.GetFront();
-        mFreeVoiceList.PopFront();
-        rVoice.~Voice();
-    }
-
-    mInitialized = false;
-}
-
-void VoiceManager::StopAllVoices() {
-    ut::AutoInterruptLock lock;
-
-    while (!mPrioVoiceList.IsEmpty()) {
-        Voice& rVoice = mPrioVoiceList.GetFront();
-
-        rVoice.Stop();
-
-        if (rVoice.mCallback != NULL) {
-            rVoice.mCallback(&rVoice, Voice::CALLBACK_STATUS_CANCEL,
-                             rVoice.mCallbackArg);
-        }
-
-        rVoice.Free();
-    }
-}
-
 Voice* VoiceManager::AllocVoice(int channels, int voices, int priority,
                                 Voice::VoiceCallback pCallback,
                                 void* pCallbackArg) {
-
     ut::AutoInterruptLock lock;
 
     if (mFreeVoiceList.IsEmpty() && DropLowestPriorityVoice(priority) == 0) {
@@ -79,16 +46,20 @@ Voice* VoiceManager::AllocVoice(int channels, int voices, int priority,
     }
 
     Voice& rVoice = mFreeVoiceList.GetFront();
+
     if (!rVoice.Acquire(channels, voices, priority, pCallback, pCallbackArg)) {
         return NULL;
     }
 
     rVoice.mPriority = priority & Voice::PRIORITY_MAX;
     AppendVoiceList(&rVoice);
-    UpdateEachVoicePriority(mPrioVoiceList.GetIteratorFromPointer(&rVoice),
-                            mPrioVoiceList.GetEndIter());
-    DisposeCallbackManager::GetInstance().RegisterDisposeCallback(&rVoice);
 
+    if (mUpdatePriorityFlag) {
+        UpdateEachVoicePriority(mPrioVoiceList.GetBeginIter(),
+                                mPrioVoiceList.GetEndIter());
+    }
+
+    DisposeCallbackManager::GetInstance().RegisterDisposeCallback(&rVoice);
     return &rVoice;
 }
 
@@ -100,18 +71,22 @@ void VoiceManager::FreeVoice(Voice* pVoice) {
 }
 
 void VoiceManager::UpdateAllVoices() {
-    NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPrioVoiceList, { it->StopFinished(); })
-    NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPrioVoiceList, { it->Calc(); })
-
     ut::AutoInterruptLock lock;
 
     NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPrioVoiceList, { it->Update(); })
 }
 
-void VoiceManager::NotifyVoiceUpdate() {
+void VoiceManager::DisableUpdateVoicePriority() {
+    ut::AutoInterruptLock lock;
+    mUpdatePriorityFlag = false;
+}
+
+void VoiceManager::EnableUpdateVoicePriority() {
     ut::AutoInterruptLock lock;
 
-    NW4R_UT_LINKLIST_FOREACH_SAFE (it, mPrioVoiceList, { it->ResetDelta(); })
+    mUpdatePriorityFlag = true;
+    UpdateEachVoicePriority(mPrioVoiceList.GetBeginIter(),
+                            mPrioVoiceList.GetEndIter());
 }
 
 void VoiceManager::AppendVoiceList(Voice* pVoice) {
@@ -119,14 +94,14 @@ void VoiceManager::AppendVoiceList(Voice* pVoice) {
 
     mFreeVoiceList.Erase(pVoice);
 
-    VoiceList::RevIterator it = mPrioVoiceList.GetEndReverseIter();
-    for (; it != mPrioVoiceList.GetBeginReverseIter(); ++it) {
-        if (it->GetPriority() <= pVoice->GetPriority()) {
+    VoiceList::Iterator it = mPrioVoiceList.GetBeginIter();
+    for (; it != mPrioVoiceList.GetEndIter(); ++it) {
+        if (it->GetPriority() > pVoice->GetPriority()) {
             break;
         }
     }
 
-    mPrioVoiceList.Insert(it.GetBase(), pVoice);
+    mPrioVoiceList.Insert(it, pVoice);
 }
 
 void VoiceManager::RemoveVoiceList(Voice* pVoice) {
@@ -142,18 +117,15 @@ void VoiceManager::ChangeVoicePriority(Voice* pVoice) {
     RemoveVoiceList(pVoice);
     AppendVoiceList(pVoice);
 
-    UpdateEachVoicePriority(mPrioVoiceList.GetIteratorFromPointer(pVoice),
-                            mPrioVoiceList.GetEndIter());
+    if (mUpdatePriorityFlag) {
+        UpdateEachVoicePriority(mPrioVoiceList.GetBeginIter(),
+                                mPrioVoiceList.GetEndIter());
+    }
 }
 
 void VoiceManager::UpdateEachVoicePriority(const VoiceList::Iterator& rBegin,
                                            const VoiceList::Iterator& rEnd) {
-
     for (VoiceList::Iterator it = rBegin; it != rEnd; ++it) {
-        if (it->GetPriority() <= 1) {
-            return;
-        }
-
         if (it->GetPriority() != Voice::PRIORITY_MAX) {
             it->UpdateVoicesPriority();
         }

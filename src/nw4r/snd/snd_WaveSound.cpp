@@ -8,21 +8,14 @@ namespace detail {
 NW4R_UT_RTTI_DEF_DERIVED(WaveSound, BasicSound);
 
 WaveSound::WaveSound(SoundInstanceManager<WaveSound>* pManager)
-    : mManager(pManager), mTempSpecialHandle(NULL), mPreparedFlag(false) {}
+    : mManager(pManager), mTempSpecialHandle(NULL) {}
 
-bool WaveSound::Prepare(const void* pWsdData, s32 wsdOffset,
-                        WsdPlayer::StartOffsetType startType, s32 startOffset,
-                        int voices, const WsdPlayer::WsdCallback* pCallback,
+bool WaveSound::Prepare(const void* pWsdData, s32 wsdOffset, int voices,
+                        const WsdPlayer::WsdCallback* pCallback,
                         u32 callbackArg) {
     InitParam();
-
-    if (!mWsdPlayer.Prepare(pWsdData, wsdOffset, startType, startOffset, voices,
-                            pCallback, callbackArg)) {
-        return false;
-    }
-
-    mPreparedFlag = true;
-    return true;
+    return mWsdPlayer.Prepare(pWsdData, wsdOffset, voices, pCallback,
+                              callbackArg);
 }
 
 void WaveSound::Shutdown() {
@@ -32,10 +25,6 @@ void WaveSound::Shutdown() {
 
 void WaveSound::SetChannelPriority(int priority) {
     mWsdPlayer.SetChannelPriority(priority);
-}
-
-void WaveSound::SetReleasePriorityFix(bool flag) {
-    mWsdPlayer.SetReleasePriorityFix(flag);
 }
 
 void WaveSound::SetPlayerPriority(int priority) {

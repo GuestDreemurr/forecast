@@ -23,7 +23,6 @@ public:
     u32 GetRequiredMemSize();
 
     void Setup(void* pWork, u32 workSize);
-    void Shutdown();
     void UpdateAllChannel();
 
 private:

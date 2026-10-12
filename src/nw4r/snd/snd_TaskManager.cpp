@@ -4,169 +4,85 @@ namespace nw4r {
 namespace snd {
 namespace detail {
 
+u8 TaskManager::sTaskArea[TASK_AREA_SIZE];
+
 TaskManager& TaskManager::GetInstance() {
     static TaskManager instance;
     return instance;
 }
 
-TaskManager::TaskManager() : mCurrentTask(NULL), mCancelWaitTaskFlag(false) {
-    OSInitThreadQueue(&mAppendThreadQueue);
-    OSInitThreadQueue(&mDoneThreadQueue);
+void* TaskManager::Alloc() {
+    ut::AutoInterruptLock lock;
+
+    void* pTask = MEMAllocFromUnitHeap(mHeap);
+
+    while (pTask == NULL) {
+        ExecuteTask();
+        pTask = MEMAllocFromUnitHeap(mHeap);
+    }
+
+    return pTask;
 }
 
 void TaskManager::AppendTask(Task* pTask, TaskPriority priority) {
     ut::AutoInterruptLock lock;
-
-    pTask->mBusyFlag = true;
     mTaskList[priority].PushBack(pTask);
-
-    OSWakeupThread(&mAppendThreadQueue);
 }
 
-Task* TaskManager::GetNextTask(TaskPriority priority, bool remove) {
-    ut::AutoInterruptLock lock;
-
-    if (mTaskList[priority].IsEmpty()) {
-        return NULL;
+void TaskManager::Execute() {
+    while (ExecuteTask()) {
+        ;
     }
-
-    Task& rTask = mTaskList[priority].GetFront();
-
-    if (remove) {
-        mTaskList[priority].PopFront();
-    }
-
-    return &rTask;
 }
 
-Task* TaskManager::PopTask() {
-    ut::AutoInterruptLock lock;
+bool TaskManager::ExecuteTask() {
+    ut::detail::AutoLock<OSMutex> lock(mMutex);
+
     Task* pTask;
 
-    pTask = GetNextTask(PRIORITY_HIGH, true);
-    if (pTask != NULL) {
-        return pTask;
-    }
-
-    pTask = GetNextTask(PRIORITY_MIDDLE, true);
-    if (pTask != NULL) {
-        return pTask;
-    }
-
-    pTask = GetNextTask(PRIORITY_LOW, true);
-    if (pTask != NULL) {
-        return pTask;
-    }
-
-    return NULL;
-}
-
-Task* TaskManager::GetNextTask() {
-    ut::AutoInterruptLock lock;
-    Task* pTask;
-
-    pTask = GetNextTask(PRIORITY_HIGH, false);
-    if (pTask != NULL) {
-        return pTask;
-    }
-
-    pTask = GetNextTask(PRIORITY_MIDDLE, false);
-    if (pTask != NULL) {
-        return pTask;
-    }
-
-    pTask = GetNextTask(PRIORITY_LOW, false);
-    if (pTask != NULL) {
-        return pTask;
-    }
-
-    return NULL;
-}
-
-Task* TaskManager::ExecuteTask() {
-    Task* pTask = PopTask();
-    if (pTask == NULL) {
-        return NULL;
-    }
-
+    pTask = PopTask(PRIORITY_HIGH);
     mCurrentTask = pTask;
-    {
-        pTask->mBusyFlag = false;
-        pTask->Execute();
+
+    if (pTask == NULL) {
+        pTask = PopTask(PRIORITY_MIDDLE);
+        mCurrentTask = pTask;
+
+        if (pTask == NULL) {
+            pTask = PopTask(PRIORITY_LOW);
+            mCurrentTask = pTask;
+
+            if (pTask == NULL) {
+                return false;
+            }
+        }
     }
+
+    mCurrentTask->Execute();
+    Free(mCurrentTask);
     mCurrentTask = NULL;
 
-    OSWakeupThread(&mDoneThreadQueue);
-    return pTask;
+    return true;
 }
 
-void TaskManager::CancelTask(Task* pTask) {
-    ut::AutoInterruptLock lock;
-
-    if (pTask == mCurrentTask) {
-        pTask->OnCancel();
-
-        while (pTask == mCurrentTask) {
-            OSSleepThread(&mDoneThreadQueue);
-        }
-    } else {
-        for (int i = 0; i < PRIORITY_MAX; i++) {
-            TaskPriority priority = static_cast<TaskPriority>(i);
-            TaskList& rList = mTaskList[priority];
-
-            NW4R_UT_LINKLIST_FOREACH_SAFE (it, rList, {
-                if (&*it == pTask) {
-                    rList.Erase(it);
-
-                    it->mBusyFlag = false;
-                    it->Cancel();
-                    break;
-                }
-            })
-        }
-    }
-}
-
-void TaskManager::CancelAllTask() {
+void TaskManager::CancelByTaskId(u32 taskId) {
     ut::AutoInterruptLock lock;
 
     for (int i = 0; i < PRIORITY_MAX; i++) {
-        TaskPriority priority = static_cast<TaskPriority>(i);
-        TaskList& rList = mTaskList[priority];
+        for (TaskList::Iterator it = mTaskList[i].GetBeginIter();
+             it != mTaskList[i].GetEndIter();) {
 
-        while (!rList.IsEmpty()) {
-            Task& rTask = rList.GetBack();
-            rList.PopBack();
+            TaskList::Iterator curr = it++;
 
-            rTask.mBusyFlag = false;
-            rTask.Cancel();
+            if (taskId == curr->mTaskId) {
+                mTaskList[i].Erase(curr);
+                Free(&*curr);
+            }
         }
     }
 
-    if (mCurrentTask != NULL) {
-        mCurrentTask->OnCancel();
-
-        while (mCurrentTask != NULL) {
-            OSSleepThread(&mDoneThreadQueue);
-        }
+    if (mCurrentTask != NULL && taskId == mCurrentTask->mTaskId) {
+        mCurrentTask->Cancel();
     }
-}
-
-void TaskManager::WaitTask() {
-    ut::AutoInterruptLock lock;
-
-    mCancelWaitTaskFlag = false;
-
-    while (GetNextTask() == NULL && !mCancelWaitTaskFlag) {
-        OSSleepThread(&mAppendThreadQueue);
-    }
-}
-
-void TaskManager::CancelWaitTask() {
-    ut::AutoInterruptLock lock;
-
-    mCancelWaitTaskFlag = true;
-    OSWakeupThread(&mAppendThreadQueue);
 }
 
 } // namespace detail

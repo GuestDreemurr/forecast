@@ -103,7 +103,7 @@ bool BankFileReader::ReadInstInfo(InstInfo* pInfo, int prgNo, int key,
     pInfo->originalKey = pParam->originalKey;
     pInfo->pan = pParam->pan;
 
-    if (mHeader->fileHeader.version >= VERSION) {
+    if (mHeader->fileHeader.version == VERSION) {
         pInfo->volume = pParam->volume;
         pInfo->tune = pParam->tune;
     } else {
