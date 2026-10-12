@@ -46,7 +46,11 @@ public:
 
 public:
     Font() : mReadFunc(&CharStrmReader::ReadNextCharCP1252) {}
+#ifdef NW4R_UT_FONT_DTOR_OUT_OF_LINE
+    virtual ~Font(); // at 0x8 (see ut_Font.cpp)
+#else
     virtual ~Font() {} // at 0x8
+#endif
 
     virtual int GetWidth() const = 0;  // at 0xC
     virtual int GetHeight() const = 0; // at 0x10

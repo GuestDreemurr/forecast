@@ -83,8 +83,7 @@ void TagProcessorBase<T>::ProcessLinefeed(ContextType* pCtx) {
     f32 x = pCtx->x;
     f32 y = rWriter.GetCursorY() + rWriter.GetLineHeight();
 
-    rWriter.SetCursorX(x);
-    rWriter.SetCursorY(y);
+    rWriter.SetCursor(x, y);
 }
 
 template class TagProcessorBase<char>;

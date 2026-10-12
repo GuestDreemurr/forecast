@@ -1,3 +1,8 @@
+// HACK: the original emits Font's destructor and vtable in this file, right
+// after InitReaderFunc, although every other file inlines the destructor.
+// No natural form reproduces that (Font is abstract and nothing here uses
+// it), so this file alone sees the destructor as out of line.
+#define NW4R_UT_FONT_DTOR_OUT_OF_LINE
 #include <nw4r/ut.h>
 
 namespace nw4r {
@@ -27,6 +32,8 @@ void Font::InitReaderFunc(FontEncoding encode) {
     }
     }
 }
+
+Font::~Font() {}
 
 } // namespace ut
 } // namespace nw4r
