@@ -8,13 +8,25 @@
 extern "C" {
 #endif
 
+typedef struct {
+    int quot;
+    int rem;
+} div_t;
+
 void free(void *);
 
 int abs(int);
+div_t div(int, int);
+
+void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
+void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
+
+char *getenv(const char *);
 
 void abort(void);
 
 int atoi(const char *);
+long atol(const char *);
 
 size_t mbstowcs(wchar_t *, const char *, size_t);
 size_t wcstombs(char *, const wchar_t *, size_t);
