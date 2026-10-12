@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 int stricmp(const char *, const char *);
+char *itoa(int, char *, int);
 
 #ifdef __cplusplus
 }

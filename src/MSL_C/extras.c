@@ -1,3 +1,4 @@
+#include "extras.h"
 #include "file_io.h"
 #include "locale.h"
 #include "size_t.h"
@@ -33,4 +34,8 @@ int strncasecmp(const char *s1, const char *s2, size_t n) {
 
 int strcasecmp(const char *s1, const char *s2) {
     return stricmp(s1, s2);
+}
+
+char* itoa(int value, char* buffer, int base) {
+    return __msl_itoa(value, buffer, base);
 }

@@ -1,6 +1,8 @@
 #include "ctype.h"
+#include "file_io.h"
 #include "file_struct.h"
 #include "locale.h"
+#include <cstring>
 
 #pragma exceptions on
 
@@ -105,4 +107,44 @@ int __msl_strnicmp(const char* pStr1, const char* pStr2, int n) {
     }
 
     return 0;
+}
+
+// Writes value as text in the given base (digits above 9 are uppercase letters). Returns buffer
+char* __msl_itoa(int value, char* buffer, int base) {
+    char tmp;
+    int negative = 0;
+    int len = 0;
+    int front;
+    int back;
+    unsigned int rest = value;
+
+    if (value < 0) {
+        rest = -value;
+        negative = 1;
+    }
+
+    // Digits come out least significant first, so the text is reversed at the end
+    do {
+        int digit = rest % base;
+
+        if (digit > 9) {
+            buffer[len++] = digit - 10 + 'A';
+        }
+        else {
+            buffer[len++] = digit + '0';
+        }
+    } while ((rest /= base) != 0);
+
+    if (negative) {
+        buffer[len++] = '-';
+    }
+    buffer[len] = '\0';
+
+    for (front = 0, back = strlen(buffer) - 1; front < back; front++, back--) {
+        tmp = buffer[front];
+        buffer[front] = buffer[back];
+        buffer[back] = tmp;
+    }
+
+    return buffer;
 }
