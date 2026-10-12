@@ -12,13 +12,6 @@ const math::VEC3 DrawStrategyImpl::mYUnitVec(0.0f, 1.0f, 0.0f);
 const math::VEC3 DrawStrategyImpl::mZUnitVec(0.0f, 0.0f, 1.0f);
 const math::VEC3 DrawStrategyImpl::mZeroVec(0.0f, 0.0f, 0.0f);
 
-// clang-format off
-const math::MTX34 DrawStrategyImpl::mIdentityMtx(
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f);
-// clang-format on
-
 /******************************************************************************
  *
  * DrawStrategyImpl
@@ -167,17 +160,12 @@ void DrawStrategyImpl::InitTev(const EmitterDrawSetting& rSetting,
         rSetting.mFlags & EmitterDrawSetting::FLAG_ZCOMP_ENABLE_UPDATE ? TRUE
                                                                        : FALSE);
 
-    if (rSetting.mFlags & EmitterDrawSetting::FLAG_FOG_ENABLE) {
-        GXFogType type;
-        f32 start, end, near, far;
-        GXColor color;
+    GXFogType type;
+    f32 start, end, near, far;
+    GXColor color;
 
-        rInfo.GetFog(&type, &start, &end, &near, &far, &color);
-        GXSetFog(type, color, start, end, near, far);
-    } else {
-        GXColor color = {0, 0, 0, 0};
-        GXSetFog(GX_FOG_NONE, color, 0.0f, 100.0f, 0.0f, 100.0f);
-    }
+    rInfo.GetFog(&type, &start, &end, &near, &far, &color);
+    GXSetFog(type, color, start, end, near, far);
 }
 
 void DrawStrategyImpl::InitColor(ParticleManager* pManager,
@@ -928,7 +916,15 @@ DrawStrategyImpl::GetFirstDrawParticle_EldersFirst(ParticleManager* pManager) {
 Particle* DrawStrategyImpl::GetFirstDrawParticle_YoungersFirst(
     ParticleManager* pManager) {
 
-    return GetYoungestDrawParticle(pManager);
+    Particle* pIt = GetYoungestParticle(pManager);
+
+    while (pIt != NULL &&
+           pIt->GetLifeStatus() != ReferencedObject::NW4R_EF_LS_ACTIVE) {
+
+        pIt = GetElderParticle(pManager, pIt);
+    }
+
+    return pIt;
 }
 
 Particle*
@@ -978,7 +974,7 @@ DrawStrategyImpl::AheadContext::AheadContext(const math::MTX34& rViewMtx,
 
     mCommon.mEmitterCenter = center;
 
-    EmitterDrawSetting& rDesc = *pManager->mResource->GetEmitterDrawSetting();
+    EmitterDesc& rDesc = *pManager->mResource->GetEmitterDesc();
 
     switch (rDesc.typeDir) {
     case EmitterDrawSetting::DIR_NO_DESIGN: {

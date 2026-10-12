@@ -17,8 +17,8 @@ DrawLineStrategy::DrawLineStrategy() {}
 void DrawLineStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
     InitGraphics(rInfo, pManager);
 
-    const EmitterDrawSetting& rSetting =
-        *pManager->mResource->GetEmitterDrawSetting();
+    EmitterDesc* pDesc = pManager->mResource->GetEmitterDesc();
+    const EmitterDrawSetting& rSetting = pDesc->drawSetting;
 
     math::MTX34 glbMtx;
     math::MTX34 posMtx;
@@ -28,10 +28,10 @@ void DrawLineStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
     GXLoadPosMtxImm(posMtx, GX_PNMTX0);
 
     GetFirstDrawParticleFunc pGetFirstFunc = GetGetFirstDrawParticleFunc(
-        rSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
+        pDesc->drawSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
 
     GetNextDrawParticleFunc pGetNextFunc = GetGetNextDrawParticleFunc(
-        rSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
+        pDesc->drawSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
 
     u8 prevLineWidth = 0;
     bool first = true;
@@ -83,8 +83,8 @@ void DrawLineStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
 void DrawLineStrategy::InitGraphics(const DrawInfo& rInfo,
                                     ParticleManager* pManager) {
 
-    const EmitterDrawSetting& rSetting =
-        *pManager->mResource->GetEmitterDrawSetting();
+    EmitterDesc* pDesc = pManager->mResource->GetEmitterDesc();
+    const EmitterDrawSetting& rSetting = pDesc->drawSetting;
 
     InitTexture(rSetting);
     InitTev(rSetting, rInfo);

@@ -8,11 +8,25 @@ namespace ef {
 // Forward declarations
 class Particle;
 
+// This library version has one routine per curve dimension.
+// The names are descriptive; the originals are unknown.
+void AnimCurveExecuteU8Vec3(u8* pCmdList, u8* pTarget, u32 tick, u16 seed,
+                            u32 life);
+
 void AnimCurveExecuteU8(u8* pCmdList, u8* pTarget, u32 tick, u16 seed,
                         u32 life);
 
-void AnimCurveExecuteF32(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
-                         u32 life);
+void AnimCurveExecuteF32Vec2(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
+                             u16 seed, u32 life);
+
+void AnimCurveExecuteF32Vec3(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
+                             u32 life);
+
+void AnimCurveExecuteF32N(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
+                          u32 life, u8 enable);
+
+void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
+                         u16 seed, u32 life);
 
 void AnimCurveExecuteRotate(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
                             u32 life);

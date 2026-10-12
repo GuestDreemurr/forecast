@@ -86,20 +86,6 @@ bool Particle::Initialize(u16 life, math::VEC3 pos, math::VEC3 vel,
     mParameter.mPrevPosition = mParameter.mPosition;
     mParameter.mVelocity = vel;
 
-    const math::VEC3* pEffVel = pManager->mManagerEM->mManagerEF->GetVelocity();
-
-    if (pEffVel->x != 0.0f || pEffVel->y != 0.0f || pEffVel->z != 0.0f) {
-        math::MTX34 glbMtx;
-        pManager->mManagerEM->CalcGlobalMtx(&glbMtx);
-
-        math::MTX34Inv(&glbMtx, &glbMtx);
-        glbMtx._03 = glbMtx._13 = glbMtx._23 = 0.0f;
-
-        math::VEC3 glbVel;
-        math::VEC3Transform(&glbVel, &glbMtx, pEffVel);
-        mParameter.mVelocity += glbVel;
-    }
-
     if (pSpace != NULL) {
         math::VEC3Transform(&mParameter.mPosition, pSpace,
                             &mParameter.mPosition);

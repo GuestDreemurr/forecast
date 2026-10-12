@@ -47,6 +47,9 @@ public:
     u32 GetNumActive() const {
         return mActiveList.numObjects;
     }
+    u32 GetNumActiveObject() const {
+        return mNumActive;
+    }
 
     void ToActive(void* pObject) {
         ut::List_Append(&mActiveList, pObject);

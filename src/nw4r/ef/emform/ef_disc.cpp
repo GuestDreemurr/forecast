@@ -113,5 +113,28 @@ void EmitterFormDisc::Emission(Emitter* pEmitter, ParticleManager* pManager,
     }
 }
 
+void EmitterFormDisc::Draw(Emitter* pEmitter, const math::MTX34& rViewMtx) {
+    SetupDrawGX();
+
+    math::MTX34 mtx = rViewMtx;
+
+    math::MTX34 glbMtx;
+    pEmitter->CalcGlobalMtx(&glbMtx);
+    math::MTX34Mult(&mtx, &mtx, &glbMtx);
+
+    math::VEC3 scale;
+    scale.x = pEmitter->mParameter.mParams[0];
+    scale.y = 0.0f;
+    scale.z = pEmitter->mParameter.mParams[4];
+    math::MTX34Scale(&mtx, &mtx, &scale);
+
+    math::MTX34RotXYZDeg(&glbMtx, 90.0f, 0.0f, 0.0f);
+    math::MTX34Mult(&mtx, &mtx, &glbMtx);
+
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXDrawCylinder(16);
+}
+
 } // namespace ef
 } // namespace nw4r

@@ -76,17 +76,14 @@ public:
     virtual void SendClosing(); // at 0x8
     virtual void DestroyFunc(); // at 0xC
 
-    virtual bool Initialize(Emitter* pParent,
-                            EmitterResource* pResource); // at 0x10
+    bool Initialize(Emitter* pParent, EmitterResource* pResource);
+    Particle* CreateParticle(u16 life, math::VEC3 pos, math::VEC3 vel,
+                             const math::MTX34* pSpace, f32 momentum,
+                             const EmitterInheritSetting* pSetting,
+                             Particle* pReferencePtcl, u16 calcRemain);
 
-    virtual Particle* CreateParticle(u16 life, math::VEC3 pos, math::VEC3 vel,
-                                     const math::MTX34* pSpace, f32 momentum,
-                                     const EmitterInheritSetting* pSetting,
-                                     Particle* pReferencePtcl,
-                                     u16 calcRemain); // at 0x14
-
-    virtual void Calc();                      // at 0x18
-    virtual void Draw(const DrawInfo& rInfo); // at 0x1C
+    void Calc();
+    void Draw(const DrawInfo& rInfo);
 
     bool Closing(Particle* pParticle);
 

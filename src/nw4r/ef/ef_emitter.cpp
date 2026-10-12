@@ -143,8 +143,7 @@ bool Emitter::InitializeDatas(EmitterResource* pResource, Effect* pEffect) {
     mParameter.mEmitRandom = pDesc->emitEmitRandom / 100.0f;
     mParameter.mEmitInterval = pDesc->emitEmitInterval;
     mParameter.mEmitEmitDiv = pDesc->emitEmitDiv;
-    mParameter.mEmitIntervalRandom = pDesc->emitEmitIntarvalRandom / 100.0f;
-    mEmitCount = 0.0f;
+    mParameter.mEmitCount = 0.0f;
 
     mIsFirstEmission = true;
 
@@ -183,7 +182,7 @@ bool Emitter::InitializeDatas(EmitterResource* pResource, Effect* pEffect) {
 
     mMtxDirty = true;
     mpReferenceParticle = NULL;
-    mForm = pEffect->mManagerES->mEmitFormBuilder->Create(pDesc->GetFormType());
+    mForm = EmitFormBuilder::Create(pDesc->GetFormType());
     mParent = NULL;
     mManagerEF = NULL;
 
@@ -200,7 +199,6 @@ bool Emitter::Initialize(Effect* pParent, EmitterResource* pResource,
     mActivityList.Initialize();
 
     InitializeDatas(pResource, pParent);
-    mManagerEF = pParent;
 
     ParticleManager* pManager =
         pParent->mManagerES->GetMemoryManager()->AllocParticleManager();
@@ -212,7 +210,8 @@ bool Emitter::Initialize(Effect* pParent, EmitterResource* pResource,
         return false;
     }
 
-    mManagerEF->Ref();
+    mManagerEF = pParent;
+    pParent->Ref();
     mActivityList.ToActive(pManager);
     pManager->ChangeLifeStatus(NW4R_EF_LS_ACTIVE);
 
@@ -309,8 +308,7 @@ Emitter* Emitter::CreateEmitter(EmitterResource* pResource,
         pEmitter->SetMtxDirty();
 
         if (pSetting->speed != 0 || pSetting->scale != 0 ||
-            pSetting->alpha != 0 || pSetting->color != 0 ||
-            (pSetting->flag & EmitterInheritSetting::FLAG_INHERIT_ROT)) {
+            pSetting->alpha != 0 || pSetting->color != 0) {
 
             pEmitter->mpReferenceParticle = pParticle;
             pParticle->Ref();
@@ -337,8 +335,7 @@ void Emitter::CreateEmitterTmp(EmitterResource* pResource,
 
     Emitter* pEmitter = &tempEmitter;
 
-    if ((pSetting->flag & EmitterInheritSetting::FLAG_FOLLOW_EMIT) &&
-        pSetting->speed != 0) {
+    if (pSetting->flag && pSetting->speed != 0) {
 
         math::VEC3 dir;
         math::MTX34 dirMtx;
@@ -466,8 +463,7 @@ void Emitter::CreateEmitterTmp(EmitterResource* pResource,
     }
 
     if (pSetting->speed != 0 || pSetting->scale != 0 || pSetting->alpha != 0 ||
-        pSetting->color != 0 ||
-        (pSetting->flag & EmitterParameter::INHERIT_FLAG_ROT)) {
+        pSetting->color != 0) {
 
         tempEmitter.mpReferenceParticle = pParticle;
         pParticle->Ref();
@@ -576,14 +572,8 @@ void Emitter::Emission(ParticleManager* pManager, const math::MTX34* pSpace) {
 
     mEmitIntervalWait = mParameter.mEmitInterval;
 
-    if (mParameter.mEmitIntervalRandom != 0.0f) {
-        mEmitIntervalWait += static_cast<u16>(math::FCeil(
-            (mParameter.mEmitInterval * mParameter.mEmitIntervalRandom - 1.0f) *
-            mRandom.RandFloat()));
-    }
-
     if (mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_17) {
-        mEmitCount = mParameter.mEmitEmitDiv;
+        mParameter.mEmitCount = mParameter.mEmitEmitDiv;
     } else {
         f32 count;
         if (mParameter.mEmitRandom == 0.0f) {
@@ -611,49 +601,28 @@ void Emitter::Emission(ParticleManager* pManager, const math::MTX34* pSpace) {
                      (1.0f - mParameter.mLODMinEmit) * ratio;
         }
 
-        mEmitCount += count;
+        mParameter.mEmitCount += count;
 
         if (mIsFirstEmission && mParameter.mEmitRatio != 0.0f &&
-            mEmitCount < 1.0f) {
+            mParameter.mEmitCount < 1.0f) {
 
-            mEmitCount = 1.0f;
+            mParameter.mEmitCount = 1.0f;
         }
     }
 
-    if (mEmitCount >= 1.0f) {
+    if (mParameter.mEmitCount >= 1.0f) {
         (void)Resource::GetInstance(); // unused
 
         EmitterDesc* pDesc = mResource->GetEmitterDesc();
 
         if (mForm != NULL) {
-            if (mManagerEF->mCallBack.mPrevEmission != NULL) {
-                int count = static_cast<int>(mEmitCount);
-                u32 flags = mParameter.mEmitFlags;
-
-                f32 params[NUM_PARAMS];
-                for (int i = 0; i < NUM_PARAMS; i++) {
-                    params[i] = mParameter.mParams[i];
-                }
-
-                u16 life = pDesc->ptclLife;
-                f32 lifeRnd = pDesc->ptclLifeRandom / 100.0f;
-                math::MTX34 newSpace = *pSpace;
-
-                mManagerEF->mCallBack.mPrevEmission(this, pManager, &count,
-                                                    &flags, &params, &life,
-                                                    &lifeRnd, &newSpace);
-
-                mForm->Emission(this, pManager, count, flags, params, life,
-                                lifeRnd, &newSpace);
-            } else {
-                mForm->Emission(
-                    this, pManager, static_cast<int>(mEmitCount),
-                    mParameter.mEmitFlags, mParameter.mParams, pDesc->ptclLife,
-                    pDesc->ptclLifeRandom / 100.0f, pSpace);
-            }
+            mForm->Emission(
+                this, pManager, static_cast<int>(mParameter.mEmitCount),
+                mParameter.mEmitFlags, mParameter.mParams, pDesc->ptclLife,
+                pDesc->ptclLifeRandom / 100.0f, pSpace);
         }
 
-        mEmitCount -= static_cast<int>(mEmitCount);
+        mParameter.mEmitCount -= static_cast<int>(mParameter.mEmitCount);
     }
 
     if (mIsFirstEmission) {
@@ -749,7 +718,7 @@ void Emitter::CalcEmitter() {
             }
             }
 
-            AnimCurveExecuteF32(pEmitTrack, pTarget, animTime, mRandSeed,
+            AnimCurveExecuteF32(pEmitTrack, NULL, pTarget, animTime, mRandSeed,
                                 animSpan);
             continue;
         }
@@ -757,8 +726,9 @@ void Emitter::CalcEmitter() {
         case (AC_TYPE_PARTICLE_F32 << 8 | 0b011): {
             switch (kind) {
             case AC_TARGET_EMIT_SPEED_NORMAL: {
-                AnimCurveExecuteF32(pEmitTrack, &mParameter.mVelPowerNormalDir,
-                                    animTime, mRandSeed, animSpan);
+                AnimCurveExecuteF32Vec2(pEmitTrack, NULL,
+                                        &mParameter.mVelPowerNormalDir,
+                                        animTime, mRandSeed, animSpan);
             }
 
             default: {
@@ -791,8 +761,8 @@ void Emitter::CalcEmitter() {
             }
             }
 
-            AnimCurveExecuteF32(pEmitTrack, pTarget, animTime, mRandSeed,
-                                animSpan);
+            AnimCurveExecuteF32Vec3(pEmitTrack, pTarget, animTime, mRandSeed,
+                                    animSpan);
 
             mtxDirty = true;
             continue;
@@ -823,8 +793,8 @@ void Emitter::CalcEmitter() {
             }
             }
 
-            AnimCurveExecuteF32(pEmitTrack, pTarget, animTime, mRandSeed,
-                                animSpan);
+            AnimCurveExecuteF32N(pEmitTrack, pTarget, animTime, mRandSeed,
+                                 animSpan, ctrl & 0xFF);
             continue;
         }
 
@@ -1057,15 +1027,16 @@ void Emitter::SetMtxDirty() {
         for (Emitter* pSearch = pEmitter->mParent; pSearch;
              pSearch = pSearch->mParent) {
 
-            if (pSearch != this) {
+            if (pSearch->mParent != this) {
                 continue;
             }
 
-            pEmitter->mMtxDirty = true;
+            // @bug Marks this emitter and the ancestor's managers, not the child's
+            mMtxDirty = true;
 
             ParticleManager* pManager = NULL;
             while ((pManager = reinterpret_cast<ParticleManager*>(
-                        ut::List_GetNext(&pEmitter->mActivityList.mActiveList,
+                        ut::List_GetNext(&pSearch->mActivityList.mActiveList,
                                          pManager))) != NULL) {
 
                 pManager->SetMtxDirty();

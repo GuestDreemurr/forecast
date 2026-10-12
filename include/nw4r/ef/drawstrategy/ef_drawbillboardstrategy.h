@@ -25,7 +25,7 @@ private:
     inline void DispParticle_Normal(Particle* pParticle,
                                     const math::MTX34& rViewMtx, f32 vx, f32 vy,
                                     f32 vz, f32 rc, f32 rs, f32 sx, f32 sy,
-                                    const math::VEC2& rPivot, int flags);
+                                    const math::VEC2& rPivot, bool flags);
 
     void DrawYBillboard(const DrawInfo& rInfo, ParticleManager* pManager);
 
@@ -33,7 +33,7 @@ private:
                                         const math::MTX34& rViewMtx, f32 vx,
                                         f32 vy, f32 vz, f32 rc, f32 rs, f32 sx,
                                         f32 sy, const math::VEC2& rPivot,
-                                        int flags);
+                                        bool flags);
 
     void DrawDirectionalBillboard(const DrawInfo& rInfo,
                                   ParticleManager* pManager);
@@ -41,11 +41,11 @@ private:
     inline void DispParticle_Directional(Particle* pParticle,
                                          const math::MTX34& rViewMtx, f32 vx,
                                          f32 vy, f32 vz, f32 rc, f32 rs, f32 sx,
-                                         f32 sy, const math::VEC2& rPivot,
-                                         int flags);
+                                         f32 sy, f32 stretch,
+                                         const math::VEC2& rPivot, bool flags);
 
-    void DispPolygon(const math::VEC3& rP, const math::VEC3& rD1,
-                     const math::VEC3& rD2, int flags);
+    inline void DispPolygon(const math::VEC3& rP, const math::VEC3& rD1,
+                            const math::VEC3& rD2, bool flags);
 
     void CalcZOffset(math::MTX34* pMtx, const ParticleManager* pManager,
                      const DrawInfo& rInfo, f32 offsetZ);
