@@ -15,6 +15,9 @@ public:
                           int count, u32 flags, f32* pParams, u16 life,
                           f32 lifeRnd, const math::MTX34* pSpace); // at 0x8
 
+    virtual void Draw(Emitter* pEmitter,
+                      const math::MTX34& rViewMtx); // at 0xC
+
 private:
     void EmissionSub(Emitter* pEmitter, ParticleManager* pManager, int count,
                      u32 flags, f32* pParams, u16 life, f32 lifeRnd,

@@ -22,18 +22,15 @@ private:
     MemoryManagerBase* mMemoryManager; // at 0x0
 
 public:
-    DrawOrderBase* mDrawOrderFunc;             // at 0x4
-    DrawStrategyBuilder* mDrawStrategyBuilder; // at 0x8
-    EmitFormBuilder* mEmitFormBuilder;         // at 0xC
-    CreationQueue mCreationQueue;              // at 0x10
-    u32 mMaxGroupID;                           // at 0x5014
-    ActivityList* mActivityList;               // at 0x5018
-    Random mRandom;                            // at 0x501C
-    math::VEC3 mProcessCameraPos;              // at 0x5020
-    math::MTX34 mProcessCameraMtx;             // at 0x502C
-    f32 mProcessCameraFar;                     // at 0x505C
-    f32 mProcessCameraNear;                    // at 0x5060
-    bool mXFFlushSafe;                         // at 0x5064
+    CreationQueue mCreationQueue;  // at 0x4
+    u32 mMaxGroupID;               // at 0x5008
+    ActivityList* mActivityList;   // at 0x500C
+    Random mRandom;                // at 0x5010
+    math::VEC3 mProcessCameraPos;  // at 0x5014
+    math::MTX34 mProcessCameraMtx; // at 0x5020
+    f32 mProcessCameraFar;         // at 0x5050
+    f32 mProcessCameraNear;        // at 0x5054
+    bool mXFFlushSafe;             // at 0x5058
 
     static bool mDisplayVersion;
     static EffectSystem instance;
@@ -44,7 +41,7 @@ public:
     EffectSystem();
     ~EffectSystem();
 
-    bool Initialize(u32 maxGroupID);
+    void Initialize(u32 maxGroupID);
     bool Closing(Effect* pEffect);
 
     Effect* CreateEffect(const char* pName, u32 groupID, u16 calcRemain);

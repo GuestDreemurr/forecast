@@ -69,5 +69,38 @@ void EmitterFormLine::Emission(Emitter* pEmitter, ParticleManager* pManager,
     }
 }
 
+void EmitterFormLine::Draw(Emitter* pEmitter, const math::MTX34& rViewMtx) {
+    SetupDrawGX();
+
+    math::MTX34 mtx = rViewMtx;
+
+    math::MTX34 glbMtx;
+    pEmitter->CalcGlobalMtx(&glbMtx);
+    math::MTX34Mult(&mtx, &mtx, &glbMtx);
+
+    f32 root3 = static_cast<f32>(sqrt(3.0));
+    f32 size = 2.0f / root3;
+
+    math::MTX34RotXYZRad(&glbMtx, pEmitter->mParameter.mParams[1], pEmitter->mParameter.mParams[2], pEmitter->mParameter.mParams[3]);
+    math::MTX34Mult(&mtx, &mtx, &glbMtx);
+
+    math::VEC3 scale;
+    scale.x = 0.4f;
+    scale.y = 0.4f;
+    scale.z = pEmitter->mParameter.mParams[0] / size;
+    math::MTX34Scale(&mtx, &mtx, &scale);
+
+    if (!(pEmitter->mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_26)) {
+        scale.x = 0.0f;
+        scale.y = 0.0f;
+        scale.z = size / 2.0f;
+        math::MTX34Trans(&mtx, &mtx, &scale);
+    }
+
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXDrawCube();
+}
+
 } // namespace ef
 } // namespace nw4r

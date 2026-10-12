@@ -16,6 +16,8 @@ public:
 
     virtual CalcAheadFunc
     GetCalcAheadFunc(ParticleManager* pManager); // at 0x18
+
+    void InitGraphics(const DrawInfo& rInfo, ParticleManager* pManager);
 };
 
 } // namespace ef

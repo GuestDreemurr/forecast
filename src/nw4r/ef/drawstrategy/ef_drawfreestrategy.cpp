@@ -11,7 +11,10 @@ static math::MTX34 CalcLocalTransform(f32 px, f32 py, f32 sx, f32 sy,
 
 static math::MTX34 CalcRotate(Particle* pParticle, u8 axis);
 
-static u8 free_tex0_u8[] = {0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01};
+static u8 free_tex0_u8[] ALIGN(32) = {0x00, 0x01, 0x00, 0x00,
+                                      0x01, 0x00, 0x01, 0x01};
+
+DrawFreeStrategy::DrawFreeStrategy() {}
 
 static void DrawQuad(const math::MTX34& rMtx, const math::_VEC3* pPosArray,
                      bool texCoord) {
@@ -52,13 +55,11 @@ static void DrawQuad(const math::MTX34& rMtx, const math::_VEC3* pPosArray,
     GXEnd();
 }
 
-DrawFreeStrategy::DrawFreeStrategy() {}
-
 void DrawFreeStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
     InitGraphics(rInfo, pManager);
 
-    const EmitterDrawSetting& rSetting =
-        *pManager->mResource->GetEmitterDrawSetting();
+    EmitterDesc* pDesc = pManager->mResource->GetEmitterDesc();
+    const EmitterDrawSetting& rSetting = pDesc->drawSetting;
 
     math::MTX34 glbMtx;
     math::MTX34 posMtx;
@@ -67,14 +68,14 @@ void DrawFreeStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
     math::MTX34Mult(&posMtx, rInfo.GetViewMtx(), &glbMtx);
     GXLoadPosMtxImm(posMtx, GX_PNMTX0);
 
-    f32 px = rSetting.pivotX / 100.0f;
-    f32 py = rSetting.pivotY / 100.0f;
+    f32 px = pDesc->pivotX / 100.0f;
+    f32 py = pDesc->pivotY / 100.0f;
 
     GetFirstDrawParticleFunc pGetFirstFunc = GetGetFirstDrawParticleFunc(
-        rSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
+        pDesc->drawSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
 
     GetNextDrawParticleFunc pGetNextFunc = GetGetNextDrawParticleFunc(
-        rSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
+        pDesc->drawSetting.mFlags & EmitterDrawSetting::FLAG_DRAW_ORDER);
 
     bool first = true;
 
@@ -94,7 +95,7 @@ void DrawFreeStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
         SetupGP(pParticle, rSetting, rInfo, first, false);
         first = false;
 
-        math::MTX34 rotMtx = CalcRotate(pParticle, rSetting.typeAxis);
+        math::MTX34 rotMtx = CalcRotate(pParticle, pDesc->typeAxis);
         math::MTX34 locMtx = CalcLocalTransform(px, py, sx, sy, rotMtx);
 
         locMtx._03 += pParticle->mParameter.mPosition.x;
@@ -112,7 +113,7 @@ void DrawFreeStrategy::Draw(const DrawInfo& rInfo, ParticleManager* pManager) {
 
         DrawQuad(locMtx, p, mNumTexmap > 0);
 
-        if (rSetting.typeOption == EmitterDrawSetting::TYPE_CMN_CROSS) {
+        if (pDesc->typeOption == EmitterDrawSetting::TYPE_CMN_CROSS) {
             // clang-format off
             static const math::_VEC3 px[4] = {
                 0.0f, -1.0f,  1.0f,

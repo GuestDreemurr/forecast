@@ -12,10 +12,6 @@ NW4R_LIB_VERSION(EF, "Jun  8 2007", "11:16:29", "0x4199_60831");
 namespace nw4r {
 namespace ef {
 
-static DrawOrder gBasicDrawOrder;
-static DrawStrategyBuilder gBasicDrawStrategyBuilder;
-static EmitFormBuilder gBasicEmitFormBuilder;
-
 bool EffectSystem::mDisplayVersion = true;
 EffectSystem EffectSystem::instance;
 
@@ -36,7 +32,7 @@ EffectSystem* EffectSystem::GetInstance() {
     return &instance;
 }
 
-bool EffectSystem::Initialize(u32 maxGroupID) {
+void EffectSystem::Initialize(u32 maxGroupID) {
     mMaxGroupID = maxGroupID;
 
     mActivityList =
@@ -49,12 +45,6 @@ bool EffectSystem::Initialize(u32 maxGroupID) {
     }
 
     mRandom.Srand(0);
-
-    mDrawOrderFunc = &gBasicDrawOrder;
-    mDrawStrategyBuilder = &gBasicDrawStrategyBuilder;
-    mEmitFormBuilder = &gBasicEmitFormBuilder;
-
-    return true;
 }
 
 bool EffectSystem::Closing(Effect* pEffect) {
@@ -87,9 +77,6 @@ Effect* EffectSystem::CreateEffect(const char* pName, u32 groupID,
     pEffect->mGroupID = groupID;
 
     mActivityList[groupID].ToActive(pEffect);
-    pEffect->mLifeStatus = ReferencedObject::NW4R_EF_LS_ACTIVE;
-
-    mActivityList[groupID].ToWait(pEffect);
     pEffect->mLifeStatus = ReferencedObject::NW4R_EF_LS_WAIT;
 
     return pEffect;
@@ -170,6 +157,14 @@ void EffectSystem::Calc(u32 groupID, bool onlyBillboard) {
 void EffectSystem::Draw(const DrawInfo& rInfo, u32 groupID) {
     NW4R_UT_LIST_FOREACH (Effect, it, mActivityList[groupID].mActiveList,
                           { it->Draw(rInfo); });
+}
+
+void EffectSystem::SetProcessCamera(f32 near, f32 far, const math::VEC3& rPos,
+                                    const math::MTX34& rMtx) {
+    mProcessCameraPos = rPos;
+    math::MTX34Copy(&mProcessCameraMtx, &rMtx);
+    mProcessCameraNear = near;
+    mProcessCameraFar = far;
 }
 
 } // namespace ef

@@ -10,7 +10,6 @@ DrawStrategy* DrawStrategyBuilder::Create(u32 type) {
     static DrawLineStrategy lineStrategy;
     static DrawPointStrategy pointStrategy;
     static DrawStripeStrategy stripeStrategy;
-    static DrawSmoothStripeStrategy smoothStripeStrategy;
 
     switch (type) {
     case DRAWSTRATEGY_BILLBOARD: {
@@ -35,10 +34,6 @@ DrawStrategy* DrawStrategyBuilder::Create(u32 type) {
 
     case DRAWSTRATEGY_STRIPE: {
         return &stripeStrategy;
-    }
-
-    case DRAWSTRATEGY_SMOOTHSTRIPE: {
-        return &smoothStripeStrategy;
     }
 
     default: {

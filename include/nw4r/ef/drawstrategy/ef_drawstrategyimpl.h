@@ -365,7 +365,6 @@ protected:
     static const math::VEC3 mZUnitVec;
 
     static const math::VEC3 mZeroVec;
-    static const math::MTX34 mIdentityMtx;
 };
 
 /******************************************************************************

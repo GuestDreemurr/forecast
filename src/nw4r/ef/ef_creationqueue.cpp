@@ -11,6 +11,7 @@ void CreationQueue::AddParticleCreation(const EmitterInheritSetting* pSetting,
                                         u16 calcRemain) {
 
     if (mNumItem >= QUEUE_SIZE) {
+        OSReport("EffectLib: CreationQueue Full\n");
         return;
     }
 
@@ -33,6 +34,7 @@ void CreationQueue::AddEmitterCreation(const EmitterInheritSetting* pSetting,
                                        u16 calcRemain) {
 
     if (mNumItem >= QUEUE_SIZE) {
+        OSReport("EffectLib: CreationQueue Full\n");
         return;
     }
 

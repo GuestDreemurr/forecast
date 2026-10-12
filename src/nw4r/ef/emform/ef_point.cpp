@@ -57,5 +57,28 @@ void EmitterFormPoint::Emission(Emitter* pEmitter, ParticleManager* pManager,
     }
 }
 
+void EmitterFormPoint::Draw(Emitter* pEmitter, const math::MTX34& rViewMtx) {
+    SetupDrawGX();
+
+    math::MTX34 mtx = rViewMtx;
+
+    math::MTX34 glbMtx;
+    pEmitter->CalcGlobalMtx(&glbMtx);
+    math::MTX34Mult(&mtx, &mtx, &glbMtx);
+
+    f32 root3 = static_cast<f32>(sqrt(3.0));
+    f32 size = 2.0f / root3;
+
+    math::VEC3 scale;
+    scale.x = 0.4f;
+    scale.y = 0.4f;
+    scale.z = 0.4f;
+    math::MTX34Scale(&mtx, &mtx, &scale);
+
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXDrawCube();
+}
+
 } // namespace ef
 } // namespace nw4r

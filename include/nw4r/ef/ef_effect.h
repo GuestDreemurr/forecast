@@ -32,33 +32,16 @@ private:
         FLAG_EXIST_CALC_REMAIN = (1 << 16),
     };
 
-    struct CallBack {
-        typedef void (*PrevEmissionFunc)(Emitter* pEmitter,
-                                         ParticleManager* pManager, int* pCount,
-                                         u32* pFlags,
-                                         f32 (*pParams)[NUM_PARAMS], u16* pLife,
-                                         f32* pLifeRnd, math::MTX34* pSpace);
-
-        typedef void (*PtclCalcFunc)(ParticleManager* pManager, ut::List* pList,
-                                     Particle* pParticle);
-
-        PrevEmissionFunc mPrevEmission; // at 0x0
-        PtclCalcFunc mPrevPtclCalc;     // at 0x4
-        PtclCalcFunc mPostPtclCalc;     // at 0x8
-    };
-
 public:
     EffectSystem* mManagerES;   // at 0x20
     ActivityList mActivityList; // at 0x24
     u32 mGroupID;               // at 0x40
-    CallBack mCallBack;         // at 0x44
 
 protected:
-    u32 mFlags;                    // at 0x50
-    math::MTX34 mRootMtx;          // at 0x54
-    math::VEC3 mVelocity;          // at 0x84
-    ut::List mParticleManager;     // at 0x90
-    DrawOrderBase* mDrawOrderFunc; // at 0x9C
+    u32 mFlags;                    // at 0x44
+    math::MTX34 mRootMtx;          // at 0x48
+    ut::List mParticleManager;     // at 0x78
+    DrawOrderBase* mDrawOrderFunc; // at 0x84
 
 public:
     Effect();
@@ -165,14 +148,6 @@ public:
     }
 
     void SetRootMtx(const math::MTX34& rMtx);
-
-    const math::VEC3* GetVelocity() const {
-        return &mVelocity;
-    }
-
-    void SetVelocity(const nw4r::math::VEC3& rVelocity) {
-        mVelocity = rVelocity;
-    }
 };
 
 } // namespace ef

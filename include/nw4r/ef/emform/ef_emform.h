@@ -20,7 +20,7 @@ enum EmitFormType {
 
 class EmitFormBuilder {
 public:
-    virtual EmitterForm* Create(EmitFormType type); // at 0x8
+    static EmitterForm* Create(EmitFormType type);
 };
 
 } // namespace ef

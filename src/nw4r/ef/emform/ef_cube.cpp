@@ -5,6 +5,14 @@
 namespace nw4r {
 namespace ef {
 
+static inline f32 FMax(f32 a, f32 b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
 void EmitterFormCube::EmissionSub(math::VEC3& rPos, math::VEC3& rNormal,
                                   Emitter* pEmitter, ParticleManager* pManager,
                                   u16 life, f32 lifeRnd,
@@ -155,8 +163,8 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
             f32 x = baseX * outerX;
             f32 y = baseY * outerZ;
 
-            f32 maxDepth = 1.0f - MAX(std::fabs(baseX), std::fabs(baseY));
-            f32 dist = MAX(std::fabs(baseX), std::fabs(baseY));
+            f32 maxDepth = 1.0f - FMax(std::fabs(baseX), std::fabs(baseY));
+            f32 dist = FMax(std::fabs(baseX), std::fabs(baseY));
 
             math::VEC3 pos;
             math::VEC3 normal;
@@ -205,8 +213,8 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                 f32 baseX = countX * div - 1.0f;
                 f32 x = baseX * outerX;
 
-                f32 maxDepth = 1.0f - MAX(std::fabs(baseX), std::fabs(baseY));
-                f32 dist = MAX(std::fabs(baseX), std::fabs(baseY));
+                f32 maxDepth = 1.0f - FMax(std::fabs(baseX), std::fabs(baseY));
+                f32 dist = FMax(std::fabs(baseX), std::fabs(baseY));
 
                 math::VEC3 pos;
                 math::VEC3 normal;
@@ -254,8 +262,8 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                 f32 baseX = countX * div - 1.0f;
                 f32 x = baseX * outerZ;
 
-                f32 maxDepth = 1.0f - MAX(std::fabs(baseX), std::fabs(baseY));
-                f32 dist = MAX(std::fabs(baseX), std::fabs(baseY));
+                f32 maxDepth = 1.0f - FMax(std::fabs(baseX), std::fabs(baseY));
+                f32 dist = FMax(std::fabs(baseX), std::fabs(baseY));
 
                 math::VEC3 pos;
                 math::VEC3 normal;
@@ -302,8 +310,8 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                 f32 baseX = countX * div - 1.0f;
                 f32 x = baseX * outerX;
 
-                f32 maxDepth = 1.0f - MAX(std::fabs(baseX), std::fabs(baseY));
-                f32 dist = MAX(std::fabs(baseX), std::fabs(baseY));
+                f32 maxDepth = 1.0f - FMax(std::fabs(baseX), std::fabs(baseY));
+                f32 dist = FMax(std::fabs(baseX), std::fabs(baseY));
 
                 math::VEC3 pos;
                 math::VEC3 normal;
@@ -349,8 +357,8 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                 f32 baseX = countX * div - 1.0f;
                 f32 x = baseX * outerZ;
 
-                f32 maxDepth = 1.0f - MAX(std::fabs(baseX), std::fabs(baseY));
-                f32 dist = MAX(std::fabs(baseX), std::fabs(baseY));
+                f32 maxDepth = 1.0f - FMax(std::fabs(baseX), std::fabs(baseY));
+                f32 dist = FMax(std::fabs(baseX), std::fabs(baseY));
 
                 math::VEC3 pos;
                 math::VEC3 normal;
@@ -450,8 +458,8 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                 f32 x = baseX * outerX;
                 f32 y = baseY * outerZ;
 
-                f32 maxDepth = 1.0f - MAX(std::fabs(baseX), std::fabs(baseY));
-                f32 dist = MAX(std::fabs(baseX), std::fabs(baseY));
+                f32 maxDepth = 1.0f - FMax(std::fabs(baseX), std::fabs(baseY));
+                f32 dist = FMax(std::fabs(baseX), std::fabs(baseY));
 
                 math::VEC3 pos;
                 math::VEC3 normal;
@@ -604,7 +612,7 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                 f32 dist;
 
                 if (normal.x != 0.0f) {
-                    dist = MAX(std::fabs(pos.y), std::fabs(pos.z));
+                    dist = FMax(std::fabs(pos.y), std::fabs(pos.z));
 
                     f32 cone = dist * diffuseNrm;
                     f32 ylen = 1.0f / std::tanf(cone);
@@ -614,7 +622,7 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                     normal.y = pos.y;
                     normal.z = pos.z;
                 } else if (normal.y != 0.0f) {
-                    dist = MAX(std::fabs(pos.x), std::fabs(pos.z));
+                    dist = FMax(std::fabs(pos.x), std::fabs(pos.z));
 
                     f32 cone = dist * diffuseNrm;
                     f32 ylen = 1.0f / std::tanf(cone);
@@ -624,7 +632,7 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
                         ylen * std::sqrtf(pos.x * pos.x + pos.z * pos.z);
                     normal.z = pos.z;
                 } else {
-                    dist = MAX(std::fabs(pos.x), std::fabs(pos.y));
+                    dist = FMax(std::fabs(pos.x), std::fabs(pos.y));
 
                     f32 cone = dist * diffuseNrm;
                     f32 ylen = 1.0f / std::tanf(cone);
@@ -639,6 +647,29 @@ void EmitterFormCube::Emission(Emitter* pEmitter, ParticleManager* pManager,
             EmissionSub(pos, normal, pEmitter, pManager, life, lifeRnd, pSpace);
         }
     }
+}
+
+void EmitterFormCube::Draw(Emitter* pEmitter, const math::MTX34& rViewMtx) {
+    SetupDrawGX();
+
+    math::MTX34 mtx = rViewMtx;
+
+    math::MTX34 glbMtx;
+    pEmitter->CalcGlobalMtx(&glbMtx);
+    math::MTX34Mult(&mtx, &mtx, &glbMtx);
+
+    f32 root3 = static_cast<f32>(sqrt(3.0));
+    f32 size = 2.0f / root3;
+
+    math::VEC3 scale;
+    scale.x = 2.0f * (pEmitter->mParameter.mParams[0] / size);
+    scale.y = 2.0f * (pEmitter->mParameter.mParams[1] / size);
+    scale.z = 2.0f * (pEmitter->mParameter.mParams[2] / size);
+    math::MTX34Scale(&mtx, &mtx, &scale);
+
+    GXLoadPosMtxImm(mtx, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+    GXDrawCube();
 }
 
 } // namespace ef

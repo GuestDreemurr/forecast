@@ -3,6 +3,17 @@
 namespace nw4r {
 namespace ef {
 
+// The out-of-line constructor makes this vtable come before Effect's in .data,
+// as in the original. The constructor itself is unused and gets stripped.
+class BasicDrawOrder : public DrawOrder {
+public:
+    BasicDrawOrder();
+};
+
+BasicDrawOrder::BasicDrawOrder() {}
+
+static BasicDrawOrder gBasicDrawOrder;
+
 Effect::Effect() : mActivityList(offsetof(Emitter, mActivityLink)) {
     ut::List_Init(&mParticleManager, offsetof(ParticleManager, mDrawOrderLink));
 }
@@ -18,19 +29,11 @@ bool Effect::Initialize(EffectSystem* pSystem, EmitterResource* pResource,
 
     mActivityList.Initialize();
 
-    mDrawOrderFunc = pSystem->mDrawOrderFunc;
+    mDrawOrderFunc = &gBasicDrawOrder;
     math::MTX34Identity(&mRootMtx);
     mManagerES = pSystem;
 
-    mCallBack.mPrevEmission = NULL;
-    mCallBack.mPrevPtclCalc = NULL;
-    mCallBack.mPostPtclCalc = NULL;
-
     mFlags = 0;
-
-    mVelocity.x = 0.0f;
-    mVelocity.y = 0.0f;
-    mVelocity.z = 0.0f;
 
     Emitter* pEmitter = pSystem->GetMemoryManager()->AllocEmitter();
     if (pEmitter == NULL) {
@@ -171,6 +174,11 @@ void Effect::Calc(bool onlyBillboard) {
             }
         }
 
+        if (pEmitter->mLifeStatus == NW4R_EF_LS_ACTIVE ||
+            pEmitter->mLifeStatus == NW4R_EF_LS_WAIT) {
+            pEmitter->SetMtxDirty();
+        }
+
         NW4R_UT_LIST_FOREACH (ParticleManager, pManager, pEmitter->mActivityList.mActiveList,
                               { pManager->BeginCalc(false); });
     });
@@ -198,12 +206,15 @@ void Effect::Calc(bool onlyBillboard) {
                 if (it->mLifeStatus == NW4R_EF_LS_ACTIVE ||
                     it->mLifeStatus == NW4R_EF_LS_WAIT) {
 
-                    if (!(it->mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_16) &&
-                        !(it->mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_15)) {
-                        continue;
+                    if ((it->mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_16) ||
+                        (it->mParameter.mEmitFlags & EmitterDesc::EMIT_FLAG_15)) {
+                        it->CalcBillboard();
                     }
 
-                    it->CalcBillboard();
+                    if (it->mMtxDirty) {
+                        math::MTX34 mtx;
+                        it->CalcGlobalMtx(&mtx);
+                    }
                 }
             });
 
@@ -296,6 +307,10 @@ void Effect::Draw(const DrawInfo& rInfo) {
     }
 
     mDrawOrderFunc->Draw(this, rInfo);
+}
+
+Emitter* Effect::GetRootEmitter() {
+    return static_cast<Emitter*>(mActivityList.mActiveList.headObject);
 }
 
 u16 Effect::GetNumEmitter() const {

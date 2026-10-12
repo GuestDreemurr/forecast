@@ -14,13 +14,12 @@ enum DrawStrategyType {
     DRAWSTRATEGY_FREE,
     DRAWSTRATEGY_BILLBOARD,
     DRAWSTRATEGY_DIRECTIONAL,
-    DRAWSTRATEGY_STRIPE,
-    DRAWSTRATEGY_SMOOTHSTRIPE
+    DRAWSTRATEGY_STRIPE
 };
 
 class DrawStrategyBuilder {
 public:
-    virtual DrawStrategy* Create(u32 type); // at 0x8
+    static DrawStrategy* Create(u32 type);
 };
 
 } // namespace ef

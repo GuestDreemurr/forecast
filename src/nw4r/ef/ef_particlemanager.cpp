@@ -82,8 +82,8 @@ bool ParticleManager::Initialize(Emitter* pParent, EmitterResource* pResource) {
     EmitterDesc* pDesc = mResource->GetEmitterDesc();
 
     mDrawStrategy =
-        mManagerEM->mManagerEF->mManagerES->mDrawStrategyBuilder->Create(
-            pDesc->drawSetting.ptcltype);
+        DrawStrategyBuilder::Create(
+            pDesc->ptcltype);
 
     mLastCalced = NULL;
 
@@ -128,11 +128,6 @@ void ParticleManager::Calc() {
     }
 
     Particle* pIt = pFirst;
-
-    if (mManagerEM->mManagerEF->mCallBack.mPrevPtclCalc != NULL) {
-        mManagerEM->mManagerEF->mCallBack.mPrevPtclCalc(
-            this, &mActivityList.mActiveList, pFirst);
-    }
 
     math::MTX34 mtxLocToGlb;
     CalcGlobalMtx(&mtxLocToGlb);
@@ -323,79 +318,79 @@ void ParticleManager::Calc() {
                 switch (kind) {
                 case AC_TARGET_SIZE: {
                     pTarget = reinterpret_cast<f32*>(&pIt->mParameter.mSize);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_SCALE: {
                     pTarget = reinterpret_cast<f32*>(&pIt->mParameter.mScale);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTURE1SCALE: {
                     pTarget = reinterpret_cast<f32*>(
                         &pIt->mParameter.mTextureScale[TEX_LAYER_1]);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTURE2SCALE: {
                     pTarget = reinterpret_cast<f32*>(
                         &pIt->mParameter.mTextureScale[TEX_LAYER_2]);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTUREINDSCALE: {
                     pTarget = reinterpret_cast<f32*>(
                         &pIt->mParameter.mTextureScale[TEX_LAYER_IND]);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTURE1TRANSLATE: {
                     pTarget = reinterpret_cast<f32*>(
                         &pIt->mParameter.mTextureTranslate[TEX_LAYER_1]);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTURE2TRANSLATE: {
                     pTarget = reinterpret_cast<f32*>(
                         &pIt->mParameter.mTextureTranslate[TEX_LAYER_2]);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTUREINDTRANSLATE: {
                     pTarget = reinterpret_cast<f32*>(
                         &pIt->mParameter.mTextureTranslate[TEX_LAYER_IND]);
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTURE1ROTATE: {
                     pTarget = &pIt->mParameter.mTextureRotate[TEX_LAYER_1];
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTURE2ROTATE: {
                     pTarget = &pIt->mParameter.mTextureRotate[TEX_LAYER_2];
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_TEXTUREINDROTATE: {
                     pTarget = &pIt->mParameter.mTextureRotate[TEX_LAYER_IND];
-                    AnimCurveExecuteF32(pPtclTrack, pTarget, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, pTarget, tick, seed, life);
                     break;
                 }
 
                 case AC_TARGET_FIELD_SPEED: {
                     f32 speed;
-                    AnimCurveExecuteF32(pPtclTrack, &speed, tick, seed, life);
+                    AnimCurveExecuteF32(pPtclTrack, NULL, &speed, tick, seed, life);
                     math::VEC3Scale(&affect, &affect, speed - 1.0f);
                     addVel += affect;
                     break;
@@ -467,11 +462,6 @@ void ParticleManager::Calc() {
 
     mLastCalced =
         static_cast<Particle*>(ut::List_GetLast(&mActivityList.mActiveList));
-
-    if (mManagerEM->mManagerEF->mCallBack.mPostPtclCalc != NULL) {
-        mManagerEM->mManagerEF->mCallBack.mPostPtclCalc(
-            this, &mActivityList.mActiveList, pFirst);
-    }
 }
 
 void ParticleManager::Draw(const DrawInfo& rInfo) {

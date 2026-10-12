@@ -104,8 +104,6 @@ struct EmitterDrawSetting {
         FLAG_HIDDEN = (1 << 10),
         FLAG_DRAW_ORDER = (1 << 11),
         FLAG_FOG_ENABLE = (1 << 12),
-        FLAG_XY_SAME_SIZE = (1 << 13),
-        FLAG_XY_SAME_SCALE = (1 << 14),
     };
 
     enum AlphaFlickType {
@@ -178,16 +176,7 @@ struct EmitterDrawSetting {
     s8 mIndTexScaleExp;             // at 0x9C
     s8 pivotX;                      // at 0x9D
     s8 pivotY;                      // at 0x9E
-    u8 PADDING_0xA3;                // at 0x9F
-    u8 ptcltype;                    // at 0xA0
-    u8 typeOption;                  // at 0xA1
-    u8 typeDir;                     // at 0xA2
-    u8 typeAxis;                    // at 0xA3
-    u8 typeOption0;                 // at 0xA4
-    u8 typeOption1;                 // at 0xA5
-    u8 typeOption2;                 // at 0xA6
-    u8 PADDING_0xAB;                // at 0xA7
-    f32 zOffset;                    // at 0xA8
+    u8 PADDING_0x9F;                // at 0x9F
 };
 
 struct EmitterDesc {
@@ -195,6 +184,8 @@ struct EmitterDesc {
         CMN_FLAG_SYNC_LIFE = (1 << 0),
         CMN_FLAG_DISABLE_DRAW = (1 << 1),
         CMN_FLAG_MAX_LIFE = (1 << 2),
+        CMN_FLAG_XY_SAME_SIZE = (1 << 3),
+        CMN_FLAG_XY_SAME_SCALE = (1 << 4),
 
         CMN_FLAG_INHERIT_PTCL_SCALE = (1 << 5),
         CMN_FLAG_INHERIT_PTCL_ROT = (1 << 6),
@@ -252,8 +243,18 @@ struct EmitterDesc {
     u8 lodMinEmit;                  // at 0x86
     u8 lodAlpha;                    // at 0x87
     u32 randomSeed;                 // at 0x88
-    u8 userdata[8];                 // at 0x8C
-    EmitterDrawSetting drawSetting; // at 0x94
+    u8 ptcltype;                    // at 0x8C
+    u8 typeOption;                  // at 0x8D
+    u8 typeDir;                     // at 0x8E
+    u8 typeAxis;                    // at 0x8F
+    u8 typeOption0;                 // at 0x90
+    u8 typeOption1;                 // at 0x91
+    u8 typeOption2;                 // at 0x92
+    u8 PADDING_0x93;                // at 0x93
+    s8 pivotX;                      // at 0x94
+    s8 pivotY;                      // at 0x95
+    u8 userdata[10];                // at 0x96
+    EmitterDrawSetting drawSetting; // at 0xA0
 
     EmitFormType GetFormType() {
         return static_cast<EmitFormType>(emitFlag & 0xFF);
