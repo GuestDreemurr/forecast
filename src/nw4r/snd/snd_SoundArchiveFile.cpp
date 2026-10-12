@@ -138,17 +138,6 @@ bool SoundArchiveFileReader::ReadSoundInfo(
     pSoundInfo->playerId = pCmnInfo->playerId;
     pSoundInfo->playerPriority = pCmnInfo->playerPriority;
     pSoundInfo->volume = pCmnInfo->volume;
-    pSoundInfo->remoteFilter = pCmnInfo->remoteFilter;
-
-    if (GetVersion() >= NW4R_VERSION(1, 2)) {
-        pSoundInfo->panMode = static_cast<detail::PanMode>(pCmnInfo->panMode);
-        pSoundInfo->panCurve =
-            static_cast<detail::PanCurve>(pCmnInfo->panCurve);
-    } else {
-        pSoundInfo->panMode = detail::PAN_MODE_BALANCE;
-        pSoundInfo->panCurve = detail::PAN_CURVE_SQRT;
-    }
-
     return true;
 }
 
@@ -189,12 +178,6 @@ bool SoundArchiveFileReader::ReadSeqSoundInfo(
     pInfo->channelPriority = pSrc->channelPriority;
     pInfo->allocTrack = pSrc->allocTrack;
 
-    if (GetVersion() >= NW4R_VERSION(1, 3)) {
-        pInfo->releasePriorityFixFlag = pSrc->releasePriorityFix;
-    } else {
-        pInfo->releasePriorityFixFlag = false;
-    }
-
     return true;
 }
 
@@ -223,12 +206,6 @@ bool SoundArchiveFileReader::ReadWaveSoundInfo(
 
     pInfo->subNo = pSrc->subNo;
     pInfo->channelPriority = pSrc->channelPriority;
-
-    if (GetVersion() >= NW4R_VERSION(1, 3)) {
-        pInfo->releasePriorityFixFlag = pSrc->releasePriorityFix;
-    } else {
-        pInfo->releasePriorityFixFlag = false;
-    }
 
     return true;
 }

@@ -15,8 +15,8 @@ public:
     void RegisterDisposeCallback(DisposeCallback* pCallback);
     void UnregisterDisposeCallback(DisposeCallback* pCallback);
 
-    void Dispose(void* pData, u32 size, void* pArg);
-    void DisposeWave(void* pData, u32 size, void* pArg);
+    static void Dispose(void* pData, u32 size, void* pArg);
+    static void DisposeWave(void* pData, u32 size, void* pArg);
 
 private:
     DisposeCallbackManager();

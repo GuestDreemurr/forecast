@@ -44,10 +44,6 @@ bool FxReverbHi::StartUp() {
 }
 
 void FxReverbHi::Shutdown() {
-    if (!mImpl.mIsActive) {
-        return;
-    }
-
     mImpl.mIsActive = false;
 
     AXFXAllocHook allocHook;

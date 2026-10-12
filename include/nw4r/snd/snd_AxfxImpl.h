@@ -22,10 +22,6 @@ struct AxfxImpl {
     void DestroyHeap();
 
     u32 GetHeapTotalSize() {
-        if (mHeap == NULL) {
-            return 0;
-        }
-
         return MEMGetHeapTotalSize(mHeap);
     }
 

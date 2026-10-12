@@ -76,7 +76,17 @@ public:
 
     bool ReadWaveParam(WaveData* pWaveData, const void* pWaveAddr) const;
 
-    static AxVoice::Format GetAxVoiceFormatFromWaveFileFormat(u32 format);
+    static AxVoice::Format GetAxVoiceFormatFromWaveFileFormat(u32 format) {
+        if (format == WaveFile::FORMAT_PCM16) {
+            return AxVoice::FORMAT_PCM16;
+        }
+
+        if (format == WaveFile::FORMAT_PCM8) {
+            return AxVoice::FORMAT_PCM8;
+        }
+
+        return AxVoice::FORMAT_ADPCM;
+    }
 
 private:
     const WaveFile::WaveInfo* mWaveInfo; // at 0x0

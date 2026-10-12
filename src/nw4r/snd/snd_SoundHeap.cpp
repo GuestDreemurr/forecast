@@ -31,13 +31,6 @@ void* SoundHeap::Alloc(u32 size, detail::FrameHeap::FreeCallback pCallback,
     return mFrameHeap.Alloc(size, pCallback, pCallbackArg);
 }
 
-void SoundHeap::Clear() {
-    ut::detail::AutoLock<OSMutex> lockHeap(mMutex);
-    detail::SoundThread::AutoLock lockThread;
-
-    mFrameHeap.Clear();
-}
-
 int SoundHeap::SaveState() {
     ut::detail::AutoLock<OSMutex> lock(mMutex);
     return mFrameHeap.SaveState();
@@ -52,9 +45,8 @@ void SoundHeap::LoadState(int id) {
 
 void SoundHeap::DisposeCallbackFunc(void* pBuffer, u32 size,
                                     void* pCallbackArg) {
-    detail::DisposeCallbackManager::GetInstance().Dispose(pBuffer, size,
-                                                          pCallbackArg);
-
+    detail::DisposeCallbackManager::Dispose(pBuffer, size, pCallbackArg);
+    detail::DisposeCallbackManager::DisposeWave(pBuffer, size, pCallbackArg);
 }
 
 } // namespace snd

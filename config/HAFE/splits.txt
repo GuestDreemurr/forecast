@@ -728,7 +728,7 @@ nw4r/snd/snd_AxManager.cpp:
 	.sdata2     start:0x80332A18 end:0x80332A30
 
 nw4r/snd/snd_AxVoice.cpp:
-	.text       start:0x800B7110 end:0x800B8A4C
+	.text       start:0x800B70F8 end:0x800B8D30
 	.sdata2     start:0x80332A30 end:0x80332A50
 
 nw4r/snd/snd_AxVoiceManager.cpp:
@@ -738,7 +738,7 @@ nw4r/snd/snd_AxVoiceManager.cpp:
 
 nw4r/snd/snd_AxfxImpl.cpp:
 	.text       start:0x800B8F24 end:0x800B9094
-	.sbss       start:0x80331100 end:0x80331110
+	.sbss       start:0x80331100 end:0x80331108
 
 nw4r/snd/snd_Bank.cpp:
 	.text       start:0x800B9094 end:0x800B92B8
@@ -757,6 +757,7 @@ nw4r/snd/snd_BasicSound.cpp:
 	.text       start:0x800B9808 end:0x800BA890
 	.ctors      start:0x801792BC end:0x801792C0
 	.data       start:0x801B7048 end:0x801B70B0
+	.sbss       start:0x80331108 end:0x80331110
 	.sdata2     start:0x80332A80 end:0x80332A90
 
 nw4r/snd/snd_Channel.cpp:
@@ -771,7 +772,7 @@ nw4r/snd/snd_DisposeCallbackManager.cpp:
 	.sbss       start:0x80331118 end:0x80331120
 
 nw4r/snd/snd_DvdSoundArchive.cpp:
-	.text       start:0x800BBA20 end:0x800BC060
+	.text       start:0x800BBA20 end:0x800BC0B8
 	.data       start:0x801B70B0 end:0x801B7138
 	.sbss       start:0x80331120 end:0x80331128
 	.sbss2      start:0x80333780 end:0x80333788
@@ -788,12 +789,9 @@ nw4r/snd/snd_FrameHeap.cpp:
 	.text       start:0x800BC4D0 end:0x800BCAA4
 
 nw4r/snd/snd_FxReverbHi.cpp:
-	.text       start:0x800BCAA4 end:0x800BCC6C
+	.text       start:0x800BCAA4 end:0x800BCE8C
 	.rodata     start:0x80195B38 end:0x80195B50
 	.data       start:0x801B7138 end:0x801B7158
-
-nw4r/snd/snd_FxReverbHiDpl2.cpp:
-	.text       start:0x800BCC6C end:0x800BCE8C
 	.sdata2     start:0x80332AE8 end:0x80332AF8
 
 nw4r/snd/snd_InstancePool.cpp:
@@ -808,6 +806,9 @@ nw4r/snd/snd_MemorySoundArchive.cpp:
 	.text       start:0x800BD2FC end:0x800BD730
 	.data       start:0x801B7158 end:0x801B71D8
 
+nw4r/snd/snd_MidiSeqPlayer.cpp:
+	.text       start:0x800BD730 end:0x800BD794
+
 nw4r/snd/snd_MmlParser.cpp:
 	.text       start:0x800BD794 end:0x800BE640
 	.data       start:0x801B71D8 end:0x801B7408
@@ -817,10 +818,11 @@ nw4r/snd/snd_MmlParser.cpp:
 
 nw4r/snd/snd_MmlSeqTrack.cpp:
 	.text       start:0x800BE640 end:0x800BE700
-	.data       start:0x801B7408 end:0x801B7430
+	.data       start:0x801B7408 end:0x801B7418
 
 nw4r/snd/snd_MmlSeqTrackAllocator.cpp:
 	.text       start:0x800BE700 end:0x800BE824
+	.data       start:0x801B7418 end:0x801B7430
 
 nw4r/snd/snd_NandSoundArchive.cpp:
 	.text       start:0x800BE824 end:0x800BE870
@@ -831,22 +833,23 @@ nw4r/snd/snd_RemoteSpeaker.cpp:
 nw4r/snd/snd_RemoteSpeakerManager.cpp:
 	.text       start:0x800BF084 end:0x800BF2C0
 	.bss        start:0x802AE858 end:0x802AEB30
-	.sbss       start:0x80331130 end:0x80331140
+	.sbss       start:0x80331130 end:0x80331138
 
 nw4r/snd/snd_SeqFile.cpp:
 	.text       start:0x800BF2C0 end:0x800BF33C
 
 nw4r/snd/snd_SeqPlayer.cpp:
-	.text       start:0x800BF4C4 end:0x800C00FC
+	.text       start:0x800BF33C end:0x800C015C
 	.ctors      start:0x801792C0 end:0x801792C4
 	.data       start:0x801B7430 end:0x801B7488
-	.bss        start:0x802AEB30 end:0x802AEB80
+	.bss        start:0x802AEB30 end:0x802AEB68
 	.sdata2     start:0x80332B48 end:0x80332B58
 
 nw4r/snd/snd_SeqSound.cpp:
-	.text       start:0x800C00FC end:0x800C0560
+	.text       start:0x800C015C end:0x800C0560
 	.ctors      start:0x801792C4 end:0x801792C8
 	.data       start:0x801B7488 end:0x801B74F0
+	.sbss       start:0x80331138 end:0x80331140
 
 nw4r/snd/snd_SeqSoundHandle.cpp:
 	.text       start:0x800C0560 end:0x800C06A0
@@ -866,34 +869,36 @@ nw4r/snd/snd_SoundArchiveFile.cpp:
 	.sbss       start:0x80331140 end:0x80331148
 
 nw4r/snd/snd_SoundArchiveLoader.cpp:
-	.text       start:0x800C2A1C end:0x800C306C
+	.text       start:0x800C2A1C end:0x800C3374
 
 nw4r/snd/snd_SoundArchivePlayer.cpp:
 	.text       start:0x800C3374 end:0x800C5CE4
 	.data       start:0x801B7520 end:0x801B75F0
-	.bss        start:0x802AEB80 end:0x802C4B28
+	.bss        start:0x802AEB80 end:0x802AEDA0
 	.sbss       start:0x80331148 end:0x80331150
-	.sdata2     start:0x80332B88 end:0x80332BA0
+	.sdata2     start:0x80332B88 end:0x80332B98
 
 nw4r/snd/snd_SoundHandle.cpp:
 	.text       start:0x800C5CE4 end:0x800C5D80
 
 nw4r/snd/snd_SoundHeap.cpp:
 	.text       start:0x800C5D80 end:0x800C5F0C
-	.data       start:0x801B75F0 end:0x801B7638
+	.data       start:0x801B75F0 end:0x801B7600
 
 nw4r/snd/snd_SoundPlayer.cpp:
-	.text       start:0x800C5F90 end:0x800C6E78
+	.text       start:0x800C5F0C end:0x800C7084
+	.sdata2     start:0x80332B98 end:0x80332BA0
 
 nw4r/snd/snd_SoundStartable.cpp:
 	.text       start:0x800C7084 end:0x800C70F0
 
 nw4r/snd/snd_SoundSystem.cpp:
-	.text       start:0x800C7138 end:0x800C72C0
+	.text       start:0x800C70F0 end:0x800C72C0
+	.bss        start:0x802AEDA0 end:0x802C4B28
 	.sbss       start:0x80331150 end:0x80331158
 
 nw4r/snd/snd_SoundThread.cpp:
-	.text       start:0x800C7340 end:0x800C76CC
+	.text       start:0x800C72C0 end:0x800C76CC
 	.bss        start:0x802C4B28 end:0x802C4EE0
 	.sbss       start:0x80331158 end:0x80331160
 
@@ -904,22 +909,30 @@ nw4r/snd/snd_StrmFile.cpp:
 	.text       start:0x800C78EC end:0x800C7D14
 
 nw4r/snd/snd_StrmPlayer.cpp:
-	.text       start:0x800C7E20 end:0x800C996C
+	.text       start:0x800C7D14 end:0x800C996C
 	.ctors      start:0x801792C8 end:0x801792CC
-	.bss        start:0x802C4EE0 end:0x802CB308
+	.data       start:0x801B7600 end:0x801B7638
+	.bss        start:0x802C4EE0 end:0x802C8F20
 	.sdata2     start:0x80332BA0 end:0x80332BA8
 
 nw4r/snd/snd_StrmSound.cpp:
 	.text       start:0x800C996C end:0x800C9C80
 	.ctors      start:0x801792CC end:0x801792D0
 	.data       start:0x801B7638 end:0x801B76A0
-	.sbss       start:0x80331160 end:0x80331178
+	.sbss       start:0x80331160 end:0x80331168
 
 nw4r/snd/snd_StrmSoundHandle.cpp:
 	.text       start:0x800C9C80 end:0x800C9CB8
 
 nw4r/snd/snd_TaskManager.cpp:
-	.text       start:0x800C9DD0 end:0x800C9F30
+	.text       start:0x800C9CB8 end:0x800CA1C0
+	.bss        start:0x802C8F20 end:0x802CAFB8
+	.sbss       start:0x80331168 end:0x80331170
+
+nw4r/snd/snd_TaskThread.cpp:
+	.text       start:0x800CA1C0 end:0x800CA340
+	.bss        start:0x802CAFB8 end:0x802CB308
+	.sbss       start:0x80331170 end:0x80331178
 
 nw4r/snd/snd_Voice.cpp:
 	.text       start:0x800CA340 end:0x800CD0DC
@@ -928,22 +941,28 @@ nw4r/snd/snd_Voice.cpp:
 
 nw4r/snd/snd_VoiceManager.cpp:
 	.text       start:0x800CD0DC end:0x800CD77C
-	.bss        start:0x802CB308 end:0x802CB348
+	.bss        start:0x802CB308 end:0x802CB330
 	.sbss       start:0x80331178 end:0x80331180
 
 nw4r/snd/snd_Util.cpp:
 	.text       start:0x800CD77C end:0x800CDAE0
 	.rodata     start:0x80195BA0 end:0x801972E8
 	.sdata      start:0x803304C8 end:0x803304D0
-	.sdata2     start:0x80332BE0 end:0x80332C30
+	.sdata2     start:0x80332BE0 end:0x80332C28
 
 nw4r/snd/snd_WaveFile.cpp:
 	.text       start:0x800CDAE0 end:0x800CDD10
 
+nw4r/snd/snd_WavePlayer.cpp:
+	.text       start:0x800CDD10 end:0x800CE408
+	.ctors      start:0x801792D0 end:0x801792D4
+	.bss        start:0x802CB330 end:0x802CB348
+	.sdata2     start:0x80332C28 end:0x80332C30
+
 nw4r/snd/snd_WaveSound.cpp:
 	.text       start:0x800CE408 end:0x800CE6FC
 	.ctors      start:0x801792D4 end:0x801792D8
-	.data       start:0x801B76B8 end:0x801B7768
+	.data       start:0x801B76B8 end:0x801B7720
 	.sbss       start:0x80331180 end:0x80331188
 
 nw4r/snd/snd_WaveSoundHandle.cpp:
@@ -951,12 +970,18 @@ nw4r/snd/snd_WaveSoundHandle.cpp:
 
 nw4r/snd/snd_WsdFile.cpp:
 	.text       start:0x800CE734 end:0x800CEA7C
-	.sdata2     start:0x80332C30 end:0x80332C68
+	.sdata2     start:0x80332C30 end:0x80332C38
 
 nw4r/snd/snd_WsdPlayer.cpp:
-	.text       start:0x800CF07C end:0x800CF108
+	.text       start:0x800CEA7C end:0x800CF178
 	.ctors      start:0x801792D8 end:0x801792DC
+	.data       start:0x801B7720 end:0x801B7768
 	.bss        start:0x802CB348 end:0x802CB360
+	.sdata2     start:0x80332C38 end:0x80332C40
+
+nw4r/snd/snd_WsdTrack.cpp:
+	.text       start:0x800CF178 end:0x800CFA0C
+	.sdata2     start:0x80332C40 end:0x80332C68
 
 nw4r/ut/ut_list.cpp:
 	.text       start:0x800CFA0C end:0x800CFCA8
@@ -1030,7 +1055,7 @@ nw4r/ut/ut_TextWriterBase.cpp:
 	.sdata2     start:0x80332C90 end:0x80332CA8
 
 nw4r/math/math_arithmetic.cpp:
-	.text       start:0x800D7A14 end:0x800D7A38
+	.text       start:0x800D7A14 end:0x800D7A90
 	.sdata2     start:0x80332CA8 end:0x80332CB0
 
 nw4r/math/math_triangular.cpp:

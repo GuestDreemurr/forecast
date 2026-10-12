@@ -13,8 +13,8 @@ public:
 public:
     EnvGenerator();
 
-    void Init(f32 db = VOLUME_INIT);
-    void Reset(f32 db = VOLUME_INIT);
+    void Init();
+    void Reset();
     f32 GetValue() const;
     void Update(int msec);
 
@@ -33,7 +33,6 @@ public:
 private:
     static const int DECIBEL_SQUARE_TABLE_SIZE = 128;
 
-    static const volatile f32 VOLUME_INIT;
     static const int ATTACK_INIT = 127;
     static const int DECAY_INIT = 127;
     static const int SUSTAIN_INIT = 127;

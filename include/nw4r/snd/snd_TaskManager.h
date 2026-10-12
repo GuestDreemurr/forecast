@@ -6,6 +6,7 @@
 
 #include <nw4r/ut.h>
 
+#include <revolution/MEM.h>
 #include <revolution/OS.h>
 
 namespace nw4r {
@@ -22,31 +23,55 @@ public:
         PRIORITY_MAX
     };
 
+    static const int TASK_SIZE_MAX = 0x40;
+    static const int TASK_COUNT_MAX = 128;
+
 public:
     static TaskManager& GetInstance();
 
+    void* Alloc();
     void AppendTask(Task* pTask, TaskPriority priority = PRIORITY_MIDDLE);
 
-    Task* ExecuteTask();
-    void CancelTask(Task* pTask);
-    void CancelAllTask();
+    void Execute();
+    bool ExecuteTask();
 
-    void WaitTask();
-    void CancelWaitTask();
+    void CancelByTaskId(u32 taskId);
 
 private:
-    TaskManager();
-
-    Task* PopTask();
-    Task* GetNextTask();
-    Task* GetNextTask(TaskPriority priority, bool remove);
+    static const int TASK_AREA_SIZE = TASK_COUNT_MAX * TASK_SIZE_MAX + 0x44;
 
 private:
-    TaskList mTaskList[PRIORITY_MAX]; // at 0x0
-    Task* volatile mCurrentTask;      // at 0x24
-    bool mCancelWaitTaskFlag;         // at 0x28
-    OSThreadQueue mAppendThreadQueue; // at 0x2C
-    OSThreadQueue mDoneThreadQueue;   // at 0x34
+    TaskManager() : mCurrentTask(NULL) {
+        OSInitMutex(&mMutex);
+        mHeap = MEMCreateUnitHeapEx(sTaskArea, TASK_AREA_SIZE, TASK_SIZE_MAX,
+                                    4, 0);
+    }
+
+    void Free(Task* pTask) {
+        ut::AutoInterruptLock lock;
+        MEMFreeToUnitHeap(mHeap, pTask);
+    }
+
+    Task* PopTask(TaskPriority priority) {
+        ut::AutoInterruptLock lock;
+
+        if (mTaskList[priority].IsEmpty()) {
+            return NULL;
+        }
+
+        Task* pTask = &mTaskList[priority].GetFront();
+        mTaskList[priority].PopFront();
+
+        return pTask;
+    }
+
+private:
+    OSMutex mMutex;                   // at 0x0
+    MEMiHeapHead* mHeap;              // at 0x18
+    Task* mCurrentTask;               // at 0x1C
+    TaskList mTaskList[PRIORITY_MAX]; // at 0x20
+
+    static u8 sTaskArea[TASK_AREA_SIZE];
 };
 
 } // namespace detail

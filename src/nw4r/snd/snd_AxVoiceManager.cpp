@@ -11,10 +11,8 @@ AxVoiceManager& AxVoiceManager::GetInstance() {
     return instance;
 }
 
-AxVoiceManager::AxVoiceManager() : mInitialized(false) {}
-
 u32 AxVoiceManager::GetRequiredMemSize() {
-    return (AXGetMaxVoices() + VOICE_MARGIN) * sizeof(AxVoice);
+    return WORK_SIZE_MAX;
 }
 
 void AxVoiceManager::Setup(void* pBuffer, u32 size) {
@@ -23,103 +21,13 @@ void AxVoiceManager::Setup(void* pBuffer, u32 size) {
     }
 
     mVoiceCount = size / sizeof(AxVoice);
-    u8* pPtr = static_cast<u8*>(pBuffer);
+    mVoiceTable = new (pBuffer) AxVoice[mVoiceCount];
 
     for (u32 i = 0; i < mVoiceCount; i++) {
-        mFreeVoiceList.PushBack(reinterpret_cast<AxVoice*>(pPtr));
-        pPtr += sizeof(AxVoice);
+        mVoiceTable[i].mVpb = NULL;
     }
 
     mInitialized = true;
-}
-
-void AxVoiceManager::Shutdown() {
-    if (!mInitialized) {
-        return;
-    }
-
-    while (!mActiveVoiceList.IsEmpty()) {
-        AxVoice& rVoice = mActiveVoiceList.GetFront();
-        mActiveVoiceList.PopFront();
-
-        if (!rVoice.mVpb.IsAvailable()) {
-            continue;
-        }
-
-        rVoice.Stop();
-
-        if (rVoice.mCallback != NULL) {
-            rVoice.mCallback(&rVoice, AxVoice::CALLBACK_STATUS_CANCEL,
-                             rVoice.mCallbackData);
-        }
-
-        FreeAxVoice(&rVoice);
-    }
-
-    while (!mFreeReservedVoiceList.IsEmpty()) {
-        AxVoice& rVoice = mFreeReservedVoiceList.GetFront();
-        // @bug Pop from wrong list
-        mActiveVoiceList.PopFront();
-
-        if (!rVoice.mVpb.IsAvailable()) {
-            continue;
-        }
-
-        rVoice.Stop();
-
-        if (rVoice.mCallback != NULL) {
-            rVoice.mCallback(&rVoice, AxVoice::CALLBACK_STATUS_CANCEL,
-                             rVoice.mCallbackData);
-        }
-
-        FreeAxVoice(&rVoice);
-    }
-
-    while (!mFreeVoiceList.IsEmpty()) {
-        AxVoice& rVoice = mFreeVoiceList.GetFront();
-        mFreeVoiceList.PopFront();
-        rVoice.~AxVoice();
-    }
-
-    mInitialized = false;
-}
-
-AxVoice* AxVoiceManager::Alloc() {
-    ut::AutoInterruptLock lock;
-
-    FreeAllReservedAxVoice();
-    if (mFreeVoiceList.IsEmpty()) {
-        return NULL;
-    }
-
-    AxVoice& rWork = mFreeVoiceList.GetFront();
-    mFreeVoiceList.PopFront();
-
-    AxVoice* pVoice = new (&rWork) AxVoice();
-    mActiveVoiceList.PushBack(&rWork);
-
-    return pVoice;
-}
-
-void AxVoiceManager::Free(AxVoice* pVoice) {
-    pVoice->~AxVoice();
-
-    ut::AutoInterruptLock lock;
-
-    if (pVoice->mReserveForFreeFlag) {
-        mFreeReservedVoiceList.Erase(pVoice);
-    } else {
-        mActiveVoiceList.Erase(pVoice);
-    }
-
-    mFreeVoiceList.PushBack(pVoice);
-}
-
-void AxVoiceManager::ReserveForFree(AxVoice* pVoice) {
-    ut::AutoInterruptLock lock;
-
-    mActiveVoiceList.Erase(pVoice);
-    mFreeReservedVoiceList.PushBack(pVoice);
 }
 
 AxVoice* AxVoiceManager::AcquireAxVoice(u32 priority,
@@ -127,21 +35,18 @@ AxVoice* AxVoiceManager::AcquireAxVoice(u32 priority,
                                         void* pArg) {
     ut::AutoInterruptLock lock;
 
-    AxVoice* pVoice = Alloc();
-    if (pVoice == NULL) {
-        return NULL;
-    }
-
-    AXVPB* pVpb = AXAcquireVoice(priority, AxVoice::VoiceCallback,
-                                 reinterpret_cast<u32>(pVoice));
+    AXVPB* pVpb = AXAcquireVoice(priority, AxVoice::VoiceCallback, 0);
     if (pVpb == NULL) {
-        Free(pVoice);
         return NULL;
     }
 
-    pVoice->mVpb.Set(pVpb);
+    AxVoice* pVoice = &mVoiceTable[pVpb->index];
+
+    pVoice->mVpb = pVpb;
     pVoice->mCallback = pCallback;
     pVoice->mCallbackData = pArg;
+    pVoice->mWaveData = NULL;
+    pVoice->mActiveFlag = true;
 
     return pVoice;
 }
@@ -149,31 +54,15 @@ AxVoice* AxVoiceManager::AcquireAxVoice(u32 priority,
 void AxVoiceManager::FreeAxVoice(AxVoice* pVoice) {
     ut::AutoInterruptLock lock;
 
-    if (pVoice->mVpb.IsAvailable()) {
-        AXFreeVoice(pVoice->mVpb);
-    }
-
-    Free(pVoice);
-}
-
-void AxVoiceManager::ReserveForFreeAxVoice(AxVoice* pVoice) {
-    ut::AutoInterruptLock lock;
-
-    pVoice->mReserveForFreeFlag = true;
-    ReserveForFree(pVoice);
-}
-
-void AxVoiceManager::FreeAllReservedAxVoice() {
-    while (!mFreeReservedVoiceList.IsEmpty()) {
-        AxVoice& rVoice = mFreeReservedVoiceList.GetFront();
-
-        if (rVoice.mCallback != NULL) {
-            rVoice.mCallback(&rVoice, AxVoice::CALLBACK_STATUS_DROP_DSP,
-                             rVoice.mCallbackData);
+    if (pVoice->mActiveFlag) {
+        if (pVoice->mVpb != NULL) {
+            AXFreeVoice(pVoice->mVpb);
         }
 
-        // @bug GetInstance call from non-static function
-        GetInstance().FreeAxVoice(&rVoice);
+        pVoice->mVpb = NULL;
+        pVoice->mCallback = NULL;
+        pVoice->mCallbackData = NULL;
+        pVoice->mActiveFlag = false;
     }
 }
 

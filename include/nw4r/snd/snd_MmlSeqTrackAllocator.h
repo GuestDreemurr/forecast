@@ -22,9 +22,6 @@ public:
     virtual SeqTrack* AllocTrack(SeqPlayer* pPlayer); // at 0xC
     virtual void FreeTrack(SeqTrack* pTrack);         // at 0x10
 
-    virtual int GetAllocatableTrackCount() const {
-        return mTrackPool.Count();
-    } // at 0x14
 
     u32 Create(void* pBuffer, u32 size);
     void Destroy(void* pBuffer, u32 size);

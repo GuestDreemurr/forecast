@@ -8,19 +8,16 @@ namespace detail {
 NW4R_UT_RTTI_DEF_DERIVED(SeqSound, BasicSound);
 
 SeqSound::SeqSound(SoundInstanceManager<SeqSound>* pManager)
-    // TODO(kiwi) Fakematch
-    : mTempSpecialHandle(reinterpret_cast<SeqSoundHandle*>(
-          mPreparedFlag = mLoadingFlag = false)),
+    : mTempSpecialHandle(NULL),
       mManager(pManager),
-      mStartOffset(0),
-      mFileStream(NULL) {
-
-    OSInitMutex(&mMutex);
-}
+      mLoadingFlag(false),
+      mLoader(NULL) {}
 
 void SeqSound::InitParam() {
     BasicSound::InitParam();
-    mStartOffset = 0;
+
+    mLoader = NULL;
+    mLoadUserData = 0;
 }
 
 SeqPlayer::SetupResult SeqSound::Setup(SeqTrackAllocator* pAllocator,
@@ -30,59 +27,37 @@ SeqPlayer::SetupResult SeqSound::Setup(SeqTrackAllocator* pAllocator,
     return mSeqPlayer.Setup(pAllocator, allocTrackFlags, voices, pCallback);
 }
 
-void SeqSound::Prepare(const void* pBase, s32 seqOffset,
-                       SeqPlayer::OffsetType startType, int startOffset) {
+void SeqSound::Prepare(const void* pBase, s32 seqOffset) {
     mSeqPlayer.SetSeqData(pBase, seqOffset);
-    Skip(startType, startOffset);
-
-    mPreparedFlag = true;
 }
 
-void SeqSound::Prepare(ut::FileStream* pStream, s32 seqOffset,
-                       SeqPlayer::OffsetType startType, int startOffset) {
-    mFileStream = pStream;
-    mSeqOffset = seqOffset;
-    mStartOffsetType = startType;
-    mStartOffset = startOffset;
+void SeqSound::Prepare(SeqLoader* pLoader, u32 userData) {
+    if (pLoader != NULL) {
+        pLoader->LoadAsync(NotifyLoadAsyncEndSeqData, this, userData);
 
-    if (!LoadData(NotifyLoadAsyncEndSeqData, this)) {
-        Shutdown();
+        mLoader = pLoader;
+        mLoadUserData = userData;
+        mLoadingFlag = true;
     }
 }
 
 void SeqSound::NotifyLoadAsyncEndSeqData(bool success, const void* pBase,
-                                         void* pCallbackArg) {
+                                         s32 offset, void* pCallbackArg) {
     SeqSound* p = static_cast<SeqSound*>(pCallbackArg);
 
     p->mLoadingFlag = false;
 
     if (!success) {
         p->Stop(0);
-    } else {
-        p->mSeqPlayer.SetSeqData(pBase, p->mSeqOffset);
-
-        if (p->mStartOffset > 0) {
-            p->mSeqPlayer.Skip(p->mStartOffsetType, p->mStartOffset);
-        }
-
-        p->mPreparedFlag = true;
+        return;
     }
-}
 
-void SeqSound::Skip(SeqPlayer::OffsetType offsetType, int offset) {
-    if (offset > 0) {
-        mSeqPlayer.Skip(offsetType, offset);
-    }
+    p->mSeqPlayer.SetSeqData(pBase, offset);
 }
 
 void SeqSound::Shutdown() {
-    if (mLoadingFlag) {
-        TaskManager::GetInstance().CancelTask(&mSeqLoadTask);
-    }
-
-    if (mFileStream) {
-        mFileStream->Close();
-        mFileStream = NULL;
+    if (mLoadingFlag && mLoader != NULL) {
+        mLoader->Cancel(mLoadUserData);
     }
 
     BasicSound::Shutdown();
@@ -97,21 +72,13 @@ void SeqSound::SetChannelPriority(int priority) {
     mSeqPlayer.SetChannelPriority(priority);
 }
 
-void SeqSound::SetReleasePriorityFix(bool flag) {
-    mSeqPlayer.SetReleasePriorityFix(flag);
-}
-
 void SeqSound::SetPlayerPriority(int priority) {
     BasicSound::SetPlayerPriority(priority);
     mManager->UpdatePriority(this, BasicSound::CalcCurrentPlayerPriority());
 }
 
-void SeqSound::SetTrackVolume(u32 trackFlags, f32 volume) {
-    mSeqPlayer.SetTrackVolume(trackFlags, volume);
-}
-
-void SeqSound::SetTrackPitch(u32 trackFlags, f32 pitch) {
-    mSeqPlayer.SetTrackPitch(trackFlags, pitch);
+void SeqSound::SetTrackMute(u32 trackFlags, bool mute) {
+    mSeqPlayer.SetTrackMute(trackFlags, mute ? MUTE_STOP : MUTE_OFF);
 }
 
 bool SeqSound::WriteVariable(int idx, s16 value) {
@@ -130,72 +97,6 @@ bool SeqSound::IsAttachedTempSpecialHandle() {
 
 void SeqSound::DetachTempSpecialHandle() {
     mTempSpecialHandle->DetachSound();
-}
-
-bool SeqSound::LoadData(SeqLoadCallback pCalllback, void* pCallbackArg) {
-    mLoadingFlag = true;
-
-    PlayerHeap* pHeap = static_cast<BasicSound*>(pCallbackArg)->GetPlayerHeap();
-    if (pHeap == NULL) {
-        return false;
-    }
-
-    u32 size = mFileStream->GetSize();
-    void* pData = pHeap->Alloc(size);
-
-    if (pData == NULL) {
-        return false;
-    }
-
-    mSeqLoadTask.fileStream = mFileStream;
-    mSeqLoadTask.buffer = pData;
-    mSeqLoadTask.bufferSize = size;
-    mSeqLoadTask.callback = pCalllback;
-    mSeqLoadTask.callbackData = this;
-
-    TaskManager::GetInstance().AppendTask(&mSeqLoadTask);
-    return true;
-}
-
-SeqSound::SeqLoadTask::SeqLoadTask()
-    : fileStream(NULL), buffer(NULL), callback(NULL), callbackData(NULL) {}
-
-void SeqSound::SeqLoadTask::Execute() {
-    fileStream->Seek(0, ut::FileStream::SEEK_ORIGIN_BEG);
-
-    s32 bytesRead = fileStream->Read(buffer, bufferSize);
-    fileStream = NULL;
-
-    if (bytesRead == DVD_RESULT_CANCELED) {
-        if (callback != NULL) {
-            callback(false, NULL, callbackData);
-        }
-    } else if (bytesRead != bufferSize) {
-        if (callback != NULL) {
-            callback(false, NULL, callbackData);
-        }
-    } else {
-        SeqFileReader reader(buffer);
-        const void* pBase = reader.GetBaseAddress();
-
-        if (callback != NULL) {
-            callback(true, pBase, callbackData);
-        }
-    }
-}
-
-void SeqSound::SeqLoadTask::Cancel() {
-    if (callback != NULL) {
-        callback(false, NULL, callbackData);
-    }
-}
-
-void SeqSound::SeqLoadTask::OnCancel() {
-    callback = NULL;
-
-    if (fileStream != NULL) {
-        fileStream->Cancel();
-    }
 }
 
 } // namespace detail

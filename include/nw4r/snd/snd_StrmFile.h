@@ -146,19 +146,12 @@ public:
     bool ReadAdpcBlockData(u16* pYN1, u16* pYN2, int block, int channels);
 
     bool ReadStrmInfo(StrmInfo* pStrmInfo) const {
-        if (!mReader.IsAvailable()) {
-            return false;
-        }
-
-        return mReader.ReadStrmInfo(pStrmInfo);
+        return mReader.IsAvailable() && mReader.ReadStrmInfo(pStrmInfo);
     }
 
     bool ReadAdpcmInfo(AdpcmInfo* pAdpcmInfo, int channel) const {
-        if (!mReader.IsAvailable()) {
-            return false;
-        }
-
-        return mReader.ReadAdpcmInfo(pAdpcmInfo, channel);
+        return mReader.IsAvailable() &&
+               mReader.ReadAdpcmInfo(pAdpcmInfo, channel);
     }
 
 private:

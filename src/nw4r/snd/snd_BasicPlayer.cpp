@@ -16,10 +16,9 @@ void BasicPlayer::InitParam() {
     mVolume = 1.0f;
     mPitch = 1.0f;
     mSurroundPan = 0.0f;
+    mAmbientPan = 0.0f;
+    mAmbientSurroundPan = 0.0f;
     mLpfFreq = 0.0f;
-    mRemoteFilter = 0;
-    mPanMode = PAN_MODE_DUAL;
-    mPanCurve = PAN_CURVE_SQRT;
     mOutputLine = OUTPUT_LINE_MAIN;
     mMainSend = 0.0f;
     mMainOutVolume = 1.0f;

@@ -59,6 +59,10 @@ public:
     void* LoadGroup(u32 id, SoundMemoryAllocatable* pAllocatable,
                     void** ppWaveBuffer, u32 blockSize);
 
+    s32 ReadFile(u32 id, void* pBuffer, s32 size, s32 offset);
+    void* LoadFile(u32 id, SoundMemoryAllocatable* pAllocatable);
+    void Cancel();
+
 private:
     mutable OSMutex mMutex;   // at 0x0
     const SoundArchive& mArc; // at 0x18

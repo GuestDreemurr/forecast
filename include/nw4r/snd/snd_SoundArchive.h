@@ -28,9 +28,6 @@ public:
         u32 playerId;              // at 0x4
         int playerPriority;        // at 0x8
         int volume;                // at 0xC
-        int remoteFilter;          // at 0x10
-        detail::PanMode panMode;   // at 0x14
-        detail::PanCurve panCurve; // at 0x18
     };
 
     struct SeqSoundInfo {
@@ -38,7 +35,6 @@ public:
         u32 bankId;                  // at 0x4
         u32 allocTrack;              // at 0x8
         int channelPriority;         // at 0xC
-        bool releasePriorityFixFlag; // at 0x10
     };
 
     struct StrmSoundInfo {};
@@ -46,7 +42,6 @@ public:
     struct WaveSoundInfo {
         int subNo;                   // at 0x0
         int channelPriority;         // at 0x4
-        bool releasePriorityFixFlag; // at 0x8
     };
 
     struct Sound3DParam {

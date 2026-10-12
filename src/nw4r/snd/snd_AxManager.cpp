@@ -96,13 +96,13 @@ f32 AxManager::GetOutputVolume() const {
 void AxManager::Update() {
     s32 status = DVDGetDriveStatus();
 
-    if (status == DVD_STATE_IDLE || status == DVD_STATE_BUSY) {
+    if (status == DVD_STATE_IDLE) {
         if (mDiskError) {
             mDiskError = false;
             VoiceManager::GetInstance().UpdateAllVoicesSync(
                 Voice::SYNC_AX_VOICE);
         }
-    } else {
+    } else if (status != DVD_STATE_BUSY) {
         if (!mDiskError) {
             mDiskError = true;
             VoiceManager::GetInstance().UpdateAllVoicesSync(
@@ -168,7 +168,9 @@ void AxManager::Update() {
 
     f32 masterRatio = mMainOutVolume.GetValue();
     masterRatio *= mVolumeForReset.GetValue();
-    masterRatio = ut::Clamp(masterRatio, 0.0f, 1.0f);
+    if (masterRatio > 1.0f) {
+        masterRatio = 1.0f;
+    }
     AXSetMasterVolume(static_cast<u16>(AX_MAX_VOLUME * masterRatio));
 }
 
@@ -224,7 +226,7 @@ void AxManager::SetMasterVolume(f32 volume, int frame) {
     mMasterVolume.SetTarget(ut::Clamp(volume, 0.0f, 1.0f), (frame + 2) / 3);
 
     if (frame == 0) {
-        VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_VE);
+        VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_MIX);
     }
 }
 

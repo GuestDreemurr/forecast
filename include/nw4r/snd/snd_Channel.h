@@ -38,7 +38,7 @@ public:
 
     void InitParam(ChannelCallback pCallback, u32 callbackArg);
     void Update(bool periodic);
-    void Start(const WaveData& rData, int length, u32 offset);
+    void Start(const WaveData& rData, int length);
     void Release();
     void Stop();
 
@@ -69,9 +69,6 @@ public:
         mPauseFlag = pause;
         mVoice->Pause(pause);
     }
-    void SetReleasePriorityFix(bool fix) {
-        mReleasePriorityFixFlag = fix;
-    }
 
     bool IsPause() const {
         return mPauseFlag != false;
@@ -98,13 +95,16 @@ public:
     void SetUserSurroundPan(f32 pan) {
         mUserSurroundPan = pan;
     }
+    void SetUserAmbientPan(f32 pan) {
+        mUserAmbientPan = pan;
+    }
+    void SetUserAmbientSurroundPan(f32 pan) {
+        mUserAmbientSurroundPan = pan;
+    }
     void SetUserLpfFreq(f32 freq) {
         mUserLpfFreq = freq;
     }
 
-    void SetRemoteFilter(int filter) {
-        mRemoteFilter = filter;
-    }
     void SetOutputLine(int flag) {
         mOutputLineFlag = flag;
     }
@@ -163,12 +163,6 @@ public:
         mLength = length;
     }
 
-    void SetPanMode(PanMode mode) {
-        mPanMode = mode;
-    }
-    void SetPanCurve(PanCurve curve) {
-        mPanCurve = curve;
-    }
 
     Channel* GetNextTrackChannel() const {
         return mNextLink;
@@ -203,15 +197,15 @@ private:
     bool mActiveFlag;             // at 0x32
     bool mAllocFlag;              // at 0x33
     bool mAutoSweep;              // at 0x34
-    bool mReleasePriorityFixFlag; // at 0x35
 
     f32 mUserVolume;      // at 0x38
     f32 mUserPitchRatio;  // at 0x3C
     f32 mUserPan;         // at 0x40
     f32 mUserSurroundPan; // at 0x44
+    f32 mUserAmbientPan;         // at 0x48
+    f32 mUserAmbientSurroundPan; // at 0x4C
     f32 mUserLpfFreq;     // at 0x48
 
-    int mRemoteFilter;   // at 0x4C
     int mOutputLineFlag; // at 0x50
 
     f32 mMainOutVolume;       // at 0x54
@@ -237,8 +231,6 @@ private:
     int mOriginalKey; // at 0xC4
     int mLength;      // at 0xC8
 
-    PanMode mPanMode;   // at 0xCC
-    PanCurve mPanCurve; // at 0xD0
 
     ChannelCallback mCallback; // at 0xD4
     u32 mCallbackData;         // at 0xD8

@@ -96,7 +96,7 @@ void BasicSound::Pause(bool flag, int frames) {
 
         mPauseFadeVolume.SetTarget(0.0f, t);
     } else {
-        if (mPauseFlag != flag) {
+        if (static_cast<bool>(mPauseFlag) != flag) {
             rPlayer.Pause(false);
         }
 
@@ -127,6 +127,10 @@ void BasicSound::FadeIn(int frames) {
     mFadeVolume.SetTarget(1.0f, t);
 }
 
+bool BasicSound::IsPrepared() const {
+    return GetBasicPlayer().IsPrepared();
+}
+
 bool BasicSound::IsPause() const {
     return mPauseFlag;
 }
@@ -146,10 +150,6 @@ void BasicSound::Update() {
     bool startPlayer = false;
     if (!mStartedFlag) {
         if (!mStartFlag) {
-            return;
-        }
-
-        if (!IsPrepared()) {
             return;
         }
 
@@ -188,6 +188,8 @@ void BasicSound::Update() {
     f32 volume;
     f32 pan;
     f32 surroundPan;
+    f32 ambientPan;
+    f32 ambientSurroundPan;
     f32 pitch;
     f32 mainOutVol;
 
@@ -204,14 +206,18 @@ void BasicSound::Update() {
 
     pan = 0.0f;
     pan += GetPan();
-    pan += GetAmbientParam().pan;
-
-    pitch = 1.0f;
-    pitch *= GetPitch();
 
     surroundPan = 0.0f;
     surroundPan += GetSurroundPan();
-    surroundPan += GetAmbientParam().surroundPan;
+
+    ambientPan = 0.0f;
+    ambientPan += GetAmbientParam().pan;
+
+    ambientSurroundPan = 0.0f;
+    ambientSurroundPan += GetAmbientParam().surroundPan;
+
+    pitch = 1.0f;
+    pitch *= GetPitch();
 
     mainOutVol = 1.0f;
     mainOutVol *= mSoundPlayer->detail_GetMainOutVolume();
@@ -235,6 +241,8 @@ void BasicSound::Update() {
     rPlayer.SetVolume(volume);
     rPlayer.SetPan(pan);
     rPlayer.SetSurroundPan(surroundPan);
+    rPlayer.SetAmbientPan(ambientPan);
+    rPlayer.SetAmbientSurroundPan(ambientSurroundPan);
     rPlayer.SetPitch(pitch);
     rPlayer.SetOutputLine(outputLine);
     rPlayer.SetMainOutVolume(mainOutVol);
@@ -318,12 +326,11 @@ void BasicSound::SetPlayerPriority(int priority) {
 }
 
 void BasicSound::SetInitialVolume(f32 vol) {
-    mInitVolume = ut::Clamp(vol, 0.0f, 1.0f);
+    mInitVolume = vol;
 }
 
 void BasicSound::SetVolume(f32 vol, int frames) {
-    f32 target = ut::Clamp(vol, 0.0f, 1.0f);
-    mExtMoveVolume.SetTarget(target, frames);
+    mExtMoveVolume.SetTarget(vol, frames);
 }
 
 void BasicSound::SetPitch(f32 pitch) {
@@ -365,18 +372,6 @@ void BasicSound::SetRemoteOutVolume(int remote, f32 vol) {
 
 void BasicSound::SetFxSend(AuxBus bus, f32 send) {
     GetBasicPlayer().SetFxSend(bus, send);
-}
-
-void BasicSound::SetRemoteFilter(int filter) {
-    GetBasicPlayer().SetRemoteFilter(filter);
-}
-
-void BasicSound::SetPanMode(PanMode mode) {
-    GetBasicPlayer().SetPanMode(mode);
-}
-
-void BasicSound::SetPanCurve(PanCurve curve) {
-    GetBasicPlayer().SetPanCurve(curve);
 }
 
 f32 BasicSound::GetInitialVolume() const {

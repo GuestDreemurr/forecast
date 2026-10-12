@@ -9,6 +9,7 @@ extern "C" {
 #include <revolution/MEM/mem_frameHeap.h>
 #include <revolution/MEM/mem_heapCommon.h>
 #include <revolution/MEM/mem_list.h>
+#include <revolution/MEM/mem_unitHeap.h>
 
 #ifdef __cplusplus
 }

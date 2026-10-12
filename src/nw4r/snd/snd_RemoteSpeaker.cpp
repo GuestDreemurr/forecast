@@ -100,21 +100,7 @@ bool RemoteSpeaker::IsEnabledOutput() const {
     return mEnableFlag;
 }
 
-void RemoteSpeaker::Update() {
-    if (mCommandBusyFlag) {
-        return;
-    }
-
-    SpeakerCommand command =
-        mUserCommand != COMMAND_NONE ? mUserCommand : mInternalCommand;
-
-    mUserCommand = COMMAND_NONE;
-    mInternalCommand = COMMAND_NONE;
-
-    ExecCommand(command);
-}
-
-void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
+inline void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
     switch (command) {
     case COMMAND_NONE: {
         break;
@@ -145,6 +131,20 @@ void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
         break;
     }
     }
+}
+
+void RemoteSpeaker::Update() {
+    if (mCommandBusyFlag) {
+        return;
+    }
+
+    SpeakerCommand command =
+        mUserCommand != COMMAND_NONE ? mUserCommand : mInternalCommand;
+
+    mUserCommand = COMMAND_NONE;
+    mInternalCommand = COMMAND_NONE;
+
+    ExecCommand(command);
 }
 
 void RemoteSpeaker::UpdateStreamData(const s16* pRmtSamples) {

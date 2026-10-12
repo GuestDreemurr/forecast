@@ -18,31 +18,30 @@ const s16
          -28,  -27,  -25,  -23,  -22,  -20,  -19,  -17,  -16,  -14,  -13,  -11,
          -10,  -8,   -7,   -6,   -4,   -3,   -1,   0};
 
-const volatile f32 EnvGenerator::VOLUME_INIT = VOLUME_MIN_DB;
-
 EnvGenerator::EnvGenerator() {
     Init();
 }
 
-void EnvGenerator::Init(f32 db) {
+void EnvGenerator::Init() {
     SetAttack(ATTACK_INIT);
     SetDecay(DECAY_INIT);
     SetSustain(SUSTAIN_INIT);
     SetRelease(RELEASE_INIT);
-    Reset(db);
+
+    Reset();
 }
 
-void EnvGenerator::Reset(f32 db) {
-    mValue = db * 10.0f;
+void EnvGenerator::Reset() {
+    mValue = VOLUME_MIN_DB * 10.0f;
     mStatus = STATUS_ATTACK;
 }
 
 f32 EnvGenerator::GetValue() const {
     if (mStatus == STATUS_ATTACK && mAttack == 0.0f) {
-        return 0.0f;
+        return Util::CalcVolumeRatio(0.0f);
     }
 
-    return mValue / 10.0f;
+    return Util::CalcVolumeRatio(mValue / 10.0f);
 }
 
 void EnvGenerator::Update(int msec) {
