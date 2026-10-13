@@ -41,6 +41,9 @@ struct VEC2 : _VEC2 {
     VEC2 operator-(const VEC2& rRhs) const {
         return VEC2(x - rRhs.x, y - rRhs.y);
     }
+    VEC2 operator*(f32 f) const {
+        return VEC2(f * x, f * y);
+    }
 
     VEC2& operator+=(const VEC2& rRhs) {
         x += rRhs.x;

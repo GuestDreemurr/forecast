@@ -38,6 +38,44 @@ block_relocations:
 
 # System.cpp: lis/addi pairs split by register spills, which analysis cannot pair
 add_relocations:
+# CityLabel.cpp: sDigits and the first .bss object start their sections, which analysis names _f_rodata/_f_bss
+- source: 0x8000810C
+  type: ha
+  target: sDigits
+- source: 0x80008114
+  type: l
+  target: sDigits
+- source: 0x80008148
+  type: ha
+  target: sDigits
+- source: 0x80008150
+  type: l
+  target: sDigits
+- source: 0x80008170
+  type: ha
+  target: sDigits
+- source: 0x80008178
+  type: l
+  target: sDigits
+- source: 0x800099E8
+  type: ha
+  target: lbl_801D6E00
+- source: 0x80009A04
+  type: l
+  target: lbl_801D6E00
+- source: 0x8000A8FC
+  type: ha
+  target: lbl_801D6E00
+- source: 0x8000A900
+  type: l
+  target: lbl_801D6E00
+# CityLabel.cpp ctor: the StateIdle ptmf at the start of .data, which analysis names _f_data
+- source: 0x8000732C
+  type: ha
+  target: lbl_80198D20
+- source: 0x800073B0
+  type: l
+  target: lbl_80198D20
 - source: 0x8002FAD4
   type: ha
   target: gPointerX

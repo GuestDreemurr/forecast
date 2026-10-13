@@ -1013,7 +1013,7 @@ void WeatherAround::UpdateLabels() {
                 globe->mSpeed.y = sSelectSpeedY;
                 gSimpleGlobe->mSpinning = FALSE;
                 gSettingResult = 2;
-                gCityPos = (*label)->mPos;
+                (Vec2&)gCityPos = (*label)->mPos;
                 gCurrentCity = (*label)->mCity;
             }
         } else if ((*label)->mInputFlags & CITY_LABEL_SELECTED) {
