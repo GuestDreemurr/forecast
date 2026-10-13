@@ -3,12 +3,12 @@
 extern PF_VOLUME_SET VFipf_vol_set;
 extern const u8 VFipf_valid_fn_char[];
 
-s32 VFiPFPATH_DoSplitPath(struct PF_STR* p_path, struct PF_STR* p_dir_path, struct PF_STR* p_filename, u32 wildcard) {
+s32 VFiPFPATH_DoSplitPath(PF_STR* p_path, PF_STR* p_dir_path, PF_STR* p_filename, u32 wildcard) {
     s8* p;
     s8* p_tail_prev;
     u32 code_mode;
-    struct PF_STR token;
-    struct PF_STR token_prev;
+    PF_STR token;
+    PF_STR token_prev;
     s32 err;
 
     if (p_dir_path == NULL) {
@@ -102,7 +102,7 @@ static u32 VFiPFPATH_OEM_ConvertFWchar(const s8* src, u16* dst) {
     return 0;
 }
 
-static u16 VFiPFPATH_GetNextCharOfShortName(struct PF_FILE_NAME_ITER* p_name) {
+static u16 VFiPFPATH_GetNextCharOfShortName(PF_FILE_NAME_ITER* p_name) {
     u16 wc;
     s8 c;
 
@@ -120,7 +120,7 @@ static u16 VFiPFPATH_GetNextCharOfShortName(struct PF_FILE_NAME_ITER* p_name) {
     return wc;
 }
 
-static u16 VFiPFPATH_GetNextCharOfLongName(struct PF_FILE_NAME_ITER* p_name) {
+static u16 VFiPFPATH_GetNextCharOfLongName(PF_FILE_NAME_ITER* p_name) {
     u16 wc;
     u16 wchar;
 
@@ -139,7 +139,7 @@ static u16 VFiPFPATH_GetNextCharOfLongName(struct PF_FILE_NAME_ITER* p_name) {
     return wc;
 }
 
-static u16 VFiPFPATH_GetNextCharOfFileName(struct PF_FILE_NAME_ITER* p_name) {
+static u16 VFiPFPATH_GetNextCharOfFileName(PF_FILE_NAME_ITER* p_name) {
     if (p_name->is_long_name != 0) {
         return VFiPFPATH_GetNextCharOfLongName(p_name);
     } else {
@@ -147,7 +147,7 @@ static u16 VFiPFPATH_GetNextCharOfFileName(struct PF_FILE_NAME_ITER* p_name) {
     }
 }
 
-u16 VFiPFPATH_GetNextCharOfPattern(struct PF_STR* p_pattern, u32 is_long_name) {
+u16 VFiPFPATH_GetNextCharOfPattern(PF_STR* p_pattern, u32 is_long_name) {
     u16 twc;
     u16 wc;
     u16 tmp_wc;
@@ -208,9 +208,9 @@ u16 VFiPFPATH_GetNextCharOfPattern(struct PF_STR* p_pattern, u32 is_long_name) {
     return twc;
 }
 
-u32 VFiPFPATH_DoMatchFileNameWithPattern(u16 c_name, struct PF_FILE_NAME_ITER* p_name, u16 c_pat, struct PF_STR* p_pattern, u32 is_long_name) {
-    struct PF_FILE_NAME_ITER name;
-    struct PF_STR pattern;
+u32 VFiPFPATH_DoMatchFileNameWithPattern(u16 c_name, PF_FILE_NAME_ITER* p_name, u16 c_pat, PF_STR* p_pattern, u32 is_long_name) {
+    PF_FILE_NAME_ITER name;
+    PF_STR pattern;
 
     while (c_pat != '\0') {
         switch (c_pat) {
@@ -347,11 +347,11 @@ s32 VFiPFPATH_cmpNameImpl(const s8* sName, const s8* sPattern, u32* p_is_end) {
     return *sName != '\0';
 }
 
-s32 VFiPFPATH_cmpNameUni(const u16* p_name, struct PF_STR* sPattern) {
+s32 VFiPFPATH_cmpNameUni(const u16* p_name, PF_STR* sPattern) {
     return VFiPFPATH_MatchFileNameWithPattern((const s8*)p_name, sPattern, 1) == 0;
 }
 
-s32 VFiPFPATH_cmpName(const s8* sShort, struct PF_STR* p_pattern, u32 is_short_search) {
+s32 VFiPFPATH_cmpName(const s8* sShort, PF_STR* p_pattern, u32 is_short_search) {
     u32 is_end;
     s8 tmpBuf[13];
     s8* p_tmpBuf;
@@ -389,13 +389,13 @@ s32 VFiPFPATH_cmpTailSFN(const s8* sfn_name, const s8* pattern) {
     return VFipf_strcmp(sfn_name, pattern) != 0;
 }
 
-void VFiPFPATH_InitTokenOfPath(struct PF_STR* p_str, s8* path, u32 code_mode) {
+void VFiPFPATH_InitTokenOfPath(PF_STR* p_str, s8* path, u32 code_mode) {
     p_str->p_head = path;
     p_str->p_tail = path;
     p_str->code_mode = code_mode;
 }
 
-s32 VFiPFPATH_GetNextTokenOfPath(struct PF_STR* p_str, u32 wildcard) {
+s32 VFiPFPATH_GetNextTokenOfPath(PF_STR* p_str, u32 wildcard) {
     u32 extsfn_len;
     u32 code_mode;
 
@@ -482,12 +482,12 @@ s32 VFiPFPATH_GetNextTokenOfPath(struct PF_STR* p_str, u32 wildcard) {
     return 0;
 }
 
-s32 VFiPFPATH_SplitPath(struct PF_STR* p_path, struct PF_STR* p_dir_path, struct PF_STR* p_filename) {
+s32 VFiPFPATH_SplitPath(PF_STR* p_path, PF_STR* p_dir_path, PF_STR* p_filename) {
     VFiPFPATH_DoSplitPath(p_path, p_dir_path, p_filename, 0);
 }
 
-struct PF_VOLUME* VFiPFPATH_GetVolumeFromPath(struct PF_STR* p_path) {
-    struct PF_VOLUME* p_vol;
+PF_VOLUME* VFiPFPATH_GetVolumeFromPath(PF_STR* p_path) {
+    PF_VOLUME* p_vol;
     s8 drv_char[2];
 
     if (VFiPFSTR_StrLen(p_path) == 0) {
@@ -503,11 +503,11 @@ struct PF_VOLUME* VFiPFPATH_GetVolumeFromPath(struct PF_STR* p_path) {
     return p_vol;
 }
 
-u32 VFiPFPATH_MatchFileNameWithPattern(const s8* file_name, struct PF_STR* p_pattern, u32 is_long_name) {
+u32 VFiPFPATH_MatchFileNameWithPattern(const s8* file_name, PF_STR* p_pattern, u32 is_long_name) {
     u16 c_name;
     u16 c_pat;
-    struct PF_FILE_NAME_ITER name;
-    struct PF_STR pattern;
+    PF_FILE_NAME_ITER name;
+    PF_STR pattern;
     u32 is_match;
     s8 sig[2];
 
@@ -749,7 +749,7 @@ s32 VFiPFPATH_transformInUnicode(u16* sDestStr, const s8* sSrcStr) {
     return szStr;
 }
 
-u32 VFiPFPATH_parseShortName(s8* pDest, struct PF_STR* p_pattern) {
+u32 VFiPFPATH_parseShortName(s8* pDest, PF_STR* p_pattern) {
     s32 width;
     const s8* p_cur_src;
     u32 is_create_long;
@@ -1024,7 +1024,7 @@ s32 VFiPFPATH_parseShortNameNumeric(s8* p_char, u32 count) {
     return 0;
 }
 
-u32 VFiPFPATH_CheckExtShortNameSignature(struct PF_STR* p_str) {
+u32 VFiPFPATH_CheckExtShortNameSignature(PF_STR* p_str) {
     u32 result;
     s8 sig[2];
 
@@ -1042,7 +1042,7 @@ u32 VFiPFPATH_CheckExtShortNameSignature(struct PF_STR* p_str) {
     return result;
 }
 
-u32 VFiPFPATH_CheckExtShortName(struct PF_STR* p_str, u32 target, u32 wildcard) {
+u32 VFiPFPATH_CheckExtShortName(PF_STR* p_str, u32 target, u32 wildcard) {
     u32 result;
     s16 i;
     s16 num;
@@ -1105,7 +1105,7 @@ u32 VFiPFPATH_CheckExtShortName(struct PF_STR* p_str, u32 target, u32 wildcard) 
     return result;
 }
 
-u32 VFiPFPATH_GetExtShortNameIndex(struct PF_STR* p_str, u32* p_index) {
+u32 VFiPFPATH_GetExtShortNameIndex(PF_STR* p_str, u32* p_index) {
     u32 result;
     s16 i;
     s16 num;
