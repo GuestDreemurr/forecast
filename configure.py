@@ -654,6 +654,7 @@ config.libs = [
             Object(Matching, "revolution/VF/pdm_dskmng.c"),
             Object(Matching, "revolution/VF/pf_cache.c"),
             Object(Matching, "revolution/VF/pf_cluster.c"),
+            Object(Matching, "revolution/VF/pf_unk.c"),
             Object(Matching, "revolution/VF/pf_dir.c"),
             Object(Matching, "revolution/VF/pf_entry_iterator.c"),
             Object(Matching, "revolution/VF/pf_fat.c"),

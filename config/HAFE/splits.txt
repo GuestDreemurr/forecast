@@ -314,6 +314,9 @@ revolution/VF/pf_cache.c:
 revolution/VF/pf_cluster.c:
 	.text       start:0x8004CE10 end:0x8004D2C8
 
+revolution/VF/pf_unk.c:
+	.text       start:0x8004D2C8 end:0x8004DFD4
+
 revolution/VF/pf_dir.c:
 	.text       start:0x8004DFD4 end:0x8004E064
 
