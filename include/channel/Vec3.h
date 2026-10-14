@@ -6,13 +6,13 @@
 // Vec with an (empty) constructor and destructor, so arrays of it get constructed and destroyed
 class Vec3 : public Vec {
 public:
-    Vec3();
+    Vec3() {}
     Vec3(f32 x, f32 y, f32 z) {
         this->x = x;
         this->y = y;
         this->z = z;
     }
-    ~Vec3();
+    ~Vec3() {}
 };
 
 #endif

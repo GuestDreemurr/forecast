@@ -988,6 +988,7 @@ config.libs = [
             "cflags": cflags_channel,
             "progress_category": "channel",
             "objects": [
+                Object(Matching, "CityLabel.cpp", extra_cflags=["-ipa file"]),
                 Object(Matching, "Connect.cpp"),
                 Object(Matching, "ErrorWindow.cpp"),
                 Object(Matching, "ForecastCheck.cpp"),

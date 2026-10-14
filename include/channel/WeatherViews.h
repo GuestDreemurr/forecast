@@ -220,7 +220,7 @@ public:
     typedef void (WeatherAround::*Func)();
     typedef BOOL (WeatherAround::*StateFunc)();
     typedef void (WeatherAround::*PageStateFunc)(s32 arg);
-    typedef Vec2F (WeatherAround::*SizeFunc)(CityLabel* label);
+    typedef Vector2 (WeatherAround::*SizeFunc)(CityLabel* label);
 
     // One page of the forecast shown on the labels
     struct Page {
@@ -271,11 +271,11 @@ public:
     void UpdateBlink();
     void Open();
     void PlayWeatherSound(CityLabel* label);
-    Vec2F GetLabelSize(CityLabel* label);
-    Vec2F GetIconSize(CityLabel* label);
-    Vec2F GetTempSize(CityLabel* label);
-    Vec2F GetTempSizeSmall(CityLabel* label);
-    Vec2F GetTempSizeLarge(CityLabel* label);
+    Vector2 GetLabelSize(CityLabel* label);
+    Vector2 GetIconSize(CityLabel* label);
+    Vector2 GetTempSize(CityLabel* label);
+    Vector2 GetTempSizeSmall(CityLabel* label);
+    Vector2 GetTempSizeLarge(CityLabel* label);
 
     CityLabel** mLabels;             // at 0x4, one per city
     CityLabel* mBackList;            // at 0x8, labels on the far side of the globe

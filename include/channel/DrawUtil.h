@@ -13,7 +13,20 @@ struct Rect {
         right = 0.0f;
         bottom = 0.0f;
     }
-    ~Rect();
+    Rect(f32 l, f32 t, f32 r, f32 b) {
+        left = l;
+        top = t;
+        right = r;
+        bottom = b;
+    }
+    ~Rect() {}
+
+    f32 GetWidth() const {
+        return right - left;
+    }
+    f32 GetHeight() const {
+        return bottom - top;
+    }
 
     f32 left;   // at 0x0
     f32 top;    // at 0x4

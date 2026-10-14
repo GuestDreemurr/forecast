@@ -2,8 +2,9 @@
 #define CHANNEL_VECTOR2_H
 #include <types.h>
 #include <revolution/MTX.h>
+#include <nw4r/math/math_types.h>
 
-// A Vec2 with a (non-inline) destructor
+// A Vec2 with a destructor
 class Vector2 : public Vec2 {
 public:
     Vector2() {}
@@ -11,7 +12,11 @@ public:
         this->x = x;
         this->y = y;
     }
-    ~Vector2();
+    explicit Vector2(const nw4r::math::VEC2& v) {
+        x = v.x;
+        y = v.y;
+    }
+    ~Vector2() {}
 };
 
 #endif

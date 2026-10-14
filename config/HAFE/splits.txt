@@ -16,6 +16,12 @@ Sections:
 CityLabel.cpp:
 	.text       start:0x80006FC0 end:0x8000AA94
 	.ctors      start:0x80179244 end:0x80179248
+	.rodata     start:0x80179340 end:0x80179356
+	.data       start:0x80198D20 end:0x80198D80
+	.bss        start:0x801D6E00 end:0x801D6F20
+	.sdata      start:0x8032F540 end:0x8032F568
+	.sbss       start:0x80330980 end:0x803309A8
+	.sdata2     start:0x80331900 end:0x803319A0
 
 Connect.cpp:
 	.text       start:0x8000AA94 end:0x8000BAC8
