@@ -10,6 +10,10 @@ private:
     u32 mSeed; // at 0x0
 
 public:
+    u32 GetSeed() const {
+        return mSeed;
+    }
+
     void Srand(u32 seed) {
         mSeed = seed;
     }
