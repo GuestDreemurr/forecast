@@ -9,15 +9,9 @@ namespace ut {
 
 struct Color : public GXColor {
 public:
-#ifndef NW4R_UT_COLOR_DEFAULT_OUT_OF_CLASS
     Color() {
         *this = WHITE;
     }
-#else
-    // CityLabel.cpp defines these after its first use (it sets where the compiler emits them)
-    Color();
-    ~Color();
-#endif
     Color(u32 color) {
         *this = color;
     }
@@ -28,9 +22,7 @@ public:
         *this = rColor;
     }
 
-#ifndef NW4R_UT_COLOR_DEFAULT_OUT_OF_CLASS
     ~Color() {}
-#endif
 
     void Set(int red, int green, int blue, int alpha) {
         r = red;

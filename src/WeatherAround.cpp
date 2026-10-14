@@ -887,11 +887,11 @@ inline s32 WeatherAround::FindPressedTouch() {
     return -1;
 }
 
-static inline void GetHitBox(Vec2& pos, const Vec2F& box) {
+static inline void GetHitBox(Vec2& pos, const Vector2& box) {
     pos.x = box.x;
     pos.y = box.y;
 }
-static inline void GetHitSize(Vec2& half, const Vec2F& boxSize) {
+static inline void GetHitSize(Vec2& half, const Vector2& boxSize) {
     half.x = boxSize.x / 2.0f;
     half.y = boxSize.y / 2.0f;
 }
@@ -1057,7 +1057,7 @@ void WeatherAround::UpdateLabels() {
 
         pos = (*label)->mPos;
         f32 bounce = 0.2f * EaseCos((*label)->mBounce);
-        Vec2F size;
+        Vector2 size;
         size = GetLabelSize(*label);
         if (bounce > 0.0f) {
             bounce += scale;
@@ -1603,26 +1603,26 @@ void WeatherAround::PlayWeatherSound(CityLabel* label) {
     }
 }
 
-Vec2F WeatherAround::GetLabelSize(CityLabel* label) {
+Vector2 WeatherAround::GetLabelSize(CityLabel* label) {
     if (mLabelSize) {
         return (this->*mLabelSize)(label);
     }
-    return Vec2F(75.0f, 80.0f);
+    return Vector2(75.0f, 80.0f);
 }
 
-Vec2F WeatherAround::GetIconSize(CityLabel* label) {
+Vector2 WeatherAround::GetIconSize(CityLabel* label) {
     return label->GetIconSize(mDay);
 }
 
-Vec2F WeatherAround::GetTempSize(CityLabel* label) {
+Vector2 WeatherAround::GetTempSize(CityLabel* label) {
     return label->GetTempSize(mDay);
 }
 
-Vec2F WeatherAround::GetTempSizeSmall(CityLabel* label) {
+Vector2 WeatherAround::GetTempSizeSmall(CityLabel* label) {
     return label->GetTempSizeSmall(mDay);
 }
 
-Vec2F WeatherAround::GetTempSizeLarge(CityLabel* label) {
+Vector2 WeatherAround::GetTempSizeLarge(CityLabel* label) {
     return label->GetTempSizeLarge(mDay);
 }
 

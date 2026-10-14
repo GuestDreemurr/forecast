@@ -3,7 +3,6 @@
 #include <types.h>
 #include <channel/Color.h>
 #include <channel/DrawUtil.h>
-#include <channel/Vec2F.h>
 #include <channel/Vec3.h>
 #include <channel/Vector2.h>
 #include <nw4r/ut/ut_Rect.h>
@@ -98,16 +97,16 @@ public:
         }
     }
     u16 GetWeatherCode(s8 day);
-    Vec2F GetIconSize(s8 day);
-    Vec2F GetTempSize(s8 day);
-    Vec2F GetTempSizeSmall(s8 day);
-    Vec2F GetTempSizeLarge(s8 day);
+    Vector2 GetIconSize(s8 day);
+    Vector2 GetTempSize(s8 day);
+    Vector2 GetTempSizeSmall(s8 day);
+    Vector2 GetTempSizeLarge(s8 day);
 
-    Vec2F GetBoxPos() const {
+    Vector2 GetBoxPos() const {
         return mBoxPos;
     }
 
-    Vec2F GetSize() const {
+    Vector2 GetSize() const {
         return mSize;
     }
 
@@ -122,9 +121,9 @@ public:
     s8 mNowC;                  // at 0xF8, -128 = none
     u8 unkF9[0xFC - 0xF9];     // at 0xF9
     nw4r::ut::TextWriterBase<wchar_t> mWriter; // at 0xFC
-    nw4r::ut::Rect mBounds;    // at 0x15C
+    Rect mBounds;              // at 0x15C
     Rect mBgRects[2];          // at 0x16C
-    GXColor mShadowColor;      // at 0x18C
+    Color mShadowColor;        // at 0x18C
     Color mBgGradient0[4];     // at 0x190, corner colors of mBgRects[0]
     Color mBgGradient1[4];     // at 0x1A0, corner colors of mBgRects[1]
     StateFunc mState;          // at 0x1B0
@@ -134,9 +133,9 @@ public:
     Vec2 mPos;                 // at 0x1F8
     Vec2 mBoxTarget;           // at 0x200, where the open box goes, beside the label
     Vec2 mLabelPos;            // at 0x208, set by SetPosition
-    Vec2F mSize;               // at 0x210
+    Vector2 mSize;             // at 0x210
     Vec2 mOpenPos;             // at 0x218, where the label was when it opened
-    Vec2F mBoxPos;             // at 0x220
+    Vector2 mBoxPos;           // at 0x220
     f32 mFontWidth;            // at 0x228
     f32 mFontHeight;           // at 0x22C
     u32 mFlags;                // at 0x230

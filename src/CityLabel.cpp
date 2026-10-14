@@ -1,5 +1,3 @@
-// Color's default constructor and destructor are defined below, after Rect's
-#define NW4R_UT_COLOR_DEFAULT_OUT_OF_CLASS
 #include <channel/CityLabel.h>
 #include <channel/DrawUtil.h>
 #include <channel/System.h>
@@ -34,7 +32,7 @@ static const wchar_t* sDayCaptions[] = {L"\x73FE\x5728 ", L"\x660E\x65E5 "}; // 
 
 CityLabel::CityLabel(City* city, f32 scale, nw4r::ut::Font* font)
     : mNext(NULL), mNextBack(NULL), mNextFront(NULL), mNextFrontBack(NULL), mNextOverlap(NULL), mCity(city),
-      mShadowColor(*(GXColor*)&sColorDarkGray), mState(NULL), mDrawFunc(NULL) {
+      mBounds(0.0f, 0.0f, 0.0f, 0.0f), mShadowColor(sColorDarkGray), mState(NULL), mDrawFunc(NULL) {
     mPos.x = 0.0f;
     mPos.y = 0.0f;
     mBoxTarget.x = 0.0f;
@@ -119,27 +117,6 @@ CityLabel::CityLabel(City* city, f32 scale, nw4r::ut::Font* font)
     mBgGradient1[3].Set(255, 255, 255, 0);
     ChangeState(&CityLabel::StateIdle);
 }
-
-Rect::~Rect() {}
-
-Rect::Rect() {
-    left = 0.0f;
-    top = 0.0f;
-    right = 0.0f;
-    bottom = 0.0f;
-}
-
-inline nw4r::ut::Color::~Color() {}
-
-inline nw4r::ut::Color::Color() {
-    *this = WHITE;
-}
-
-Vec3::Vec3() {}
-
-Vec3::~Vec3() {}
-
-Vector2::~Vector2() {}
 
 CityLabel::~CityLabel() {}
 
@@ -594,7 +571,7 @@ void CityLabel::UpdateBox() {
     mOpenPos.y = boxTarget->y;
     nw4r::math::VEC2 diff;
     diff = *boxTarget - *(nw4r::math::VEC2*)&mPos;
-    mBoxPos = Vec2F(*(nw4r::math::VEC2*)&mPos + diff * mOpen);
+    mBoxPos = Vector2(*(nw4r::math::VEC2*)&mPos + diff * mOpen);
     unk1D4[0].x = mBoxPos.x;
     unk1D4[0].y = mBoxPos.y;
     unk1D4[1].x = mBoxPos.x;
@@ -622,25 +599,25 @@ void CityLabel::UpdateBox() {
 void CityLabel::CalcSize() {
     // Unused, but the original has a 20.0f here: it puts the constant at this spot of the pool
     f32 padding = 20.0f;
-    nw4r::ut::Rect nameRect;
-    nw4r::ut::Rect rect;
+    Rect nameRect;
+    Rect rect;
     mWriter.SetScale(1.0f);
     mWriter.SetCharSpace(0.0f);
-    mWriter.CalcStringRect(&nameRect, mCity->GetInfo()->mName);
+    mWriter.CalcStringRect((nw4r::ut::Rect*)&nameRect, mCity->GetInfo()->mName);
 
     f32 width;
     if (mCity->GetInfo()->mCountry != NULL) {
-        mWriter.CalcStringRect(&rect, mCity->GetInfo()->mCountry);
+        mWriter.CalcStringRect((nw4r::ut::Rect*)&rect, mCity->GetInfo()->mCountry);
         width = rect.GetWidth();
     } else {
         width = 0.0f;
     }
     if (mCity->GetInfo()->mRegion != NULL) {
-        mWriter.CalcStringRect(&rect, mCity->GetInfo()->mRegion);
+        mWriter.CalcStringRect((nw4r::ut::Rect*)&rect, mCity->GetInfo()->mRegion);
         f32 regionWidth = rect.GetWidth();
         if (regionWidth > 0.0f) {
             width += regionWidth;
-            mWriter.CalcStringRect(&rect, L"\x3000"); // full-width space
+            mWriter.CalcStringRect((nw4r::ut::Rect*)&rect, L"\x3000"); // full-width space
             width += rect.GetWidth();
         }
     }
@@ -681,7 +658,7 @@ void CityLabel::DrawDayTemp(s32 day, f32 scale) {
     nw4r::ut::Color color = GetTempColor(mDays[day].mMaxC);
     nw4r::ut::Color shadow(255, 255, 255, mAlpha);
     f32 alphaLow = mAlphaLow; // unused; its int-to-float stores stay in the code
-    Vec2F pos(mPos.x, mPos.y);
+    Vector2 pos(mPos.x, mPos.y);
     color.a = mAlpha;
     SetDefaultGXState();
     SetOrthoProjection();
@@ -855,7 +832,7 @@ void CityLabel::DrawRain(s32 day, f32 scale) {
     nw4r::ut::Color color;
     nw4r::ut::Color shadow(255, 255, 255, mAlpha);
     f32 alphaLow = mAlphaLow; // unused; its int-to-float stores stay in the code
-    Vec2F pos(mPos.x, mPos.y);
+    Vector2 pos(mPos.x, mPos.y);
     color = GetTempColor(mDays[day].mMaxC);
     color.a = mAlpha;
     SetDefaultGXState();
@@ -871,7 +848,7 @@ void CityLabel::DrawHigh(f32 scale) {
     nw4r::ut::Color color(255, 104, 104, mAlpha);
     nw4r::ut::Color shadow(255, 255, 255, mAlpha);
     f32 alphaLow = mAlphaLow; // unused; its int-to-float stores stay in the code
-    Vec2F pos(mPos.x, mPos.y);
+    Vector2 pos(mPos.x, mPos.y);
     color = GetTempColor(mNowC);
     color.a = mAlpha;
     SetDefaultGXState();
@@ -1010,10 +987,10 @@ void CityLabel::SetPosition(Vec2* pos, f32 scale) {
 
 // Measures the city name and places the bounds and the two background boxes around it
 void CityLabel::UpdateBounds() {
-    nw4r::ut::Rect rect; // unused, but the original zeroes it on the stack
+    Rect rect; // unused, but the original zeroes it on the stack
     mWriter.SetScale(mTextScale);
     mWriter.SetCharSpace(0.0f);
-    mWriter.CalcStringRect(&mBounds, mCity->GetInfo()->mName);
+    mWriter.CalcStringRect((nw4r::ut::Rect*)&mBounds, mCity->GetInfo()->mName);
 
     f32 y = mLabelPos.y - 0.5f * mBounds.GetHeight();
     mBounds.left += mLabelPos.x - 4.0f;
@@ -1214,11 +1191,11 @@ u16 CityLabel::GetWeatherCode(s8 day) {
     return 255;
 }
 
-Vec2F CityLabel::GetIconSize(s8 day) {
-    return Vec2F(90.0f, 90.0f);
+Vector2 CityLabel::GetIconSize(s8 day) {
+    return Vector2(90.0f, 90.0f);
 }
 
-Vec2F CityLabel::GetTempSize(s8 day) {
+Vector2 CityLabel::GetTempSize(s8 day) {
     if (gSimpleGlobe != NULL && gSimpleGlobe->mZoomLevel > gLabelDetailZoom) {
         return GetTempSizeLarge(day);
     } else {
@@ -1226,11 +1203,11 @@ Vec2F CityLabel::GetTempSize(s8 day) {
     }
 }
 
-Vec2F CityLabel::GetTempSizeSmall(s8 day) {
-    return Vec2F(116.0f, 116.0f);
+Vector2 CityLabel::GetTempSizeSmall(s8 day) {
+    return Vector2(116.0f, 116.0f);
 }
 
-Vec2F CityLabel::GetTempSizeLarge(s8 day) {
+Vector2 CityLabel::GetTempSizeLarge(s8 day) {
     // Day 2 is the current weather
     const wchar_t* text;
     switch (day) {
@@ -1244,5 +1221,5 @@ Vec2F CityLabel::GetTempSizeLarge(s8 day) {
 
     f32 width = CalcTempWidth(text) + 20.0f;
     f32 height = GetTempGlyphHeight(text) + 20.0f;
-    return Vec2F(width, height);
+    return Vector2(width, height);
 }
