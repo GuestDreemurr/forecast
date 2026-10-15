@@ -362,8 +362,14 @@ Material::Material(const res::Material* pRes, const ResBlockSet& rBlockSet) {
             pTexSrt[i].scale = pResTexSrt[i].scale;
         }
 
+        // Same as SetTexCoordGenNum, but written out in this version
         TexCoordGen* pTexCoordGen = GetTexCoordGenAry();
-        SetTexCoordGenNum(texCoordGenNum);
+        if (texCoordGenNum > 0) {
+            for (u32 i = mGXMemNum.texCoordGen; i < texCoordGenNum; i++) {
+                pTexCoordGen[i] = TexCoordGen();
+            }
+            mGXMemNum.texCoordGen = texCoordGenNum;
+        }
         for (int i = 0; i < mGXMemNum.texCoordGen; i++) {
             pTexCoordGen[i] = pResTexCoordGen[i];
         }
@@ -702,7 +708,7 @@ void Material::SetTexCoordGenNum(u8 num) {
         TexCoordGen* const pTexCoordGen = GetTexCoordGenAry();
 
         for (u32 i = mGXMemNum.texCoordGen; i < num; i++) {
-            new (&pTexCoordGen[i]) TexCoordGen();
+            pTexCoordGen[i] = TexCoordGen();
         }
 
         mGXMemNum.texCoordGen = num;
@@ -714,7 +720,7 @@ void Material::SetTevStageNum(u8 num) {
         TevStage* const pTevStage = GetTevStageAry();
 
         for (u32 i = mGXMemNum.tevStage; i < num; i++) {
-            new (&pTevStage[i]) TevStage();
+            pTevStage[i] = TevStage();
         }
 
         mGXMemNum.tevStage = num;
@@ -726,7 +732,7 @@ void Material::SetIndStageNum(u8 num) {
         IndirectStage* const pIndStage = GetIndirectStageAry();
 
         for (u32 i = mGXMemNum.indStage; i < num; i++) {
-            new (&pIndStage[i]) IndirectStage();
+            pIndStage[i] = IndirectStage();
         }
 
         mGXMemNum.indStage = num;
