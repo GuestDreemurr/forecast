@@ -92,6 +92,25 @@ struct AnimCurveRandomTexture {
     u16 name;   // at 0x2
 };
 
+// Child created by a child curve
+struct AnimCurveChild {
+    EmitterInheritSetting setting; // at 0x0
+    u16 resIdx;                    // at 0x8, index into the name table
+};
+
+// Key of a child curve
+struct AnimCurveKeyChild {
+    u16 frame;       // at 0x0
+    u16 PADDING_0x2; // at 0x2
+    u16 PADDING_0x4; // at 0x4
+    u8 random;       // at 0x6
+    u8 PADDING_0x7;  // at 0x7
+    union {
+        AnimCurveChild child; // at 0x8
+        u16 rangeIdx;         // at 0x8
+    };
+};
+
 template <typename T> struct AnimCurveTable {
     u16 count;       // at 0x0
     u16 PADDING_0x2; // at 0x2
@@ -379,6 +398,159 @@ static inline void AdjustTurnLoop(AnimCurveHeader* pHeader, u16 numKey, int idx,
             }
         }
     }
+}
+
+// Integer frame of the step curves (texture and child)
+// rEnd is set on the last tick of an even number of turns.
+static inline u16 CalcFrameStep(AnimCurveHeader* pHeader, u32 tick, u32 life,
+                                u32& rLoop, bool& rEnd) {
+    u8 flag = pHeader->processFlag;
+    rLoop = 0;
+
+    if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
+        pHeader->loopCount <= 1) {
+
+        if (!(flag & AnimCurveHeader::PROC_FLAG_FITTING)) {
+            if (tick >= pHeader->frameLength) {
+                return pHeader->frameLength;
+            }
+            return tick;
+        }
+
+        return pHeader->frameLength * tick / life;
+    }
+
+    if (!(flag & AnimCurveHeader::PROC_FLAG_FITTING)) {
+        u16 frameLength = pHeader->frameLength;
+
+        if (frameLength <= 1 || !(flag & AnimCurveHeader::PROC_FLAG_TURN)) {
+            rLoop = tick / frameLength;
+
+            if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
+                rLoop >= pHeader->loopCount) {
+                rLoop = static_cast<u8>(pHeader->loopCount - 1);
+                return frameLength;
+            }
+
+            return tick - rLoop * frameLength;
+        }
+
+        u32 period = frameLength - 1;
+        rLoop = tick / period;
+
+        if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
+            rLoop >= pHeader->loopCount) {
+            u16 frame;
+            if (pHeader->loopCount % 2 == 0) {
+                if (rLoop == pHeader->loopCount &&
+                    tick - rLoop * period == 0) {
+                    rEnd = true;
+                }
+                frame = 0;
+            } else {
+                frame = static_cast<u8>(period);
+            }
+            rLoop = static_cast<u8>(pHeader->loopCount - 1);
+            return frame;
+        }
+
+        if (rLoop % 2 == 0) {
+            return tick - rLoop * period;
+        }
+        return period * (rLoop + 1) - tick;
+    }
+
+    if (tick >= life) {
+        u16 frame;
+        if (!(flag & AnimCurveHeader::PROC_FLAG_TURN) ||
+            pHeader->loopCount % 2 != 0) {
+            frame = pHeader->frameLength;
+        } else {
+            frame = 0;
+        }
+        rLoop = static_cast<u8>(pHeader->loopCount - 1);
+        return frame;
+    }
+
+    u16 frameLength = pHeader->frameLength;
+
+    if (frameLength <= 1 || !(flag & AnimCurveHeader::PROC_FLAG_TURN)) {
+        f32 scale = pHeader->loopCount *
+                    (static_cast<f32>(frameLength) / static_cast<f32>(life));
+
+        rLoop = tick * scale / frameLength;
+        return tick * scale - rLoop * frameLength;
+    }
+
+    u32 period = frameLength - 1;
+    u8 loopCount = pHeader->loopCount;
+
+    u32 pos = tick * ((1.0f + static_cast<f32>(static_cast<int>(period)) *
+                                  loopCount) /
+                      life);
+    rLoop = pos / period;
+
+    if (rLoop >= loopCount) {
+        u16 frame;
+        if (loopCount % 2 == 0) {
+            if (tick == life - 1) {
+                rEnd = true;
+            }
+            frame = 0;
+        } else {
+            frame = static_cast<u8>(period);
+        }
+        rLoop = static_cast<u8>(loopCount - 1);
+        return frame;
+    }
+
+    if (rLoop % 2 == 0) {
+        return pos - rLoop * period;
+    }
+    return period * (rLoop + 1) - pos;
+}
+
+// Step curves: binary search for the frame. With lowerBound set this finds
+// the first key at or after the frame, otherwise the last key at or before it.
+template <typename TKey>
+static inline int SearchKeyStep(TKey* pKeys, u16 numKey, int frame,
+                                bool lowerBound) {
+    int lo = 0;
+    int hi = numKey - 1;
+    int mid = hi / 2;
+
+    if (frame < pKeys[0].frame || (lowerBound && frame == pKeys[0].frame)) {
+        return 0;
+    }
+
+    if (pKeys[hi].frame < frame ||
+        (!lowerBound && frame == pKeys[hi].frame)) {
+        return hi;
+    }
+
+    int midFrame = pKeys[mid].frame;
+
+    while (lo < mid) {
+        if (frame == midFrame) {
+            if (lowerBound) {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
+        } else {
+            if (midFrame < frame) {
+                lo = mid;
+            }
+            if (midFrame >= frame) {
+                hi = mid;
+            }
+        }
+
+        mid = (lo + hi) / 2;
+        midFrame = pKeys[mid].frame;
+    }
+
+    return lo;
 }
 
 static inline u32 MixRandom(u32 rnd) {
@@ -1604,91 +1776,9 @@ void AnimCurveExecuteTexture(u8* pCmdList, Particle* pParticle, u32 tick,
         reinterpret_cast<AnimCurveTable<TextureData*>*>(
             reinterpret_cast<u8*>(pRandomTbl) + pHeader->randomTable);
 
-    u8 flag = pHeader->processFlag;
-    u32 loop = 0;
-    u16 frame;
-
-    if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
-        pHeader->loopCount <= 1) {
-
-        if (!(flag & AnimCurveHeader::PROC_FLAG_FITTING)) {
-            if (tick < pHeader->frameLength) {
-                frame = tick;
-            } else {
-                frame = pHeader->frameLength;
-            }
-        } else {
-            frame = pHeader->frameLength * tick / life;
-        }
-    } else if (!(flag & AnimCurveHeader::PROC_FLAG_FITTING)) {
-        frame = pHeader->frameLength;
-
-        if (frame <= 1 || !(flag & AnimCurveHeader::PROC_FLAG_TURN)) {
-            loop = tick / frame;
-
-            if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
-                loop >= pHeader->loopCount) {
-                loop = static_cast<u8>(pHeader->loopCount - 1);
-            } else {
-                frame = tick - loop * frame;
-            }
-        } else {
-            u32 period = frame - 1;
-            loop = tick / period;
-
-            if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
-                loop >= pHeader->loopCount) {
-                if (pHeader->loopCount % 2 == 0) {
-                    frame = 0;
-                } else {
-                    frame = static_cast<u8>(period);
-                }
-                loop = static_cast<u8>(pHeader->loopCount - 1);
-            } else if (loop % 2 == 0) {
-                frame = tick - loop * period;
-            } else {
-                frame = period * (loop + 1) - tick;
-            }
-        }
-    } else if (tick >= life) {
-        if (!(flag & AnimCurveHeader::PROC_FLAG_TURN) ||
-            pHeader->loopCount % 2 != 0) {
-            frame = pHeader->frameLength;
-        } else {
-            frame = 0;
-        }
-        loop = static_cast<u8>(pHeader->loopCount - 1);
-    } else {
-        u16 frameLength = pHeader->frameLength;
-
-        if (frameLength <= 1 || !(flag & AnimCurveHeader::PROC_FLAG_TURN)) {
-            f32 scale = pHeader->loopCount *
-                        (static_cast<f32>(frameLength) / static_cast<f32>(life));
-
-            loop = tick * scale / frameLength;
-            frame = tick * scale - loop * frameLength;
-        } else {
-            u32 period = frameLength - 1;
-            u8 loopCount = pHeader->loopCount;
-
-            u32 pos = tick * ((1.0f + static_cast<int>(period) * loopCount) /
-                              life);
-            loop = pos / period;
-
-            if (loop >= loopCount) {
-                if (loopCount % 2 == 0) {
-                    frame = 0;
-                } else {
-                    frame = static_cast<u8>(period);
-                }
-                loop = static_cast<u8>(loopCount - 1);
-            } else if (loop % 2 == 0) {
-                frame = pos - loop * period;
-            } else {
-                frame = period * (loop + 1) - pos;
-            }
-        }
-    }
+    u32 loop;
+    bool end;
+    u16 frame = CalcFrameStep(pHeader, tick, life, loop, end);
 
     TextureData** ppTexture;
     int layer;
@@ -1714,39 +1804,9 @@ void AnimCurveExecuteTexture(u8* pCmdList, Particle* pParticle, u32 tick,
     }
     }
 
-    // Step curve: the last key at or before the frame
     AnimCurveKeyTexture* pKeys = pKeyTbl->datas;
-    int iframe = frame;
-    int lo = 0;
-    int hi = pKeyTbl->count - 1;
-    int mid = hi / 2;
-
-    if (iframe < pKeys[0].frame) {
-        hi = 0;
-    } else if (pKeys[hi].frame < iframe || iframe == pKeys[hi].frame) {
-    } else {
-        int midFrame = pKeys[mid].frame;
-
-        while (lo < mid) {
-            if (iframe == midFrame) {
-                lo = mid;
-            } else {
-                if (midFrame < iframe) {
-                    lo = mid;
-                }
-                if (midFrame >= iframe) {
-                    hi = mid;
-                }
-            }
-
-            mid = (lo + hi) / 2;
-            midFrame = pKeys[mid].frame;
-        }
-
-        hi = lo;
-    }
-
-    AnimCurveKeyTexture* pKey = &pKeys[hi];
+    AnimCurveKeyTexture* pKey =
+        &pKeys[SearchKeyStep(pKeys, pKeyTbl->count, frame, false)];
 
     u16 name;
     u8 wrap;
@@ -1809,6 +1869,245 @@ void AnimCurveExecuteTexture(u8* pCmdList, Particle* pParticle, u32 tick,
     pParticle->mParameter.mTextureReverse =
         (pParticle->mParameter.mTextureReverse & ~(3 << (layer * 2))) |
         ((reverse & 3) << (layer * 2));
+}
+
+void createChild(u8* pKeyData, u16 seed, AnimCurveHeader* pHeader,
+                 AnimCurveNameTable* pNameTbl,
+                 AnimCurveRandomTable* pRandomTbl, Particle* pParticle,
+                 u32 loop) {
+    AnimCurveKeyChild* pKey = reinterpret_cast<AnimCurveKeyChild*>(pKeyData);
+    AnimCurveChild* pChild;
+
+    if (pKey->random == 0) {
+        pChild = &pKey->child;
+    } else {
+        union {
+            u32 value;
+            u8 bytes[4];
+        } rndSeed;
+
+        rndSeed.value = seed * 0x3F81F635 + pHeader->randomSeed * 0x30A74193 +
+                        loop * 0x7B929 + pKey->rangeIdx * 0x371097E7 + 0x4BF53;
+
+        rndSeed.bytes[2] ^= rndSeed.bytes[3];
+        rndSeed.bytes[1] ^= rndSeed.bytes[2];
+        rndSeed.bytes[0] ^= rndSeed.bytes[1];
+
+        // @bug pChild is left unset for keys with a random range
+        if (pKey->random & KEY_RANDOM_FLAG_TABLE) {
+            u16 count = pRandomTbl->count;
+            if (count == 0) {
+                return;
+            }
+
+            pChild = &reinterpret_cast<AnimCurveChild*>(
+                pRandomTbl->datas)[(rndSeed.value >> 16) % count];
+        }
+    }
+
+    EmitterResource* pResource = reinterpret_cast<EmitterResource*>(
+        pNameTbl->datas[pChild->resIdx].work);
+
+    if (pResource == NULL) {
+        return;
+    }
+
+    if (pChild->setting.type == 0) {
+        pParticle->mParticleManager->mManagerEM->mManagerEF->mManagerES
+            ->mCreationQueue.AddParticleCreation(&pChild->setting, pParticle,
+                                                 pResource,
+                                                 pParticle->mCalcRemain);
+    } else {
+        pParticle->mParticleManager->mManagerEM->mManagerEF->mManagerES
+            ->mCreationQueue.AddEmitterCreation(&pChild->setting, pParticle,
+                                                pResource,
+                                                pParticle->mCalcRemain);
+    }
+}
+
+void AnimCurveExecuteChild(u8* pCmdList, Particle* pParticle, u32 tick,
+                           u16 seed, u32 life) {
+    AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
+
+    AnimCurveTable<AnimCurveKeyChild>* pKeyTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveKeyChild>*>(
+            pCmdList + sizeof(AnimCurveHeader));
+    u8* pRangeTbl = reinterpret_cast<u8*>(pKeyTbl) + pHeader->keyTable;
+    AnimCurveRandomTable* pRandomTbl =
+        reinterpret_cast<AnimCurveRandomTable*>(pRangeTbl +
+                                                pHeader->rangeTable);
+    AnimCurveNameTable* pNameTbl = reinterpret_cast<AnimCurveNameTable*>(
+        reinterpret_cast<u8*>(pRandomTbl) + pHeader->randomTable);
+
+    // Children are created for the keys passed between this tick and the
+    // next one
+    bool end = false;
+    u32 loop0;
+    u16 frame0 = CalcFrameStep(pHeader, tick, life, loop0, end);
+    u32 loop1;
+    bool end1;
+    u16 frame1 = CalcFrameStep(pHeader, tick + 1, life, loop1, end1);
+
+    AnimCurveKeyChild* pKeys = pKeyTbl->datas;
+
+    if (loop0 == loop1) {
+        if (frame0 == frame1) {
+            if (!end) {
+                return;
+            }
+            frame1 = 1;
+        }
+
+        if (frame0 < frame1) {
+            int i = SearchKeyStep(pKeys, pKeyTbl->count, frame0, true);
+            AnimCurveKeyChild* pKey = &pKeys[i];
+
+            for (; i < pKeyTbl->count; i++, pKey++) {
+                if (pKey->frame >= frame0) {
+                    if (frame1 <= pKey->frame) {
+                        return;
+                    }
+
+                    createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                                pNameTbl, pRandomTbl, pParticle, loop0);
+                }
+            }
+        } else {
+            int i = SearchKeyStep(pKeys, pKeyTbl->count, frame0, false);
+            AnimCurveKeyChild* pKey = &pKeys[i];
+
+            for (; i >= 0; i--, pKey--) {
+                if (frame0 >= pKey->frame) {
+                    if (pKey->frame <= frame1) {
+                        return;
+                    }
+
+                    createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                                pNameTbl, pRandomTbl, pParticle, loop0);
+                }
+            }
+        }
+        return;
+    }
+
+    if (pHeader->processFlag & AnimCurveHeader::PROC_FLAG_TURN) {
+        u32 backward = loop0 & 1;
+
+        // Rest of the current loop
+        if (!backward) {
+            int i = SearchKeyStep(pKeys, pKeyTbl->count, frame0, true);
+            AnimCurveKeyChild* pKey = &pKeys[i];
+
+            for (; i < pKeyTbl->count; i++, pKey++) {
+                if (pKey->frame >= frame0) {
+                    if (pKey->frame == pHeader->frameLength - 1) {
+                        break;
+                    }
+
+                    createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                                pNameTbl, pRandomTbl, pParticle, loop0);
+                }
+            }
+        } else {
+            int i = SearchKeyStep(pKeys, pKeyTbl->count, frame0, false);
+            AnimCurveKeyChild* pKey = &pKeys[i];
+
+            for (; i >= 0; i--, pKey--) {
+                if (frame0 >= pKey->frame) {
+                    if (pKey->frame == 0) {
+                        break;
+                    }
+
+                    createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                                pNameTbl, pRandomTbl, pParticle, loop0);
+                }
+            }
+        }
+
+        // Whole loops in between
+        for (u32 loop = loop0 + 1; loop < loop1; loop++) {
+            if (!backward) {
+                AnimCurveKeyChild* pKey = pKeys;
+
+                for (int i = 0; i < pKeyTbl->count; i++, pKey++) {
+                    if (pKey->frame == pHeader->frameLength - 1) {
+                        break;
+                    }
+
+                    createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                                pNameTbl, pRandomTbl, pParticle, loop0);
+                }
+            } else {
+                int i = pKeyTbl->count - 1;
+                AnimCurveKeyChild* pKey = &pKeys[i];
+
+                for (; i >= 0; i--, pKey--) {
+                    if (pKey->frame == 0) {
+                        break;
+                    }
+
+                    createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                                pNameTbl, pRandomTbl, pParticle, loop0);
+                }
+            }
+        }
+
+        // Start of the next loop
+        if (!(loop1 & 1)) {
+            AnimCurveKeyChild* pKey = pKeys;
+
+            for (int i = 0; i < pKeyTbl->count; i++, pKey++) {
+                if (frame1 <= pKey->frame) {
+                    return;
+                }
+
+                createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                            pNameTbl, pRandomTbl, pParticle, loop0);
+            }
+        } else {
+            int i = pKeyTbl->count - 1;
+            AnimCurveKeyChild* pKey = &pKeys[i];
+
+            for (; i >= 0; i--, pKey--) {
+                if (frame1 >= pKey->frame) {
+                    return;
+                }
+
+                createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                            pNameTbl, pRandomTbl, pParticle, loop0);
+            }
+        }
+    } else {
+        int i = SearchKeyStep(pKeys, pKeyTbl->count, frame0, true);
+        AnimCurveKeyChild* pKey = &pKeys[i];
+
+        for (; i < pKeyTbl->count; i++, pKey++) {
+            if (pKey->frame >= frame0) {
+                createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                            pNameTbl, pRandomTbl, pParticle, loop0);
+            }
+        }
+
+        for (u32 loop = loop0 + 1; loop < loop1; loop++) {
+            pKey = pKeys;
+
+            for (int i = 0; i < pKeyTbl->count; i++, pKey++) {
+                createChild(reinterpret_cast<u8*>(pKey), seed, pHeader,
+                            pNameTbl, pRandomTbl, pParticle, loop0);
+            }
+        }
+
+        pKey = pKeys;
+
+        for (int i = 0; i < pKeyTbl->count; i++, pKey++) {
+            if (frame1 <= pKey->frame) {
+                return;
+            }
+
+            createChild(reinterpret_cast<u8*>(pKey), seed, pHeader, pNameTbl,
+                        pRandomTbl, pParticle, loop0);
+        }
+    }
 }
 
 } // namespace ef
