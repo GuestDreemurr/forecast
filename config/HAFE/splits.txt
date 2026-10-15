@@ -1144,10 +1144,10 @@ nw4r/lyt/lyt_arcResourceAccessor.cpp:
 	.sdata      start:0x803304E0 end:0x803304E7
 
 nw4r/lyt/lyt_common.cpp:
-	.text       start:0x800E26C8 end:0x800E31D4
+	.text       start:0x800E26C8 end:0x800E3310
 	.bss        start:0x802CB3D0 end:0x802CB400
 	.sbss       start:0x803311F0 end:0x803311F8
-	.sdata2     start:0x80332D88 end:0x80332D90
+	.sdata2     start:0x80332D88 end:0x80332D98
 
 revolution/BASE/PPCArch.c:
 	.text       start:0x800E3310 end:0x800E347C

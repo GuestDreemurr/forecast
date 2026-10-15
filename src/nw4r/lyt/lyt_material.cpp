@@ -59,6 +59,30 @@ void CalcTextureMtx(math::MTX34* pMtx, const TexSRT& rSrt) {
     pMtx->_23 = 0.0f;
 }
 
+u8 GetColorComponentValue(ut::Color color, u32 idx) {
+    switch (idx) {
+    case 0: {
+        return color.r;
+    }
+
+    case 1: {
+        return color.g;
+    }
+
+    case 2: {
+        return color.b;
+    }
+
+    case 3: {
+        return color.a;
+    }
+
+    default: {
+        return 0xFF;
+    }
+    }
+}
+
 void CalcIndTexMtx(f32 mtx[2][3], const TexSRT& rSrt) {
     f32 cr = math::CosDeg(rSrt.rotate);
     f32 sr = math::SinDeg(rSrt.rotate);
@@ -203,7 +227,7 @@ void InitTexSRT(TexSRT* pTexSrt, u32 num) {
  * GX memory offsets
  ******************************************************************************/
 u32 CalcOffsetTexSRTAry(const detail::BitGXNums& rNums) {
-    return rNums.texMap * ROUND_UP(sizeof(TexMap), 4);
+    return rNums.texMap * ROUND_UP(sizeof(GXTexObj), 4);
 }
 
 u32 CalcOffsetTexCoordGenAry(const detail::BitGXNums& rNums) {
@@ -312,20 +336,20 @@ Material::Material(const res::Material* pRes, const ResBlockSet& rBlockSet) {
                 detail::ConvertOffsToPtr<res::Texture>(
                     rBlockSet.pTextureList, sizeof(res::TextureList));
 
-            TexMap* const pTexMap = GetTexMapAry();
+            GXTexObj* const pTexObj = GetTexMapAry();
 
-            u8 num = 0;
-            for (u8 i = 0; i < mGXMemNum.texMap; num++, i++) {
+            for (u8 i = 0; i < mGXMemNum.texMap; i++) {
                 const char* const pName = detail::ConvertOffsToPtr<char>(
                     pTexture, pTexture[pResTexMap[i].texIdx].nameStrOffset);
 
                 void* const pTexPalette = rBlockSet.pResAccessor->GetResource(
                     ArcResourceAccessor::RES_TYPE_TEXTURE, pName, NULL);
 
-                TexMap texMap(static_cast<TPLPalette*>(pTexPalette), 0);
-                SetTextureNoWrap(num, texMap);
+                detail::InitTexObj(&GetTexMapAry()[i],
+                                   static_cast<TPLPalette*>(pTexPalette), 0);
 
-                pTexMap[num].SetWrapMode(
+                GXInitTexObjWrapMode(
+                    &pTexObj[i],
                     static_cast<GXTexWrapMode>(pResTexMap[i].wrapS),
                     static_cast<GXTexWrapMode>(pResTexMap[i].wrapT));
             }
@@ -497,7 +521,7 @@ void Material::ReserveGXMem(u8 texMapNum, u8 texSrtNum, u8 texCoordGenNum,
         (texCoordGenNum + chanCtrlNum + matColNum + tevSwapNum +
             alpCompNum + blendModeNum + indStageNum) * 4 +
 
-        texMapNum   * sizeof(TexMap)   +
+        texMapNum   * sizeof(GXTexObj) +
         tevStageNum * sizeof(TevStage) +
         texSrtNum   * sizeof(TexSRT)   +
         indSrtNum   * sizeof(TexSRT));
@@ -563,11 +587,11 @@ void Material::ReserveGXMem(u8 texMapNum, u8 texSrtNum, u8 texCoordGenNum,
     }
 }
 
-const TexMap* Material::GetTexMapAry() const {
-    return detail::ConvertOffsToPtr<TexMap>(mpGXMem, 0);
+const GXTexObj* Material::GetTexMapAry() const {
+    return detail::ConvertOffsToPtr<GXTexObj>(mpGXMem, 0);
 }
-TexMap* Material::GetTexMapAry() {
-    return detail::ConvertOffsToPtr<TexMap>(mpGXMem, 0);
+GXTexObj* Material::GetTexMapAry() {
+    return detail::ConvertOffsToPtr<GXTexObj>(mpGXMem, 0);
 }
 
 const TexSRT* Material::GetTexSRTAry() const {
@@ -663,10 +687,10 @@ TevStage* Material::GetTevStageAry() {
 
 void Material::SetTextureNum(u8 num) {
     if (num > 0) {
-        TexMap* const pTexMap = GetTexMapAry();
+        GXTexObj* const pTexObj = GetTexMapAry();
 
         for (u32 i = mGXMemNum.texMap; i < num; i++) {
-            new (&pTexMap[i]) TexMap();
+            std::memset(&pTexObj[i], 0, sizeof(GXTexObj));
         }
 
         mGXMemNum.texMap = num;
@@ -707,6 +731,94 @@ void Material::SetIndStageNum(u8 num) {
 
         mGXMemNum.indStage = num;
     }
+}
+
+void Material::SetTextureNoWrap(u8 idx, TPLPalette* pPalette) {
+    GXTexObj* const pTexObj = &GetTexMapAry()[idx];
+
+    GXTexWrapMode wrapS = GXGetTexObjWrapS(pTexObj);
+    GXTexWrapMode wrapT = GXGetTexObjWrapT(pTexObj);
+
+    detail::InitTexObj(pTexObj, pPalette, 0);
+    GXInitTexObjWrapMode(pTexObj, wrapS, wrapT);
+}
+
+void Material::SetTexture(u8 idx, const GXTexObj& rTexObj) {
+    GXTexObj* const pTexObj = &GetTexMapAry()[idx];
+
+    *pTexObj = rTexObj;
+    GXInitTexObjUserData(pTexObj, NULL);
+}
+
+s16 Material::GetColorElement(u32 idx) const {
+    switch (idx) {
+    case ANIMTARGET_MATCOLOR_MATR:
+    case ANIMTARGET_MATCOLOR_MATG:
+    case ANIMTARGET_MATCOLOR_MATB:
+    case ANIMTARGET_MATCOLOR_MATA: {
+        if (mGXMemNum.matCol < 1) {
+            break;
+        }
+
+        return GetColorComponentValue(*GetMatColAry(), idx % 4);
+    }
+
+    case ANIMTARGET_MATCOLOR_TEV0R:
+    case ANIMTARGET_MATCOLOR_TEV0G:
+    case ANIMTARGET_MATCOLOR_TEV0B:
+    case ANIMTARGET_MATCOLOR_TEV0A:
+    case ANIMTARGET_MATCOLOR_TEV1R:
+    case ANIMTARGET_MATCOLOR_TEV1G:
+    case ANIMTARGET_MATCOLOR_TEV1B:
+    case ANIMTARGET_MATCOLOR_TEV1A:
+    case ANIMTARGET_MATCOLOR_TEV2R:
+    case ANIMTARGET_MATCOLOR_TEV2G:
+    case ANIMTARGET_MATCOLOR_TEV2B:
+    case ANIMTARGET_MATCOLOR_TEV2A: {
+        u32 regIdx = (idx - 4) / 4;
+
+        switch ((idx - 4) % 4) {
+        case 0: {
+            return mTevCols[regIdx].r;
+        }
+
+        case 1: {
+            return mTevCols[regIdx].g;
+        }
+
+        case 2: {
+            return mTevCols[regIdx].b;
+        }
+
+        case 3: {
+            return mTevCols[regIdx].a;
+        }
+        }
+        break;
+    }
+
+    case ANIMTARGET_MATCOLOR_TEVK0R:
+    case ANIMTARGET_MATCOLOR_TEVK0G:
+    case ANIMTARGET_MATCOLOR_TEVK0B:
+    case ANIMTARGET_MATCOLOR_TEVK0A:
+    case ANIMTARGET_MATCOLOR_TEVK1R:
+    case ANIMTARGET_MATCOLOR_TEVK1G:
+    case ANIMTARGET_MATCOLOR_TEVK1B:
+    case ANIMTARGET_MATCOLOR_TEVK1A:
+    case ANIMTARGET_MATCOLOR_TEVK2R:
+    case ANIMTARGET_MATCOLOR_TEVK2G:
+    case ANIMTARGET_MATCOLOR_TEVK2B:
+    case ANIMTARGET_MATCOLOR_TEVK2A:
+    case ANIMTARGET_MATCOLOR_TEVK3R:
+    case ANIMTARGET_MATCOLOR_TEVK3G:
+    case ANIMTARGET_MATCOLOR_TEVK3B:
+    case ANIMTARGET_MATCOLOR_TEVK3A: {
+        u32 regIdx = (idx - 16) / 4;
+        return GetColorComponentValue(mTevKCols[regIdx], (idx - 16) % 4);
+    }
+    }
+
+    return 0xFF;
 }
 
 void Material::SetColorElement(u32 idx, s16 value) {
@@ -882,30 +994,26 @@ bool Material::SetupGX(bool modulate, u8 alpha) {
 
     if (mGXMemNum.texMap > 0) {
         u32 tlutID = GX_TLUT0;
-        u32 bigTlutID = GX_BIGTLUT0;
 
-        const TexMap* const pTexMap = GetTexMapAry();
+        const GXTexObj* const pTexObj = GetTexMapAry();
 
-        for (int i = 0; i < mGXMemNum.texMap; i++) {
-            const TexMap& rTexMap = pTexMap[i];
+        for (u32 i = 0; i < mGXMemNum.texMap; i++) {
+            GXTexObj texObj = pTexObj[i];
 
-            GXTexObj texObj;
-            rTexMap.Get(&texObj);
+            GXTexFmt format = GXGetTexObjFmt(&texObj);
+            if (format == GX_TF_C4 || format == GX_TF_C8) {
+                const TPLClutHeader* pClut = static_cast<TPLClutHeader*>(
+                    GXGetTexObjUserData(&texObj));
 
-            if (detail::IsCITexelFormat(rTexMap.GetTexelFormat())) {
-                u32 tlutName;
-                if (static_cast<int>(rTexMap.GetTexelFormat()) == GX_TF_C14X2) {
-                    tlutName = bigTlutID++;
-                } else {
-                    tlutName = tlutID++;
+                if (pClut != NULL) {
+                    GXTlutObj tlutObj;
+                    GXInitTlutObj(&tlutObj, pClut->data, pClut->format,
+                                  pClut->numEntries);
+
+                    GXLoadTlut(&tlutObj, tlutID);
+                    GXInitTexObjTlut(&texObj, tlutID);
+                    tlutID++;
                 }
-
-                GXInitTexObjTlut(&texObj, tlutName);
-
-                GXTlutObj tlutObj;
-                rTexMap.Get(&tlutObj);
-
-                GXLoadTlut(&tlutObj, tlutName);
             }
 
             GXLoadTexObj(&texObj, static_cast<GXTexMapID>(i));
@@ -1258,8 +1366,10 @@ Size GetTextureSize(Material* pMaterial, u8 idx) {
         return Size(0.0f, 0.0f);
     }
 
-    const TexMap& rTexMap = pMaterial->GetTexture(idx);
-    return rTexMap.GetSize();
+    GXTexObj texObj;
+    pMaterial->GetTexture(&texObj, idx);
+
+    return Size(GXGetTexObjWidth(&texObj), GXGetTexObjHeight(&texObj));
 }
 
 } // namespace detail

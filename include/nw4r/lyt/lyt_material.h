@@ -124,6 +124,7 @@ public:
 
     void SetIndStageNum(u8 num);
 
+    s16 GetColorElement(u32 idx) const;
     void SetColorElement(u32 idx, s16 value);
 
     bool IsTevSwapCap() const {
@@ -142,8 +143,8 @@ public:
         return mGXMemCap.blendMode;
     }
 
-    const TexMap* GetTexMapAry() const;
-    TexMap* GetTexMapAry();
+    const GXTexObj* GetTexMapAry() const;
+    GXTexObj* GetTexMapAry();
 
     const TexSRT* GetTexSRTAry() const;
     TexSRT* GetTexSRTAry();
@@ -175,18 +176,16 @@ public:
     const TevStage* GetTevStageAry() const;
     TevStage* GetTevStageAry();
 
-    const TexMap& GetTexture(u8 idx) const {
+    // This older version stores GXTexObjs instead of TexMaps
+    const GXTexObj& GetTexture(u8 idx) const {
         return GetTexMapAry()[idx];
     }
     void GetTexture(GXTexObj* pTexObj, u8 idx) const {
-        GetTexMapAry()[idx].Get(pTexObj);
+        *pTexObj = GetTexMapAry()[idx];
+        GXInitTexObjUserData(pTexObj, NULL);
     }
-    void SetTexture(u8 idx, const TexMap& rTexMap) {
-        GetTexMapAry()[idx].Set(rTexMap);
-    }
-    void SetTextureNoWrap(u8 idx, const TexMap& rTexMap) {
-        GetTexMapAry()[idx].SetNoWrap(rTexMap);
-    }
+    void SetTexture(u8 idx, const GXTexObj& rTexObj);
+    void SetTextureNoWrap(u8 idx, TPLPalette* pPalette);
 
     const TexSRT& GetTexSRT(u32 idx) const {
         return GetTexSRTAry()[idx];
