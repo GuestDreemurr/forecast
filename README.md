@@ -3,12 +3,12 @@ Forecast Channel
 [![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress]
 
 
-[Build Status]: https://github.com/GuestDreemurr/forecast/actions/workflows/build.yml/badge.svg
-[actions]: https://github.com/GuestDreemurr/forecast/actions/workflows/build.yml
+[Build Status]: https://github.com/doldecomp/forecast/actions/workflows/build.yml/badge.svg
+[actions]: https://github.com/doldecomp/forecast/actions/workflows/build.yml
 
-[Code Progress]: https://decomp.dev/GuestDreemurr/forecast.svg?mode=shield&measure=code&label=Code
-[Data Progress]: https://decomp.dev/GuestDreemurr/forecast.svg?mode=shield&measure=data&label=Data
-[progress]: https://decomp.dev/GuestDreemurr/forecast
+[Code Progress]: https://decomp.dev/doldecomp/forecast.svg?mode=shield&measure=code&label=Code
+[Data Progress]: https://decomp.dev/doldecomp/forecast.svg?mode=shield&measure=data&label=Data
+[progress]: https://decomp.dev/doldecomp/forecast
 
 
 A work-in-progress decompilation of The Wii's Forecast Channel.
