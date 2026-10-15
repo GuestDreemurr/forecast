@@ -494,7 +494,13 @@ config.libs = [
             # BTE/stack/sdp
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_api.c"),
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_db.c"),
-            Object(NonMatching, "revolution/BTE/stack/sdp/sdp_discovery.c"),
+            Object(NonMatching, "revolution/BTE/stack/sdp/sdp_discovery.c", extra_cflags=[
+                "-Iinclude/revolution/BTE/gki/platform",
+                "-Iinclude/revolution/BTE/gki/common",
+                "-Iinclude/revolution/BTE/include",
+                "-Iinclude/revolution/BTE/stack/include",
+                "-Iinclude/revolution/BTE/stack/sdp",
+            ]),
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_main.c"),
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_server.c"),
             Object(NonMatching, "revolution/BTE/stack/sdp/sdp_utils.c"),

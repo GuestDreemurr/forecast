@@ -3,9 +3,9 @@
  *  NOTICE OF CHANGES
  *  2024/03/25:
  *      - Add #defines for RVL target
- * 
+ *
  *  Compile with REVOLUTION defined to include these changes.
- * 
+ *
  ******************************************************************************/
 
 
@@ -559,7 +559,7 @@
 
 /* Sends SDP data packets. */
 #ifndef SDP_POOL_ID
-#define SDP_POOL_ID                 3
+#define SDP_POOL_ID                 2
 #endif
 
 /* Sends RFCOMM command packets. */
@@ -2493,7 +2493,7 @@ Range: Minimum 12000 (12 secs) on BR/EDR when supporting PBF.
 
 /* keep the raw data received from SDP server in database. */
 #ifndef SDP_RAW_DATA_INCLUDED
-#define SDP_RAW_DATA_INCLUDED       TRUE
+#define SDP_RAW_DATA_INCLUDED       FALSE
 #endif
 
 /* TRUE, to allow JV to create L2CAP connection on SDP PSM. */

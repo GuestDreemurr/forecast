@@ -230,6 +230,9 @@ System.cpp:
 	.sbss       start:0x80330AD0 end:0x80330B78
 	.sdata2     start:0x80331F00 end:0x80331F78
 
+Tween.cpp:
+	.text       start:0x80036994 end:0x80037184
+
 ButtonGroup.cpp:
 	.text       start:0x80039994 end:0x8003A4A8
 	.sdata      start:0x803301B8 end:0x803301BC

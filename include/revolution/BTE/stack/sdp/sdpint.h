@@ -326,4 +326,3 @@ extern void sdp_disc_server_rsp (tCONN_CB *p_ccb, BT_HDR *p_msg);
 
 
 #endif
-

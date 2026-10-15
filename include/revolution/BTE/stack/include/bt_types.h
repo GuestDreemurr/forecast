@@ -687,4 +687,3 @@ typedef UINT8 tBT_DEVICE_TYPE;
 typedef void (BT_LOG_FUNC) (int trace_type, const char *fmt_str, ...);
 
 #endif
-
