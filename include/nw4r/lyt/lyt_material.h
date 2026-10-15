@@ -213,7 +213,6 @@ public:
         pArray[idx] = value;
     }
 
-    void SetName(const char* pName);
     const char* GetName() const {
         return mName;
     }
@@ -227,19 +226,21 @@ protected:
     static const int MAX_IND_SRT = (GX_ITM_2 - GX_ITM_0) + 1;
 
 protected:
-    AnimationLinkList mAnimList; // at 0x4
+    // This older version stores the name without a terminator
+    char mName[NW4R_LYT_MATERIAL_NAME_LEN]; // at 0x4
 
-    GXColorS10 mTevCols[TEVCOLOR_MAX];  // at 0x10
-    ut::Color mTevKCols[GX_MAX_KCOLOR]; // at 0x28
+    AnimationLinkList mAnimList; // at 0x18
 
-    detail::BitGXNums mGXMemCap; // at 0x38
-    detail::BitGXNums mGXMemNum; // at 0x3C
-    void* mpGXMem;               // at 0x40
+    GXColorS10 mTevCols[TEVCOLOR_MAX];  // at 0x24
+    ut::Color mTevKCols[GX_MAX_KCOLOR]; // at 0x3C
 
-    char mName[NW4R_LYT_MATERIAL_NAME_LEN + 1]; // at 0x44
-    bool mbUserAllocated;                       // at 0x59
+    detail::BitGXNums mGXMemCap; // at 0x4C
+    detail::BitGXNums mGXMemNum; // at 0x50
 
-    u8 PADDING_0x5A[0x5C - 0x5A]; // at 0x5A
+    bool mbUserAllocated;       // at 0x54
+    u8 PADDING_0x55[0x58 - 0x55]; // at 0x55
+
+    void* mpGXMem; // at 0x58
 
 private:
     void Init();

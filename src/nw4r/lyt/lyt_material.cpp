@@ -263,7 +263,7 @@ namespace lyt {
  ******************************************************************************/
 Material::Material(const res::Material* pRes, const ResBlockSet& rBlockSet) {
     Init();
-    SetName(pRes->name);
+    std::strncpy(mName, pRes->name, NW4R_LYT_MATERIAL_NAME_LEN);
 
     for (int i = 0; i < TEVCOLOR_MAX; i++) {
         mTevCols[i] = pRes->tevCols[i];
@@ -660,10 +660,6 @@ TevStage* Material::GetTevStageAry() {
                                               CalcOffsetTevStageAry(mGXMemCap));
 }
 
-void Material::SetName(const char* pName) {
-    std::strncpy(mName, pName, NW4R_LYT_MATERIAL_NAME_LEN);
-    mName[NW4R_LYT_MATERIAL_NAME_LEN] = '\0';
-}
 
 void Material::SetTextureNum(u8 num) {
     if (num > 0) {
