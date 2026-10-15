@@ -57,7 +57,7 @@ Building
 - Clone the repository:
 
   ```sh
-  git clone https://github.com/GuestDreemurr/forecast.git
+  git clone https://github.com/doldecomp/forecast.git
   ```
 
 - Copy your WAD to `orig/HAFE`
