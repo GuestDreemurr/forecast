@@ -25,6 +25,12 @@ ut::Color GetColor(const GXColorS10& rColor16) {
     return ut::Color(color8);
 }
 
+int CalcLineRectImpl(ut::Rect* pRect, ut::WideTextWriter* pWriter,
+                     const wchar_t* pStr, int len, f32 maxWidth, bool* pOver);
+
+void CalcStringRectImpl(ut::Rect* pRect, ut::WideTextWriter writer,
+                        const wchar_t* pStr, int len, f32 maxWidth);
+
 } // namespace
 
 namespace nw4r {
@@ -181,7 +187,10 @@ void TextBox::DrawSelf(const DrawInfo& rInfo) {
     LoadMtx(rInfo);
 
     ut::WideTextWriter writer;
-    ut::Rect rect = GetTextDrawRect(&writer);
+    writer.SetFont(*mpFont);
+    writer.SetFontSize(mFontSize.width, mFontSize.height);
+    writer.SetLineSpace(mLineSpace);
+    writer.SetCharSpace(mCharSpace);
 
     ut::Color top =
         detail::MultipleAlpha(mTextColors[TEXTCOLOR_TOP], mGlbAlpha);
@@ -194,12 +203,48 @@ void TextBox::DrawSelf(const DrawInfo& rInfo) {
 
     ut::Color min = GetColor(mpMaterial->GetTevColor(TEVCOLOR_REG0));
     ut::Color max = GetColor(mpMaterial->GetTevColor(TEVCOLOR_REG1));
-
     writer.SetColorMapping(min, max);
+
+    if (mpTagProcessor != NULL) {
+        writer.SetTagProcessor(mpTagProcessor);
+    }
+
     writer.SetupGX();
 
+    ut::Rect rect = GetTextDrawRect(&writer);
+    f32 magH = GetTextMagH();
+    const wchar_t* pStr = mTextBuf;
+    f32 width = rect.GetWidth();
+
     writer.SetCursor(rect.left, rect.top);
-    writer.Print(mTextBuf, mTextLen);
+
+    for (int remain = mTextLen; remain > 0;) {
+        f32 maxWidth = mSize.width;
+        ut::Rect lineRect;
+        bool over;
+        int lineLen;
+        f32 lineWidth;
+
+        {
+            ut::WideTextWriter lineWriter = writer;
+            lineWriter.SetCursor(0.0f, 0.0f);
+
+            lineLen = CalcLineRectImpl(&lineRect, &lineWriter, pStr, remain,
+                                       maxWidth, &over);
+
+            lineWidth = lineRect.GetWidth();
+        }
+
+        writer.SetCursorX(rect.left + magH * (width - lineWidth));
+        writer.Print(pStr, lineLen);
+
+        if (over) {
+            writer.Print(L"\n");
+        }
+
+        pStr += lineLen;
+        remain -= lineLen;
+    }
 }
 
 u16 TextBox::GetStringBufferLength() const {
@@ -286,20 +331,10 @@ ut::Rect TextBox::GetTextDrawRect(ut::WideTextWriter* pWriter) const {
     ut::Rect rect;
 
     pWriter->SetCursor(0.0f, 0.0f);
-
-    pWriter->SetFont(*mpFont);
-    pWriter->SetFontSize(mFontSize.width, mFontSize.height);
-
-    pWriter->SetLineSpace(mLineSpace);
-    pWriter->SetCharSpace(mCharSpace);
-
-    pWriter->SetDrawFlag(MakeDrawFlag());
-
-    if (mpTagProcessor != NULL) {
-        pWriter->SetTagProcessor(mpTagProcessor);
-    }
-
-    pWriter->CalcStringRect(&rect, mTextBuf, mTextLen);
+    f32 maxWidth = mSize.width;
+    int len = mTextLen;
+    const wchar_t* pStr = mTextBuf;
+    CalcStringRectImpl(&rect, *pWriter, pStr, len, maxWidth);
 
     math::VEC2 base = GetVtxPos();
     rect.MoveTo(base.x + (mSize.width - rect.GetWidth()) * GetTextMagH(),
@@ -380,3 +415,143 @@ u32 TextBox::MakeDrawFlag() const {
 
 } // namespace lyt
 } // namespace nw4r
+
+/******************************************************************************
+ *
+ * Text measurement with a width limit
+ *
+ ******************************************************************************/
+namespace {
+
+int CalcLineRectImpl(ut::Rect* pRect, ut::WideTextWriter* pWriter,
+                     const wchar_t* pStr, int len, f32 maxWidth, bool* pOver) {
+
+    ut::PrintContext<wchar_t> context = {
+        pWriter, // writer
+        pStr     // str
+    };
+
+    const ut::Font* pFont = pWriter->GetFont();
+
+    f32 x = 0.0f;
+    bool charSpace = false;
+
+    ut::CharStrmReader reader = pFont->GetCharStrmReader();
+    const wchar_t* pPrevPos = static_cast<const wchar_t*>(reader.GetCurrentPos());
+
+    pRect->left = 0.0f;
+    pRect->right = 0.0f;
+    pRect->top = ut::Min(0.0f, pWriter->GetLineHeight());
+    pRect->bottom = ut::Max(0.0f, pWriter->GetLineHeight());
+
+    *pOver = false;
+
+    reader.Set(pStr);
+    ut::Rect prevRect = *pRect;
+
+    u16 ch = reader.Next();
+
+    while (static_cast<const wchar_t*>(reader.GetCurrentPos()) - pStr <= len) {
+        if (ch < ' ') {
+            ut::Rect r(x, 0.0f, 0.0f, 0.0f);
+            context.str = static_cast<const wchar_t*>(reader.GetCurrentPos());
+            context.flags =
+                charSpace ? 0 : ut::PrintContext<wchar_t>::FLAGS_CHARSPACE;
+
+            pWriter->SetCursorX(x);
+
+            ut::WideTagProcessor::Operation oper =
+                pWriter->GetTagProcessor()->CalcRect(&r, ch, &context);
+
+            reader.Set(context.str);
+
+            pRect->left = ut::Min(pRect->left, r.left);
+            pRect->top = ut::Min(pRect->top, r.top);
+            pRect->right = ut::Max(pRect->right, r.right);
+            pRect->bottom = ut::Max(pRect->bottom, r.bottom);
+
+            x = pWriter->GetCursorX();
+
+            if (pRect->GetWidth() > maxWidth) {
+                *pOver = true;
+                break;
+            }
+
+            if (oper == ut::WideTagProcessor::OPERATION_END_DRAW) {
+                return len;
+            }
+
+            if (oper == ut::WideTagProcessor::OPERATION_NO_CHAR_SPACE) {
+                charSpace = false;
+            } else if (oper == ut::WideTagProcessor::OPERATION_CHAR_SPACE) {
+                charSpace = true;
+            } else if (oper == ut::WideTagProcessor::OPERATION_NEXT_LINE) {
+                break;
+            }
+        } else {
+            if (charSpace) {
+                x += pWriter->GetCharSpace();
+            }
+
+            charSpace = true;
+
+            if (pWriter->IsWidthFixed()) {
+                x += pWriter->GetFixedWidth();
+            } else {
+                x += pWriter->GetFont()->GetCharWidth(ch) * pWriter->GetScaleH();
+            }
+
+            pRect->left = ut::Min(pRect->left, x);
+            pRect->right = ut::Max(pRect->right, x);
+
+            if (pRect->GetWidth() > maxWidth) {
+                *pOver = true;
+                break;
+            }
+        }
+
+        pPrevPos = static_cast<const wchar_t*>(reader.GetCurrentPos());
+        ch = reader.Next();
+        prevRect = *pRect;
+    }
+
+    if (*pOver && pPrevPos != NULL) {
+        *pRect = prevRect;
+        return pPrevPos - pStr;
+    }
+
+    return static_cast<const wchar_t*>(reader.GetCurrentPos()) - pStr;
+}
+
+void CalcStringRectImpl(ut::Rect* pRect, ut::WideTextWriter writer,
+                        const wchar_t* pStr, int len, f32 maxWidth) {
+
+    int remain = len;
+
+    pRect->left = 0.0f;
+    pRect->right = 0.0f;
+    pRect->top = 0.0f;
+    pRect->bottom = 0.0f;
+
+    writer.SetCursor(0.0f, 0.0f);
+
+    do {
+        ut::Rect r;
+        bool over;
+
+        int read = CalcLineRectImpl(&r, &writer, pStr, remain, maxWidth, &over);
+        if (over) {
+            CalcLineRectImpl(&r, &writer, L"\n", 1, maxWidth, &over);
+        }
+
+        pStr += read;
+        remain -= read;
+
+        pRect->left = ut::Min(pRect->left, r.left);
+        pRect->top = ut::Min(pRect->top, r.top);
+        pRect->right = ut::Max(pRect->right, r.right);
+        pRect->bottom = ut::Max(pRect->bottom, r.bottom);
+    } while (remain > 0);
+}
+
+} // namespace
