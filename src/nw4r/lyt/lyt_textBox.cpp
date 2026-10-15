@@ -268,180 +268,9 @@ void TextBox::DrawSelf(const DrawInfo& rInfo) {
     }
 }
 
-u16 TextBox::GetStringBufferLength() const {
-    if (mTextBufBytes == 0) {
-        return 0;
-    }
-
-    return mTextBufBytes / sizeof(wchar_t) - 1;
-}
-
-void TextBox::AllocStringBuffer(u16 len) {
-    if (len == 0) {
-        return;
-    }
-
-    u16 chars = len + 1;
-    u16 bytes = chars * sizeof(wchar_t);
-
-    if (bytes > mTextBufBytes) {
-        FreeStringBuffer();
-        mTextBuf = static_cast<wchar_t*>(Layout::AllocMemory(bytes));
-
-        if (mTextBuf != NULL) {
-            mTextBufBytes = bytes;
-        }
-    }
-}
-
-void TextBox::FreeStringBuffer() {
-    if (mTextBuf == NULL) {
-        return;
-    }
-
-    Layout::FreeMemory(mTextBuf);
-    mTextBuf = NULL;
-    mTextBufBytes = 0;
-}
-
-u16 TextBox::SetString(const wchar_t* pStr, u16 pos) {
-    return SetString(pStr, pos, std::wcslen(pStr));
-}
-
-u16 TextBox::SetString(const wchar_t* pStr, u16 pos, u16 len) {
-    if (mTextBuf == NULL) {
-        return 0;
-    }
-
-    const u16 maxlen = GetStringBufferLength();
-    if (pos >= maxlen) {
-        return 0;
-    }
-
-    const u16 chars = ut::Min<u16>(len, maxlen - pos);
-    memcpy(&mTextBuf[pos], pStr, chars * sizeof(wchar_t));
-
-    mTextLen = pos + chars;
-    mTextBuf[mTextLen] = L'\0';
-
-    return chars;
-}
-
-const ut::Font* TextBox::GetFont() const {
-    return mpFont;
-}
-
-void TextBox::SetFont(const ut::Font* pFont) {
-    if (mBits.bAllocFont) {
-        mpFont->~Font();
-        Layout::FreeMemory(const_cast<ut::Font*>(mpFont));
-        mBits.bAllocFont = false;
-    }
-
-    mpFont = pFont;
-
-    if (mpFont != NULL) {
-        SetFontSize(Size(static_cast<f32>(mpFont->GetWidth()),
-                         static_cast<f32>(mpFont->GetHeight())));
-    } else {
-        SetFontSize(Size(0.0f, 0.0f));
-    }
-}
-
-ut::Rect TextBox::GetTextDrawRect(ut::WideTextWriter* pWriter) const {
-    ut::Rect rect;
-
-    pWriter->SetCursor(0.0f, 0.0f);
-    f32 maxWidth = mSize.width;
-    int len = mTextLen;
-    const wchar_t* pStr = mTextBuf;
-    CalcStringRectImpl(&rect, *pWriter, pStr, len, maxWidth);
-
-    math::VEC2 base = GetVtxPos();
-    rect.MoveTo(base.x + (mSize.width - rect.GetWidth()) * GetTextMagH(),
-                base.y + (mSize.height - rect.GetHeight()) * GetTextMagV());
-
-    return rect;
-}
-
-f32 TextBox::GetTextMagH() const {
-    f32 mag = 0.0f;
-
-    switch (GetTextPositionH()) {
-    default:
-    case HORIZONTALPOSITION_LEFT: {
-        mag = 0.0f;
-        break;
-    }
-
-    case HORIZONTALPOSITION_CENTER: {
-        mag = 0.5f;
-        break;
-    }
-
-    case HORIZONTALPOSITION_RIGHT: {
-        mag = 1.0f;
-        break;
-    }
-    }
-
-    return mag;
-}
-
-f32 TextBox::GetTextMagV() const {
-    f32 mag = 0.0f;
-
-    switch (GetTextPositionV()) {
-    default:
-    case VERTICALPOSITION_TOP: {
-        mag = 0.0f;
-        break;
-    }
-
-    case VERTICALPOSITION_CENTER: {
-        mag = 0.5f;
-        break;
-    }
-
-    case VERTICALPOSITION_BOTTOM: {
-        mag = 1.0f;
-        break;
-    }
-    }
-
-    return mag;
-}
-
-u32 TextBox::MakeDrawFlag() const {
-    u32 flag = 0;
-
-    switch (GetTextPositionH()) {
-    case HORIZONTALPOSITION_CENTER: {
-        flag |= ut::WideTextWriter::DRAWFLAG_ALIGN_TEXT_CENTER;
-        break;
-    }
-
-    case HORIZONTALPOSITION_RIGHT: {
-        flag |= ut::WideTextWriter::DRAWFLAG_ALIGN_TEXT_RIGHT;
-        break;
-    }
-
-    default: {
-        break;
-    }
-    }
-
-    return flag;
-}
-
 } // namespace lyt
 } // namespace nw4r
 
-/******************************************************************************
- *
- * Text measurement with a width limit
- *
- ******************************************************************************/
 namespace {
 
 int CalcLineRectImpl(ut::Rect* pRect, ut::WideTextWriter* pWriter,
@@ -544,6 +373,112 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::WideTextWriter* pWriter,
     return static_cast<const wchar_t*>(reader.GetCurrentPos()) - pStr;
 }
 
+} // namespace
+
+namespace nw4r {
+namespace lyt {
+
+u16 TextBox::GetStringBufferLength() const {
+    if (mTextBufBytes == 0) {
+        return 0;
+    }
+
+    return mTextBufBytes / sizeof(wchar_t) - 1;
+}
+
+void TextBox::AllocStringBuffer(u16 len) {
+    if (len == 0) {
+        return;
+    }
+
+    u16 chars = len + 1;
+    u16 bytes = chars * sizeof(wchar_t);
+
+    if (bytes > mTextBufBytes) {
+        FreeStringBuffer();
+        mTextBuf = static_cast<wchar_t*>(Layout::AllocMemory(bytes));
+
+        if (mTextBuf != NULL) {
+            mTextBufBytes = bytes;
+        }
+    }
+}
+
+void TextBox::FreeStringBuffer() {
+    if (mTextBuf == NULL) {
+        return;
+    }
+
+    Layout::FreeMemory(mTextBuf);
+    mTextBuf = NULL;
+    mTextBufBytes = 0;
+}
+
+u16 TextBox::SetString(const wchar_t* pStr, u16 pos) {
+    return SetString(pStr, pos, std::wcslen(pStr));
+}
+
+u16 TextBox::SetString(const wchar_t* pStr, u16 pos, u16 len) {
+    if (mTextBuf == NULL) {
+        return 0;
+    }
+
+    const u16 maxlen = GetStringBufferLength();
+    if (pos >= maxlen) {
+        return 0;
+    }
+
+    const u16 chars = ut::Min<u16>(len, maxlen - pos);
+    memcpy(&mTextBuf[pos], pStr, chars * sizeof(wchar_t));
+
+    mTextLen = pos + chars;
+    mTextBuf[mTextLen] = L'\0';
+
+    return chars;
+}
+
+const ut::Font* TextBox::GetFont() const {
+    return mpFont;
+}
+
+void TextBox::SetFont(const ut::Font* pFont) {
+    if (mBits.bAllocFont) {
+        mpFont->~Font();
+        Layout::FreeMemory(const_cast<ut::Font*>(mpFont));
+        mBits.bAllocFont = false;
+    }
+
+    mpFont = pFont;
+
+    if (mpFont != NULL) {
+        SetFontSize(Size(static_cast<f32>(mpFont->GetWidth()),
+                         static_cast<f32>(mpFont->GetHeight())));
+    } else {
+        SetFontSize(Size(0.0f, 0.0f));
+    }
+}
+
+ut::Rect TextBox::GetTextDrawRect(ut::WideTextWriter* pWriter) const {
+    ut::Rect rect;
+
+    pWriter->SetCursor(0.0f, 0.0f);
+    f32 maxWidth = mSize.width;
+    int len = mTextLen;
+    const wchar_t* pStr = mTextBuf;
+    CalcStringRectImpl(&rect, *pWriter, pStr, len, maxWidth);
+
+    math::VEC2 base = GetVtxPos();
+    rect.MoveTo(base.x + (mSize.width - rect.GetWidth()) * GetTextMagH(),
+                base.y + (mSize.height - rect.GetHeight()) * GetTextMagV());
+
+    return rect;
+}
+
+} // namespace lyt
+} // namespace nw4r
+
+namespace {
+
 void CalcStringRectImpl(ut::Rect* pRect, ut::WideTextWriter writer,
                         const wchar_t* pStr, int len, f32 maxWidth) {
 
@@ -576,3 +511,79 @@ void CalcStringRectImpl(ut::Rect* pRect, ut::WideTextWriter writer,
 }
 
 } // namespace
+
+namespace nw4r {
+namespace lyt {
+
+f32 TextBox::GetTextMagH() const {
+    f32 mag = 0.0f;
+
+    switch (GetTextPositionH()) {
+    default:
+    case HORIZONTALPOSITION_LEFT: {
+        mag = 0.0f;
+        break;
+    }
+
+    case HORIZONTALPOSITION_CENTER: {
+        mag = 0.5f;
+        break;
+    }
+
+    case HORIZONTALPOSITION_RIGHT: {
+        mag = 1.0f;
+        break;
+    }
+    }
+
+    return mag;
+}
+
+f32 TextBox::GetTextMagV() const {
+    f32 mag = 0.0f;
+
+    switch (GetTextPositionV()) {
+    default:
+    case VERTICALPOSITION_TOP: {
+        mag = 0.0f;
+        break;
+    }
+
+    case VERTICALPOSITION_CENTER: {
+        mag = 0.5f;
+        break;
+    }
+
+    case VERTICALPOSITION_BOTTOM: {
+        mag = 1.0f;
+        break;
+    }
+    }
+
+    return mag;
+}
+
+u32 TextBox::MakeDrawFlag() const {
+    u32 flag = 0;
+
+    switch (GetTextPositionH()) {
+    case HORIZONTALPOSITION_CENTER: {
+        flag |= ut::WideTextWriter::DRAWFLAG_ALIGN_TEXT_CENTER;
+        break;
+    }
+
+    case HORIZONTALPOSITION_RIGHT: {
+        flag |= ut::WideTextWriter::DRAWFLAG_ALIGN_TEXT_RIGHT;
+        break;
+    }
+
+    default: {
+        break;
+    }
+    }
+
+    return flag;
+}
+
+} // namespace lyt
+} // namespace nw4r
