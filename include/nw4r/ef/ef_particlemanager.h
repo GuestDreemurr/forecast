@@ -66,8 +66,6 @@ public:
     math::MTX34 mMtx; // at 0x8C
 
     static math::MTX34 smDrawMtxPMtoEM;
-    static math::MTX34 smMtxInv;
-    static s32 smMtxInvId;
 
 public:
     ParticleManager();
@@ -98,7 +96,9 @@ public:
     void BeginDraw();
     void EndDraw();
 
-    const math::MTX34* Draw_GetMtxPMtoEM() const;
+    const math::MTX34* Draw_GetMtxPMtoEM() const {
+        return &smDrawMtxPMtoEM;
+    }
 
     void Draw_ModifyColor(Particle* pParticle, GXColor* pColorPri,
                           GXColor* pColorSec);

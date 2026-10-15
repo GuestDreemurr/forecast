@@ -5,6 +5,10 @@
 namespace nw4r {
 namespace ef {
 
+static inline f32 SeedToFloat(u32 seed) {
+    return static_cast<f32>(seed >> 16) / 0x10000;
+}
+
 void EmitterFormCylinder::EmissionSub(
     Emitter* pEmitter, ParticleManager* pManager, int count, u32 flags,
     f32* pParams, u16 life, f32 lifeRnd, const math::MTX34* pSpace, f32 sizeX,
@@ -15,6 +19,7 @@ void EmitterFormCylinder::EmissionSub(
         math::VEC3 vel;
 
         f32 dist = pEmitter->mRandom.RandFloat();
+        u32 seed = pEmitter->mRandom.GetSeed();
         f32 inner = pParams[1] / 100.0f;
 
         if (flags & EmitterDesc::EMIT_FLAG_24) {
@@ -24,7 +29,9 @@ void EmitterFormCylinder::EmissionSub(
         }
 
         if (!(flags & EmitterDesc::EMIT_FLAG_17)) {
-            angle = (pParams[3] - pParams[2]) * pEmitter->mRandom.RandFloat();
+            seed = seed * 0x343FD + 0x269EC3;
+            pEmitter->mRandom.Srand(seed);
+            angle = (pParams[3] - pParams[2]) * SeedToFloat(seed);
         }
 
         f32 sa = std::sinf(angleOffset + angle);
