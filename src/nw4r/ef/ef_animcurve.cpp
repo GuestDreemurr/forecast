@@ -742,6 +742,22 @@ static inline f32 InterpolateConstF32(u16 interp, f32 t, f32 v0, f32 v1) {
     return InterpolateF32(interp, t, v0, v1);
 }
 
+// Not referenced by the channel; the linker strips them. They come first in
+// the file and give .sdata2 its constant order.
+f32 AnimCurveCalcTime(u8* pCmdList, u32 tick, u32 life) {
+    u16 frame;
+    u32 loop;
+    return CalcTime(reinterpret_cast<AnimCurveHeader*>(pCmdList), tick, life,
+                    frame, loop);
+}
+
+u16 AnimCurveCalcFrameStep(u8* pCmdList, u32 tick, u32 life) {
+    u32 loop;
+    bool end;
+    return CalcFrameStep(reinterpret_cast<AnimCurveHeader*>(pCmdList), tick,
+                         life, loop, end);
+}
+
 void AnimCurveExecuteU8Vec3(u8* pCmdList, u8* pTarget, u32 tick, u16 seed,
                         u32 life) {
     AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
