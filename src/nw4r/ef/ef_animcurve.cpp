@@ -38,6 +38,29 @@ struct AnimCurveRangeRotate {
     u8 PADDING_0x19[3]; // at 0x19
 };
 
+// Key of a byte curve with N components
+template <int N> struct AnimCurveKeyU8 {
+    u16 frame;       // at 0x0
+    u16 interp;      // at 0x2, two bits per component
+    u16 PADDING_0x4; // at 0x4
+    u8 random;       // at 0x6
+    u8 PADDING_0x7;  // at 0x7
+    union {
+        u8 value[N];  // at 0x8
+        u16 rangeIdx; // at 0x8
+    };
+};
+
+struct AnimCurveRangeCompU8 {
+    u8 base;  // at 0x0
+    u8 width; // at 0x1, scaled by a signed random in [-1, 1)
+};
+
+// Random range of a byte curve with N components
+template <int N> struct AnimCurveRangeU8 {
+    AnimCurveRangeCompU8 comp[N];
+};
+
 template <typename T> struct AnimCurveTable {
     u16 count;       // at 0x0
     u16 PADDING_0x2; // at 0x2
@@ -364,6 +387,39 @@ static inline TRange* GetRandomRange(AnimCurveHeader* pHeader,
     return pRange;
 }
 
+// GetRandomRange with the range index read through the key values
+template <typename TRange>
+static inline TRange* GetRandomRangeV(AnimCurveHeader* pHeader,
+                                      AnimCurveTable<TRange>* pRangeTbl,
+                                      AnimCurveTable<TRange>* pRandomTbl,
+                                      u8 random, u16* pRangeIdx, u32 loop,
+                                      u16 seed, u32& rRnd) {
+    union {
+        u32 value;
+        u8 bytes[4];
+    } rndSeed;
+
+    rndSeed.value = seed * 0x3F81F635 + pHeader->randomSeed * 0x30A74193 +
+                    (loop * 0x7B929 + *pRangeIdx * 0x371097E7 + 0x4BF53);
+
+    rndSeed.bytes[2] ^= rndSeed.bytes[3];
+    rndSeed.bytes[1] ^= rndSeed.bytes[2];
+    rndSeed.bytes[0] ^= rndSeed.bytes[1];
+
+    u32 rnd = rndSeed.value;
+    TRange* pRange;
+
+    if (!(random & KEY_RANDOM_FLAG_TABLE)) {
+        pRange = &pRangeTbl->datas[*pRangeIdx];
+    } else {
+        pRange = &pRandomTbl->datas[(rnd >> 16) % pRandomTbl->count];
+        rnd = MixRandom(rnd);
+    }
+
+    rRnd = rnd;
+    return pRange;
+}
+
 // GetRandomRange for ranges of variable size
 static inline AnimCurveRangeF32<1>*
 GetRandomRangeStride(AnimCurveHeader* pHeader, AnimCurveTable<u8>* pRangeTbl,
@@ -425,6 +481,39 @@ static inline f32 CalcRandomF32(AnimCurveHeader* pHeader,
     return GetRangeValueF32(pRange, 0, rnd);
 }
 
+// Byte curves use a 16.16 fixed point t
+static inline u8 InterpolateU8(u16 interp, u32 t, u8 v0, u8 v1) {
+    switch (interp & 3) {
+    case INTERP_LINEAR: {
+        return v0 + ((t * (v1 - v0)) >> 16);
+    }
+    case INTERP_SMOOTH: {
+        f32 ft = t / 65536.0f;
+        return v0 + ft * (ft * ((3.0f - 2.0f * ft) * (v1 - v0)));
+    }
+    case INTERP_STEP: {
+        return v0;
+    }
+    default: {
+        return 0;
+    }
+    }
+}
+
+static inline int GetRangeValueU8(AnimCurveRangeCompU8* pComp, u32 rnd) {
+    int value =
+        pComp->base + static_cast<s16>(rnd >> 16) * pComp->width / 32768;
+
+    if (value < 0) {
+        value = 0;
+    }
+    if (value > 255) {
+        value = 255;
+    }
+
+    return value;
+}
+
 static inline f32 InterpolateF32(u16 interp, f32 t, f32 v0, f32 v1) {
     switch (interp & 3) {
     case INTERP_LINEAR: {
@@ -448,6 +537,220 @@ static inline f32 InterpolateConstF32(u16 interp, f32 t, f32 v0, f32 v1) {
     }
 
     return InterpolateF32(interp, t, v0, v1);
+}
+
+void AnimCurveExecuteU8Vec3(u8* pCmdList, u8* pTarget, u32 tick, u16 seed,
+                        u32 life) {
+    AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
+
+    AnimCurveTable<AnimCurveKeyU8<3> >* pKeyTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveKeyU8<3> >*>(
+            pCmdList + sizeof(AnimCurveHeader));
+    AnimCurveTable<AnimCurveRangeU8<3> >* pRangeTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeU8<3> >*>(
+            reinterpret_cast<u8*>(pKeyTbl) + pHeader->keyTable);
+    AnimCurveTable<AnimCurveRangeU8<3> >* pRandomTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeU8<3> >*>(
+            reinterpret_cast<u8*>(pRangeTbl) + pHeader->rangeTable);
+
+    u32 loop;
+    u16 frame;
+    f32 time = CalcTime(pHeader, tick, life, frame, loop);
+
+    AnimCurveKeyU8<3>* pKeys = pKeyTbl->datas;
+
+    int idx;
+    u16 prevFrame;
+    u16 nextFrame;
+    bool found = SearchKey(pKeyTbl, frame, time, idx, prevFrame, nextFrame);
+
+    AnimCurveKeyU8<3>* pKey;
+
+    if (found) {
+        pKey = &pKeys[idx];
+    } else {
+        u32 loop0 = loop;
+        u32 loop1 = loop;
+        AdjustTurnLoop(pHeader, pKeyTbl->count, idx, loop, loop0, loop1);
+
+        u32 t = static_cast<u32>(65536.0f * (time - prevFrame)) /
+                (nextFrame - prevFrame);
+
+        AnimCurveKeyU8<3>* pKey0 = &pKeys[idx];
+        u8* pValue0 = pKey0->value;
+        u16 interp = pKey0->interp;
+        AnimCurveKeyU8<3>* pKey1 = &pKeys[idx + 1];
+        u8* pValue1 = pKey1->value;
+
+        bool random0 = pKey0->random != 0;
+        bool random1 = pKey1->random != 0;
+
+        if (!random0 && !random1) {
+            for (int i = 0; i < 3; i++, interp >>= 2, pValue0++, pValue1++) {
+                u8 value1 = *pValue1;
+                u8 value0 = *pValue0;
+
+                if (value0 == value1) {
+                    *pTarget++ = value0;
+                } else {
+                    *pTarget++ = InterpolateU8(interp, t, value0, value1);
+                }
+            }
+        } else if (random0 && !random1) {
+            u32 rnd;
+            AnimCurveRangeU8<3>* pRange = GetRandomRangeV(
+                pHeader, pRangeTbl, pRandomTbl, pKey0->random,
+                reinterpret_cast<u16*>(pValue0), loop0, seed, rnd);
+            AnimCurveRangeCompU8* pComp = pRange->comp;
+
+            for (int i = 0; i < 3; i++, interp >>= 2, pValue1++) {
+                int value = GetRangeValueU8(pComp++, rnd);
+                rnd = MixRandom(rnd);
+                *pTarget++ = InterpolateU8(interp, t, value, *pValue1);
+            }
+        } else if (!random0 && random1) {
+            u32 rnd;
+            AnimCurveRangeU8<3>* pRange = GetRandomRangeV(
+                pHeader, pRangeTbl, pRandomTbl, pKey1->random,
+                reinterpret_cast<u16*>(pValue1), loop1, seed, rnd);
+            AnimCurveRangeCompU8* pComp = pRange->comp;
+
+            for (int i = 0; i < 3; i++, interp >>= 2, pValue0++) {
+                int value = GetRangeValueU8(pComp++, rnd);
+                rnd = MixRandom(rnd);
+                *pTarget++ = InterpolateU8(interp, t, *pValue0, value);
+            }
+        } else {
+            u32 rnd0;
+            AnimCurveRangeU8<3>* pRange0 = GetRandomRangeV(
+                pHeader, pRangeTbl, pRandomTbl, pKey0->random,
+                reinterpret_cast<u16*>(pValue0), loop0, seed, rnd0);
+            AnimCurveRangeCompU8* pComp0 = pRange0->comp;
+            u32 rnd1;
+            AnimCurveRangeU8<3>* pRange1 = GetRandomRangeV(
+                pHeader, pRangeTbl, pRandomTbl, pKey1->random,
+                reinterpret_cast<u16*>(pValue1), loop1, seed, rnd1);
+            AnimCurveRangeCompU8* pComp1 = pRange1->comp;
+
+            for (int i = 0; i < 3; i++, interp >>= 2) {
+                int value0 = GetRangeValueU8(pComp0++, rnd0);
+                int value1 = GetRangeValueU8(pComp1++, rnd1);
+                rnd0 = MixRandom(rnd0);
+                rnd1 = MixRandom(rnd1);
+                *pTarget++ = InterpolateU8(interp, t, value0, value1);
+            }
+        }
+        return;
+    }
+
+    if (pKey->random == 0) {
+        for (int i = 0; i < 3; i++) {
+            pTarget[i] = pKey->value[i];
+        }
+    } else {
+        u32 rnd;
+        AnimCurveRangeU8<3>* pRange = GetRandomRange(
+            pHeader, pRangeTbl, pRandomTbl, pKey, loop, seed, rnd);
+        AnimCurveRangeCompU8* pComp = pRange->comp;
+
+        for (int i = 0; i < 3; i++) {
+            pTarget[i] = GetRangeValueU8(pComp++, rnd);
+            rnd = MixRandom(rnd);
+        }
+    }
+}
+
+void AnimCurveExecuteU8(u8* pCmdList, u8* pTarget, u32 tick, u16 seed,
+                        u32 life) {
+    AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
+
+    AnimCurveTable<AnimCurveKeyU8<1> >* pKeyTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveKeyU8<1> >*>(
+            pCmdList + sizeof(AnimCurveHeader));
+    AnimCurveTable<AnimCurveRangeU8<1> >* pRangeTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeU8<1> >*>(
+            reinterpret_cast<u8*>(pKeyTbl) + pHeader->keyTable);
+    AnimCurveTable<AnimCurveRangeU8<1> >* pRandomTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeU8<1> >*>(
+            reinterpret_cast<u8*>(pRangeTbl) + pHeader->rangeTable);
+
+    u32 loop;
+    u16 frame;
+    f32 time = CalcTime(pHeader, tick, life, frame, loop);
+
+    AnimCurveKeyU8<1>* pKeys = pKeyTbl->datas;
+
+    int idx;
+    u16 prevFrame;
+    u16 nextFrame;
+    bool found = SearchKey(pKeyTbl, frame, time, idx, prevFrame, nextFrame);
+
+    AnimCurveKeyU8<1>* pKey;
+
+    if (found) {
+        pKey = &pKeys[idx];
+    } else {
+        u32 loop0 = loop;
+        u32 loop1 = loop;
+        AdjustTurnLoop(pHeader, pKeyTbl->count, idx, loop, loop0, loop1);
+
+        u32 t = static_cast<u32>(65536.0f * (time - prevFrame)) /
+                (nextFrame - prevFrame);
+
+        AnimCurveKeyU8<1>* pKey0 = &pKeys[idx];
+        AnimCurveKeyU8<1>* pKey1 = &pKeys[idx + 1];
+
+        bool random0 = pKey0->random != 0;
+        bool random1 = pKey1->random != 0;
+        u16 interp = pKey0->interp;
+
+        if (!random0 && !random1) {
+            u8 value1 = pKey1->value[0];
+            u8 value0 = pKey0->value[0];
+
+            if (value0 == value1) {
+                *pTarget = value0;
+            } else {
+                *pTarget = InterpolateU8(interp, t, value0, value1);
+            }
+        } else if (random0 && !random1) {
+            u32 rnd;
+            AnimCurveRangeU8<1>* pRange = GetRandomRange(
+                pHeader, pRangeTbl, pRandomTbl, pKey0, loop0, seed, rnd);
+
+            int value = GetRangeValueU8(pRange->comp, rnd);
+            *pTarget = InterpolateU8(interp, t, value, pKey1->value[0]);
+        } else if (!random0 && random1) {
+            u32 rnd;
+            AnimCurveRangeU8<1>* pRange = GetRandomRange(
+                pHeader, pRangeTbl, pRandomTbl, pKey1, loop1, seed, rnd);
+
+            int value = GetRangeValueU8(pRange->comp, rnd);
+            *pTarget = InterpolateU8(interp, t, pKey0->value[0], value);
+        } else {
+            u32 rnd0;
+            AnimCurveRangeU8<1>* pRange0 = GetRandomRange(
+                pHeader, pRangeTbl, pRandomTbl, pKey0, loop0, seed, rnd0);
+            u32 rnd1;
+            AnimCurveRangeU8<1>* pRange1 = GetRandomRange(
+                pHeader, pRangeTbl, pRandomTbl, pKey1, loop1, seed, rnd1);
+
+            int value0 = GetRangeValueU8(pRange0->comp, rnd0);
+            int value1 = GetRangeValueU8(pRange1->comp, rnd1);
+            *pTarget = InterpolateU8(interp, t, value0, value1);
+        }
+        return;
+    }
+
+    if (pKey->random == 0) {
+        *pTarget = pKey->value[0];
+    } else {
+        u32 rnd;
+        AnimCurveRangeU8<1>* pRange = GetRandomRange(
+            pHeader, pRangeTbl, pRandomTbl, pKey, loop, seed, rnd);
+
+        *pTarget = GetRangeValueU8(pRange->comp, rnd);
+    }
 }
 
 void AnimCurveExecuteF32Vec2(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
