@@ -14,8 +14,7 @@ namespace lyt {
 Group::Group(const res::Group* pRes, Pane* pRootPane) {
     Init();
 
-    std::strncpy(mName, pRes->name, NW4R_LYT_RES_NAME_LEN);
-    mName[NW4R_LYT_RES_NAME_LEN] = '\0';
+    std::memcpy(mName, pRes->name, NW4R_LYT_RES_NAME_LEN);
 
     const char* pNameBase =
         detail::ConvertOffsToPtr<char>(pRes, sizeof(res::Group));

@@ -1077,6 +1077,7 @@ nw4r/lyt/lyt_pane.cpp:
 	.text       start:0x800D82F8 end:0x800D91B4
 	.ctors      start:0x801792F4 end:0x801792F8
 	.data       start:0x801B8BA8 end:0x801B8C10
+	.sbss       start:0x803311C0 end:0x803311C8
 	.sdata2     start:0x80332CE0 end:0x80332D00
 
 nw4r/lyt/lyt_group.cpp:
@@ -1086,13 +1087,14 @@ nw4r/lyt/lyt_group.cpp:
 nw4r/lyt/lyt_layout.cpp:
 	.text       start:0x800D94D4 end:0x800DA144
 	.data       start:0x801B8C20 end:0x801B8C58
+	.sbss       start:0x803311C8 end:0x803311D0
 	.sdata2     start:0x80332D00 end:0x80332D08
 
 nw4r/lyt/lyt_picture.cpp:
 	.text       start:0x800DA144 end:0x800DA664
 	.ctors      start:0x801792F8 end:0x801792FC
 	.data       start:0x801B8C58 end:0x801B8CC8
-	.sbss       start:0x803311D0 end:0x803311E0
+	.sbss       start:0x803311D0 end:0x803311D8
 	.sdata2     start:0x80332D08 end:0x80332D10
 
 nw4r/lyt/lyt_textBox.cpp:
@@ -1100,6 +1102,7 @@ nw4r/lyt/lyt_textBox.cpp:
 	.ctors      start:0x801792FC end:0x80179300
 	.data       start:0x801B8CC8 end:0x801B8D40
 	.sdata      start:0x803304D8 end:0x803304E0
+	.sbss       start:0x803311D8 end:0x803311E0
 	.sdata2     start:0x80332D10 end:0x80332D28
 
 nw4r/lyt/lyt_window.cpp:
