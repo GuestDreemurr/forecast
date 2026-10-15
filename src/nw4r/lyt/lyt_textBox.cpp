@@ -211,10 +211,31 @@ void TextBox::DrawSelf(const DrawInfo& rInfo) {
 
     writer.SetupGX();
 
+    f32 width;
     ut::Rect rect = GetTextDrawRect(&writer);
-    f32 magH = GetTextMagH();
+
+    f32 magH;
+    switch (GetTextPositionH()) {
+    default:
+    case HORIZONTALPOSITION_LEFT: {
+        magH = 0.0f;
+        break;
+    }
+
+    case HORIZONTALPOSITION_CENTER: {
+        magH = 0.5f;
+        break;
+    }
+
+    case HORIZONTALPOSITION_RIGHT: {
+        magH = 1.0f;
+        break;
+    }
+    }
+
     const wchar_t* pStr = mTextBuf;
-    f32 width = rect.GetWidth();
+    const ut::Rect& rRect = rect;
+    width = rRect.right - rRect.left;
 
     writer.SetCursor(rect.left, rect.top);
 
