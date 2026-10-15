@@ -28,6 +28,16 @@ template <int N> struct AnimCurveRangeF32 {
     } comp[N];
 };
 
+// Random range of a rotation curve
+struct AnimCurveRangeRotate {
+    struct {
+        f32 base;  // at 0x0
+        f32 width; // at 0x4
+    } comp[3];
+    u8 randomSign;     // at 0x18
+    u8 PADDING_0x19[3]; // at 0x19
+};
+
 template <typename T> struct AnimCurveTable {
     u16 count;       // at 0x0
     u16 PADDING_0x2; // at 0x2
@@ -385,6 +395,20 @@ GetRandomRangeStride(AnimCurveHeader* pHeader, AnimCurveTable<u8>* pRangeTbl,
     return reinterpret_cast<AnimCurveRangeF32<1>*>(pRange);
 }
 
+// Rotation ranges can pick a random sign. rRnd advances when they do.
+static inline bool GetRandomSign(AnimCurveRangeRotate* pRange, u32& rRnd) {
+    bool negate = false;
+
+    if (pRange->randomSign) {
+        if (!(rRnd & 0x10000)) {
+            negate = true;
+        }
+        rRnd = MixRandom(rRnd);
+    }
+
+    return negate;
+}
+
 template <typename TRange>
 static inline f32 GetRangeValueF32(TRange* pRange, int i, u32 rnd) {
     return pRange->comp[i].base + pRange->comp[i].width * (rnd >> 16);
@@ -495,11 +519,13 @@ void AnimCurveExecuteF32Vec2(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
             AnimCurveRangeF32<2>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                          pKey0, loop0, seed, rnd);
 
-            value = GetRangeValueF32(pRange, 0, rnd);
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
             rnd = MixRandom(rnd);
             pTarget[0] = InterpolateF32(interp, t, value, pKey1->value[0]);
 
-            value = GetRangeValueF32(pRange, 1, rnd);
+            value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
             pTarget[1] = InterpolateF32(interp >> 2, t, value, pKey1->value[1]);
 
         } else if (!random0 && random1) {
@@ -507,11 +533,13 @@ void AnimCurveExecuteF32Vec2(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
             AnimCurveRangeF32<2>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                          pKey1, loop1, seed, rnd);
 
-            value = GetRangeValueF32(pRange, 0, rnd);
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
             rnd = MixRandom(rnd);
             pTarget[0] = InterpolateF32(interp, t, pKey0->value[0], value);
 
-            value = GetRangeValueF32(pRange, 1, rnd);
+            value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
             pTarget[1] = InterpolateF32(interp >> 2, t, pKey0->value[1], value);
 
         } else {
@@ -525,14 +553,18 @@ void AnimCurveExecuteF32Vec2(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
             f32 value0;
             f32 value1;
 
-            value0 = GetRangeValueF32(pRange0, 0, rnd0);
-            value1 = GetRangeValueF32(pRange1, 0, rnd1);
+            value0 = pRange0->comp[0].base +
+        pRange0->comp[0].width * (rnd0 >> 16);
+            value1 = pRange1->comp[0].base +
+        pRange1->comp[0].width * (rnd1 >> 16);
             rnd0 = MixRandom(rnd0);
             rnd1 = MixRandom(rnd1);
             pTarget[0] = InterpolateF32(interp, t, value0, value1);
 
-            value0 = GetRangeValueF32(pRange0, 1, rnd0);
-            value1 = GetRangeValueF32(pRange1, 1, rnd1);
+            value0 = pRange0->comp[1].base +
+        pRange0->comp[1].width * (rnd0 >> 16);
+            value1 = pRange1->comp[1].base +
+        pRange1->comp[1].width * (rnd1 >> 16);
             pTarget[1] = InterpolateF32(interp >> 2, t, value0, value1);
 
         }
@@ -548,9 +580,12 @@ void AnimCurveExecuteF32Vec2(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
         AnimCurveRangeF32<2>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                      pKey, loop, seed, rnd);
 
-        pTarget[0] = GetRangeValueF32(pRange, 0, rnd);
+
+        pTarget[0] = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
         rnd = MixRandom(rnd);
-        pTarget[1] = GetRangeValueF32(pRange, 1, rnd);
+        pTarget[1] = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
 
     }
 }
@@ -622,19 +657,22 @@ void AnimCurveExecuteF32Vec3(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
             AnimCurveRangeF32<3>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                          pKey0, loop0, seed, rnd);
 
-            value = GetRangeValueF32(pRange, 0, rnd);
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
             rnd = MixRandom(rnd);
             pTarget[0] = InterpolateF32(interp, t, value, pKey1->value[0]);
 
             interp >>= 2;
 
-            value = GetRangeValueF32(pRange, 1, rnd);
+            value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
             rnd = MixRandom(rnd);
             pTarget[1] = InterpolateF32(interp, t, value, pKey1->value[1]);
 
             interp >>= 2;
 
-            value = GetRangeValueF32(pRange, 2, rnd);
+            value = pRange->comp[2].base +
+        pRange->comp[2].width * (rnd >> 16);
             pTarget[2] = InterpolateF32(interp, t, value, pKey1->value[2]);
 
         } else if (!random0 && random1) {
@@ -642,19 +680,22 @@ void AnimCurveExecuteF32Vec3(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
             AnimCurveRangeF32<3>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                          pKey1, loop1, seed, rnd);
 
-            value = GetRangeValueF32(pRange, 0, rnd);
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
             rnd = MixRandom(rnd);
             pTarget[0] = InterpolateF32(interp, t, pKey0->value[0], value);
 
             interp >>= 2;
 
-            value = GetRangeValueF32(pRange, 1, rnd);
+            value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
             rnd = MixRandom(rnd);
             pTarget[1] = InterpolateF32(interp, t, pKey0->value[1], value);
 
             interp >>= 2;
 
-            value = GetRangeValueF32(pRange, 2, rnd);
+            value = pRange->comp[2].base +
+        pRange->comp[2].width * (rnd >> 16);
             pTarget[2] = InterpolateF32(interp, t, pKey0->value[2], value);
 
         } else {
@@ -668,24 +709,30 @@ void AnimCurveExecuteF32Vec3(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
             f32 value0;
             f32 value1;
 
-            value0 = GetRangeValueF32(pRange0, 0, rnd0);
-            value1 = GetRangeValueF32(pRange1, 0, rnd1);
+            value0 = pRange0->comp[0].base +
+        pRange0->comp[0].width * (rnd0 >> 16);
+            value1 = pRange1->comp[0].base +
+        pRange1->comp[0].width * (rnd1 >> 16);
             rnd0 = MixRandom(rnd0);
             rnd1 = MixRandom(rnd1);
             pTarget[0] = InterpolateF32(interp, t, value0, value1);
 
             interp >>= 2;
 
-            value0 = GetRangeValueF32(pRange0, 1, rnd0);
-            value1 = GetRangeValueF32(pRange1, 1, rnd1);
+            value0 = pRange0->comp[1].base +
+        pRange0->comp[1].width * (rnd0 >> 16);
+            value1 = pRange1->comp[1].base +
+        pRange1->comp[1].width * (rnd1 >> 16);
             rnd0 = MixRandom(rnd0);
             rnd1 = MixRandom(rnd1);
             pTarget[1] = InterpolateF32(interp, t, value0, value1);
 
             interp >>= 2;
 
-            value0 = GetRangeValueF32(pRange0, 2, rnd0);
-            value1 = GetRangeValueF32(pRange1, 2, rnd1);
+            value0 = pRange0->comp[2].base +
+        pRange0->comp[2].width * (rnd0 >> 16);
+            value1 = pRange1->comp[2].base +
+        pRange1->comp[2].width * (rnd1 >> 16);
             pTarget[2] = InterpolateF32(interp, t, value0, value1);
 
         }
@@ -702,11 +749,15 @@ void AnimCurveExecuteF32Vec3(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
         AnimCurveRangeF32<3>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                      pKey, loop, seed, rnd);
 
-        pTarget[0] = GetRangeValueF32(pRange, 0, rnd);
+
+        pTarget[0] = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
         rnd = MixRandom(rnd);
-        pTarget[1] = GetRangeValueF32(pRange, 1, rnd);
+        pTarget[1] = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
         rnd = MixRandom(rnd);
-        pTarget[2] = GetRangeValueF32(pRange, 2, rnd);
+        pTarget[2] = pRange->comp[2].base +
+        pRange->comp[2].width * (rnd >> 16);
 
     }
 }
@@ -863,6 +914,231 @@ void AnimCurveExecuteF32N(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
     }
 }
 
+void AnimCurveExecuteRotate(u8* pCmdList, f32* pTarget, u32 tick, u16 seed,
+                            u32 life) {
+    AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
+
+    AnimCurveTable<AnimCurveKeyF32<3> >* pKeyTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveKeyF32<3> >*>(pCmdList +
+                                                sizeof(AnimCurveHeader));
+    AnimCurveTable<AnimCurveRangeRotate >* pRangeTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeRotate >*>(
+            reinterpret_cast<u8*>(pKeyTbl) + pHeader->keyTable);
+    AnimCurveTable<AnimCurveRangeRotate >* pRandomTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeRotate >*>(
+            reinterpret_cast<u8*>(pRangeTbl) + pHeader->rangeTable);
+
+    u32 loop;
+    u16 frame;
+    f32 time = CalcTime(pHeader, tick, life, frame, loop);
+
+    AnimCurveKeyF32<3>* pKeys = pKeyTbl->datas;
+
+    int idx;
+    u16 prevFrame;
+    u16 nextFrame;
+    bool found = SearchKey(pKeyTbl, frame, time, idx, prevFrame, nextFrame);
+
+    AnimCurveKeyF32<3>* pKey;
+
+    if (found) {
+        pKey = &pKeys[idx];
+    } else {
+        u32 loop0 = loop;
+        u32 loop1 = loop;
+        AdjustTurnLoop(pHeader, pKeyTbl->count, idx, loop, loop0, loop1);
+
+        f32 t = (time - prevFrame) / static_cast<int>(nextFrame - prevFrame);
+
+        AnimCurveKeyF32<3>* pKey0 = &pKeys[idx];
+        AnimCurveKeyF32<3>* pKey1 = &pKeys[idx + 1];
+
+        bool random0 = pKey0->random != 0;
+        bool random1 = pKey1->random != 0;
+        u16 interp = pKey0->interp;
+
+        f32 value;
+
+        if (!random0 && !random1) {
+            value = InterpolateConstF32(interp, t, pKey0->value[0],
+                                        pKey1->value[0]);
+            pTarget[0] = value;
+
+            interp >>= 2;
+
+            value = InterpolateConstF32(interp, t, pKey0->value[1],
+                                        pKey1->value[1]);
+            pTarget[1] = value;
+
+            interp >>= 2;
+
+            value = InterpolateConstF32(interp, t, pKey0->value[2],
+                                        pKey1->value[2]);
+            pTarget[2] = value;
+
+        } else if (random0 && !random1) {
+            u32 rnd;
+            AnimCurveRangeRotate* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
+                                         pKey0, loop0, seed, rnd);
+            bool negate = GetRandomSign(pRange, rnd);
+
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
+            if (negate) {
+                value = -value;
+            }
+            rnd = MixRandom(rnd);
+            pTarget[0] = InterpolateF32(interp, t, value, pKey1->value[0]);
+
+            interp >>= 2;
+
+            value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
+            if (negate) {
+                value = -value;
+            }
+            rnd = MixRandom(rnd);
+            pTarget[1] = InterpolateF32(interp, t, value, pKey1->value[1]);
+
+            interp >>= 2;
+
+            value = pRange->comp[2].base +
+        pRange->comp[2].width * (rnd >> 16);
+            if (negate) {
+                value = -value;
+            }
+            pTarget[2] = InterpolateF32(interp, t, value, pKey1->value[2]);
+
+        } else if (!random0 && random1) {
+            u32 rnd;
+            AnimCurveRangeRotate* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
+                                         pKey1, loop1, seed, rnd);
+            bool negate = GetRandomSign(pRange, rnd);
+
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
+            if (negate) {
+                value = -value;
+            }
+            pTarget[0] = InterpolateF32(interp, t, pKey0->value[0], value);
+            rnd = MixRandom(rnd);
+
+            interp >>= 2;
+
+            value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
+            if (negate) {
+                value = -value;
+            }
+            pTarget[1] = InterpolateF32(interp, t, pKey0->value[1], value);
+            rnd = MixRandom(rnd);
+
+            interp >>= 2;
+
+            value = pRange->comp[2].base +
+        pRange->comp[2].width * (rnd >> 16);
+            if (negate) {
+                value = -value;
+            }
+            pTarget[2] = InterpolateF32(interp, t, pKey0->value[2], value);
+
+        } else {
+            u32 rnd0;
+            AnimCurveRangeRotate* pRange0 = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
+                                          pKey0, loop0, seed, rnd0);
+            u32 rnd1;
+            AnimCurveRangeRotate* pRange1 = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
+                                          pKey1, loop1, seed, rnd1);
+            bool negate0 = GetRandomSign(pRange0, rnd0);
+            bool negate1 = GetRandomSign(pRange1, rnd1);
+
+            f32 value0;
+            f32 value1;
+
+            value0 = pRange0->comp[0].base +
+        pRange0->comp[0].width * (rnd0 >> 16);
+            if (negate0) {
+                value0 = -value0;
+            }
+            value1 = pRange1->comp[0].base +
+        pRange1->comp[0].width * (rnd1 >> 16);
+            if (negate1) {
+                value1 = -value1;
+            }
+            pTarget[0] = InterpolateF32(interp, t, value0, value1);
+            rnd0 = MixRandom(rnd0);
+            rnd1 = MixRandom(rnd1);
+
+            interp >>= 2;
+
+            value0 = pRange0->comp[1].base +
+        pRange0->comp[1].width * (rnd0 >> 16);
+            if (negate0) {
+                value0 = -value0;
+            }
+            value1 = pRange1->comp[1].base +
+        pRange1->comp[1].width * (rnd1 >> 16);
+            if (negate1) {
+                value1 = -value1;
+            }
+            pTarget[1] = InterpolateF32(interp, t, value0, value1);
+            rnd0 = MixRandom(rnd0);
+            rnd1 = MixRandom(rnd1);
+
+            interp >>= 2;
+
+            value0 = pRange0->comp[2].base +
+        pRange0->comp[2].width * (rnd0 >> 16);
+            if (negate0) {
+                value0 = -value0;
+            }
+            value1 = pRange1->comp[2].base +
+        pRange1->comp[2].width * (rnd1 >> 16);
+            if (negate1) {
+                value1 = -value1;
+            }
+            pTarget[2] = InterpolateF32(interp, t, value0, value1);
+
+        }
+        return;
+    }
+
+    if (pKey->random == 0) {
+        pTarget[0] = pKey->value[0];
+        pTarget[1] = pKey->value[1];
+        pTarget[2] = pKey->value[2];
+
+    } else {
+        u32 rnd;
+        AnimCurveRangeRotate* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
+                                     pKey, loop, seed, rnd);
+        bool negate = GetRandomSign(pRange, rnd);
+
+        f32 value;
+        value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
+        if (negate) {
+            value = -value;
+        }
+        pTarget[0] = value;
+        rnd = MixRandom(rnd);
+        value = pRange->comp[1].base +
+        pRange->comp[1].width * (rnd >> 16);
+        if (negate) {
+            value = -value;
+        }
+        pTarget[1] = value;
+        rnd = MixRandom(rnd);
+        value = pRange->comp[2].base +
+        pRange->comp[2].width * (rnd >> 16);
+        if (negate) {
+            value = -value;
+        }
+        pTarget[2] = value;
+
+    }
+}
+
 void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
                          u16 seed, u32 life) {
     AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
@@ -928,7 +1204,8 @@ void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
             AnimCurveRangeF32<1>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                          pKey0, loop0, seed, rnd);
 
-            value = GetRangeValueF32(pRange, 0, rnd);
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
             pTarget[0] = InterpolateF32(interp, t, value, pKey1->value[0]);
 
         } else if (!random0 && random1) {
@@ -936,7 +1213,8 @@ void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
             AnimCurveRangeF32<1>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                          pKey1, loop1, seed, rnd);
 
-            value = GetRangeValueF32(pRange, 0, rnd);
+            value = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
             pTarget[0] = InterpolateF32(interp, t, pKey0->value[0], value);
 
         } else {
@@ -950,8 +1228,10 @@ void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
             f32 value0;
             f32 value1;
 
-            value0 = GetRangeValueF32(pRange0, 0, rnd0);
-            value1 = GetRangeValueF32(pRange1, 0, rnd1);
+            value0 = pRange0->comp[0].base +
+        pRange0->comp[0].width * (rnd0 >> 16);
+            value1 = pRange1->comp[0].base +
+        pRange1->comp[0].width * (rnd1 >> 16);
             pTarget[0] = InterpolateF32(interp, t, value0, value1);
 
         }
@@ -966,7 +1246,9 @@ void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
         AnimCurveRangeF32<1>* pRange = GetRandomRange(pHeader, pRangeTbl, pRandomTbl,
                                      pKey, loop, seed, rnd);
 
-        pTarget[0] = GetRangeValueF32(pRange, 0, rnd);
+
+        pTarget[0] = pRange->comp[0].base +
+        pRange->comp[0].width * (rnd >> 16);
 
     }
 }
