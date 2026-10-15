@@ -234,9 +234,6 @@ Tween.cpp:
 	.text       start:0x80036994 end:0x800369F4
 	.sdata2     start:0x80331FC0 end:0x80331FC8
 
-Unk.cpp:
-	.text       start:0x800369F4 end:0x80037184
-
 ButtonGroup.cpp:
 	.text       start:0x80039994 end:0x8003A4A8
 	.sdata      start:0x803301B8 end:0x803301BC
