@@ -833,7 +833,7 @@ config.libs = [
             Object(Matching, "nw4r/ef/emform/ef_sphere.cpp"),
             Object(Matching, "nw4r/ef/emform/ef_cylinder.cpp"),
             Object(Matching, "nw4r/ef/emform/ef_torus.cpp"),
-            Object(NonMatching, "nw4r/ef/emform/ef_cube.cpp"),
+            Object(Matching, "nw4r/ef/emform/ef_cube.cpp"),
             Object(Matching, "nw4r/ef/drawstrategy/ef_drawstrategybuilder.cpp"),
             Object(Matching, "nw4r/ef/drawstrategy/ef_drawstrategyimpl.cpp"),
             Object(Matching, "nw4r/ef/drawstrategy/ef_drawbillboardstrategy.cpp"),

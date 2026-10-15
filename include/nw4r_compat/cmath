@@ -6,8 +6,8 @@
 extern "C" double atan(double);
 extern "C" float modff(float, float*);
 namespace std {
-inline float fabs(float x) { return __fabs(x); }
 inline double fabs(double x) { return __fabs(x); }
+inline float fabs(float x) { return (float)fabs((double)x); }
 inline float fabsf(float x) { return __fabs(x); }
 inline float pow(float x, float y) { return ::pow(x, y); }
 using ::acosf; using ::asinf; using ::atan2f; using ::ceilf; using ::cosf; using ::sinf;
