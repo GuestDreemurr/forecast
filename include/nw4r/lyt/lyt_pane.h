@@ -246,12 +246,10 @@ public:
     const char* GetName() const {
         return mName;
     }
-    void SetName(const char* pName);
 
     const char* GetUserData() const {
         return mUserData;
     }
-    void SetUserData(const char* pUserData);
 
     bool IsUserAllocated() const {
         return mbUserAllocated;
@@ -271,16 +269,17 @@ protected:
     math::MTX34 mMtx;    // at 0x54
     math::MTX34 mGlbMtx; // at 0x84
 
-    u8 mAlpha;        // at 0xB4
-    u8 mGlbAlpha;     // at 0xB5
-    u8 mBasePosition; // at 0xB6
-    u8 mFlag;         // at 0xB7
+    // This older version stores the names without a terminator
+    char mName[NW4R_LYT_RES_NAME_LEN];          // at 0xB4
+    char mUserData[NW4R_LYT_PANE_USERDATA_LEN]; // at 0xC4
 
-    char mName[NW4R_LYT_RES_NAME_LEN + 1];          // at 0xB8
-    char mUserData[NW4R_LYT_PANE_USERDATA_LEN + 1]; // at 0xC9
+    u8 mBasePosition; // at 0xCC
+    u8 mAlpha;        // at 0xCD
+    u8 mGlbAlpha;     // at 0xCE
+    u8 mFlag;         // at 0xCF
 
-    bool mbUserAllocated; // at 0xD2
-    u8 PADDING_0xD3;      // at 0xD3
+    bool mbUserAllocated; // at 0xD0
+    u8 PADDING_0xD1[3];   // at 0xD1
 
 protected:
     void InsertChild(PaneList::Iterator next, Pane* pChild);
