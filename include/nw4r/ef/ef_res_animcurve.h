@@ -67,10 +67,10 @@ enum AnimCurveTarget {
     // AC_TYPE_PARTICLE_ROTATE
     AC_TARGET_ROTATE = 12,
 
-    // Texture target
-    // AC_TARGET_TEXTURE1 = 23,
-    // AC_TARGET_TEXTURE2 = 24,
-    // AC_TARGET_TEXTUREIND = 25,
+    // AC_TYPE_PARTICLE_TEXTURE
+    AC_TARGET_TEXTURE1 = 14,
+    AC_TARGET_TEXTURE2,
+    AC_TARGET_TEXTUREIND,
 
     // Child target
     // AC_TARGET_CHILD = 26,

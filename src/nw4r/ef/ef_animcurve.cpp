@@ -61,6 +61,37 @@ template <int N> struct AnimCurveRangeU8 {
     AnimCurveRangeCompU8 comp[N];
 };
 
+// Key of a texture curve
+struct AnimCurveKeyTexture {
+    u16 frame;       // at 0x0
+    u16 PADDING_0x2; // at 0x2
+    u16 PADDING_0x4; // at 0x4
+    u8 random;       // at 0x6
+    u8 PADDING_0x7;  // at 0x7
+    union {
+        struct {
+            u8 wrap;    // at 0x8
+            u8 reverse; // at 0x9
+        };
+        u16 rangeIdx; // at 0x8
+    };
+    u16 name; // at 0xA
+};
+
+struct AnimCurveRangeTexture {
+    u8 wrap;          // at 0x0
+    u8 reverse;       // at 0x1
+    u16 name;         // at 0x2
+    u8 randomReverse; // at 0x4
+    u8 PADDING_0x5[3]; // at 0x5
+};
+
+struct AnimCurveRandomTexture {
+    u8 wrap;    // at 0x0
+    u8 reverse; // at 0x1
+    u16 name;   // at 0x2
+};
+
 template <typename T> struct AnimCurveTable {
     u16 count;       // at 0x0
     u16 PADDING_0x2; // at 0x2
@@ -1554,6 +1585,230 @@ void AnimCurveExecuteF32(u8* pCmdList, f32* pBase, f32* pTarget, u32 tick,
         pRange->comp[0].width * (rnd >> 16);
 
     }
+}
+
+void AnimCurveExecuteTexture(u8* pCmdList, Particle* pParticle, u32 tick,
+                             u16 seed, u32 life) {
+    AnimCurveHeader* pHeader = reinterpret_cast<AnimCurveHeader*>(pCmdList);
+
+    AnimCurveTable<AnimCurveKeyTexture>* pKeyTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveKeyTexture>*>(
+            pCmdList + sizeof(AnimCurveHeader));
+    AnimCurveTable<AnimCurveRangeTexture>* pRangeTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRangeTexture>*>(
+            reinterpret_cast<u8*>(pKeyTbl) + pHeader->keyTable);
+    AnimCurveTable<AnimCurveRandomTexture>* pRandomTbl =
+        reinterpret_cast<AnimCurveTable<AnimCurveRandomTexture>*>(
+            reinterpret_cast<u8*>(pRangeTbl) + pHeader->rangeTable);
+    AnimCurveTable<TextureData*>* pNameTbl =
+        reinterpret_cast<AnimCurveTable<TextureData*>*>(
+            reinterpret_cast<u8*>(pRandomTbl) + pHeader->randomTable);
+
+    u8 flag = pHeader->processFlag;
+    u32 loop = 0;
+    u16 frame;
+
+    if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
+        pHeader->loopCount <= 1) {
+
+        if (!(flag & AnimCurveHeader::PROC_FLAG_FITTING)) {
+            if (tick < pHeader->frameLength) {
+                frame = tick;
+            } else {
+                frame = pHeader->frameLength;
+            }
+        } else {
+            frame = pHeader->frameLength * tick / life;
+        }
+    } else if (!(flag & AnimCurveHeader::PROC_FLAG_FITTING)) {
+        frame = pHeader->frameLength;
+
+        if (frame <= 1 || !(flag & AnimCurveHeader::PROC_FLAG_TURN)) {
+            loop = tick / frame;
+
+            if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
+                loop >= pHeader->loopCount) {
+                loop = static_cast<u8>(pHeader->loopCount - 1);
+            } else {
+                frame = tick - loop * frame;
+            }
+        } else {
+            u32 period = frame - 1;
+            loop = tick / period;
+
+            if (!(flag & AnimCurveHeader::PROC_FLAG_INFLOOP) &&
+                loop >= pHeader->loopCount) {
+                if (pHeader->loopCount % 2 == 0) {
+                    frame = 0;
+                } else {
+                    frame = static_cast<u8>(period);
+                }
+                loop = static_cast<u8>(pHeader->loopCount - 1);
+            } else if (loop % 2 == 0) {
+                frame = tick - loop * period;
+            } else {
+                frame = period * (loop + 1) - tick;
+            }
+        }
+    } else if (tick >= life) {
+        if (!(flag & AnimCurveHeader::PROC_FLAG_TURN) ||
+            pHeader->loopCount % 2 != 0) {
+            frame = pHeader->frameLength;
+        } else {
+            frame = 0;
+        }
+        loop = static_cast<u8>(pHeader->loopCount - 1);
+    } else {
+        u16 frameLength = pHeader->frameLength;
+
+        if (frameLength <= 1 || !(flag & AnimCurveHeader::PROC_FLAG_TURN)) {
+            f32 scale = pHeader->loopCount *
+                        (static_cast<f32>(frameLength) / static_cast<f32>(life));
+
+            loop = tick * scale / frameLength;
+            frame = tick * scale - loop * frameLength;
+        } else {
+            u32 period = frameLength - 1;
+            u8 loopCount = pHeader->loopCount;
+
+            u32 pos = tick * ((1.0f + static_cast<int>(period) * loopCount) /
+                              life);
+            loop = pos / period;
+
+            if (loop >= loopCount) {
+                if (loopCount % 2 == 0) {
+                    frame = 0;
+                } else {
+                    frame = static_cast<u8>(period);
+                }
+                loop = static_cast<u8>(loopCount - 1);
+            } else if (loop % 2 == 0) {
+                frame = pos - loop * period;
+            } else {
+                frame = period * (loop + 1) - pos;
+            }
+        }
+    }
+
+    TextureData** ppTexture;
+    int layer;
+
+    switch (pHeader->kindType) {
+    case AC_TARGET_TEXTURE1: {
+        ppTexture = &pParticle->mParameter.mTexture[TEX_LAYER_1];
+        layer = TEX_LAYER_1;
+        break;
+    }
+    case AC_TARGET_TEXTURE2: {
+        ppTexture = &pParticle->mParameter.mTexture[TEX_LAYER_2];
+        layer = TEX_LAYER_2;
+        break;
+    }
+    case AC_TARGET_TEXTUREIND: {
+        ppTexture = &pParticle->mParameter.mTexture[TEX_LAYER_IND];
+        layer = TEX_LAYER_IND;
+        break;
+    }
+    default: {
+        return;
+    }
+    }
+
+    // Step curve: the last key at or before the frame
+    AnimCurveKeyTexture* pKeys = pKeyTbl->datas;
+    int iframe = frame;
+    int lo = 0;
+    int hi = pKeyTbl->count - 1;
+    int mid = hi / 2;
+
+    if (iframe < pKeys[0].frame) {
+        hi = 0;
+    } else if (pKeys[hi].frame < iframe || iframe == pKeys[hi].frame) {
+    } else {
+        int midFrame = pKeys[mid].frame;
+
+        while (lo < mid) {
+            if (iframe == midFrame) {
+                lo = mid;
+            } else {
+                if (midFrame < iframe) {
+                    lo = mid;
+                }
+                if (midFrame >= iframe) {
+                    hi = mid;
+                }
+            }
+
+            mid = (lo + hi) / 2;
+            midFrame = pKeys[mid].frame;
+        }
+
+        hi = lo;
+    }
+
+    AnimCurveKeyTexture* pKey = &pKeys[hi];
+
+    u16 name;
+    u8 wrap;
+    u8 reverse;
+
+    if (pKey->random == 0) {
+        name = pKey->name;
+        wrap = pKey->wrap;
+        reverse = pKey->reverse;
+    } else {
+        union {
+            u32 value;
+            u8 bytes[4];
+        } rndSeed;
+
+        rndSeed.value =
+            seed * 0x3F81F635 + pHeader->randomSeed * 0x30A74193 +
+            (loop * 0x7B929 + pKey->rangeIdx * 0x371097E7 + 0x4BF53);
+
+        rndSeed.bytes[2] ^= rndSeed.bytes[3];
+        rndSeed.bytes[1] ^= rndSeed.bytes[2];
+        rndSeed.bytes[0] ^= rndSeed.bytes[1];
+
+        if (!(pKey->random & KEY_RANDOM_FLAG_TABLE)) {
+            AnimCurveRangeTexture* pRange = &pRangeTbl->datas[pKey->rangeIdx];
+
+            name = pRange->name;
+            wrap = pRange->wrap;
+            reverse = pRange->reverse;
+
+            switch (pRange->randomReverse) {
+            case 1: {
+                reverse = (reverse & 2) | ((rndSeed.value >> 16) & 1);
+                break;
+            }
+            case 2: {
+                reverse = ((rndSeed.value >> 16) & 2) | (reverse & 1);
+                break;
+            }
+            case 3: {
+                reverse = (rndSeed.value >> 16) & 3;
+                break;
+            }
+            }
+        } else {
+            AnimCurveRandomTexture* pRandom =
+                &pRandomTbl->datas[(rndSeed.value >> 16) % pRandomTbl->count];
+
+            name = pRandom->name;
+            wrap = pRandom->wrap;
+            reverse = pRandom->reverse;
+        }
+    }
+
+    *ppTexture = pNameTbl->datas[name];
+
+    pParticle->mParameter.mTextureWrap =
+        (pParticle->mParameter.mTextureWrap & ~(0xF << (layer * 4))) |
+        ((wrap & 0xF) << (layer * 4));
+    pParticle->mParameter.mTextureReverse =
+        (pParticle->mParameter.mTextureReverse & ~(3 << (layer * 2))) |
+        ((reverse & 3) << (layer * 2));
 }
 
 } // namespace ef
