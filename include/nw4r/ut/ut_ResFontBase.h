@@ -107,7 +107,7 @@ protected:
     void SetResourceBuffer(void* pBuffer, FontInformation* pInfo);
     void* RemoveResourceBuffer();
 
-private:
+protected:
     u16 GetGlyphIndex(u16 ch) const;
 
     u16 FindGlyphIndex(u16 ch) const;
@@ -119,7 +119,7 @@ private:
 
     void GetGlyphFromIndex(Glyph* pGlyph, u16 index) const;
 
-private:
+protected:
     void* mResource;            // at 0x10
     FontInformation* mFontInfo; // at 0x14
 };
