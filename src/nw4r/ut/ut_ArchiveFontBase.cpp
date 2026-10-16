@@ -197,9 +197,26 @@ ArchiveFontBase::ConstructOpAnalyzeFileHeader(ConstructContext* pContext,
 ArchiveFontBase::ConstructResult
 ArchiveFontBase::ConstructOpAnalyzeGLGR(ConstructContext* pContext,
                                         CachedStreamReader* pStream) {
-    BinaryFileHeader* pHeader =
+    // Declaration order chosen for register allocation (still 24 diffs off)
+    u8* pBlock;
+    u16 numSheet;
+    const u32* pUseSheets;
+    const FontGlyphGroupsBlock* pGLGR;
+    BinaryFileHeader* pHeader;
+    u32 bodySize;
+    u32 adjustSize;
+    u32 sheetBytes;
+    u16* pAdjustEnd;
+    u8* pBlockEnd;
+    u16 glyphsPerSheet;
+    u16* pDst;
+    u32 totalSize;
+    u16 numBlocks;
+    u16* pAdjust;
+
+    pHeader =
         reinterpret_cast<BinaryFileHeader*>(pContext->pCurrent);
-    u32 bodySize = pContext->header.size - sizeof(BinaryBlockHeader);
+    bodySize = pContext->header.size - sizeof(BinaryBlockHeader);
 
     if (pHeader->signature != 'RFNA') {
         return CONSTRUCT_ERROR;
@@ -215,9 +232,9 @@ ArchiveFontBase::ConstructOpAnalyzeGLGR(ConstructContext* pContext,
         return CONSTRUCT_ERROR;
     }
 
-    u8* pBlock = reinterpret_cast<u8*>(pHeader + 1);
-    u32 totalSize = sizeof(BinaryFileHeader) + pContext->header.size;
-    u8* pBlockEnd = pBlock + pContext->header.size;
+    pBlock = reinterpret_cast<u8*>(pHeader + 1);
+    totalSize = sizeof(BinaryFileHeader) + pContext->header.size;
+    pBlockEnd = pBlock + pContext->header.size;
 
     std::memcpy(pBlock, &pContext->header, sizeof(BinaryBlockHeader));
     pStream->CopyTo(pBlock + sizeof(BinaryBlockHeader), bodySize);
@@ -226,7 +243,7 @@ ArchiveFontBase::ConstructOpAnalyzeGLGR(ConstructContext* pContext,
         return CONSTRUCT_ERROR;
     }
 
-    const FontGlyphGroupsBlock* pGLGR =
+    pGLGR =
         reinterpret_cast<FontGlyphGroupsBlock*>(pHeader + 1);
 
     u32 sizeSheetsOfs = RoundUp(sizeof(BinaryFileHeader) +
@@ -241,19 +258,19 @@ ArchiveFontBase::ConstructOpAnalyzeGLGR(ConstructContext* pContext,
     u32 useSheetsOfs =
         RoundUp(sizeCMAPOfs + pGLGR->body.numCMAP * sizeof(u32), 4);
 
-    u32 sheetBytes = ((pGLGR->body.numSheet + 31) / 32) * sizeof(u32);
-    const u32* pUseSheets =
+    sheetBytes = ((pGLGR->body.numSheet + 31) / 32) * sizeof(u32);
+    pUseSheets =
         static_cast<const u32*>(AddOffsetToPtr(pHeader, useSheetsOfs));
 
-    u16 numSheet = pGLGR->body.numSheet;
-    u16 glyphsPerSheet = pGLGR->body.glyphsPerSheet;
-    u16 numBlocks = pHeader->dataBlocks;
+    numSheet = pGLGR->body.numSheet;
+    glyphsPerSheet = pGLGR->body.glyphsPerSheet;
+    numBlocks = pHeader->dataBlocks;
 
-    u32 adjustSize = RoundUp(numSheet * sizeof(u16), 4);
+    adjustSize = RoundUp(numSheet * sizeof(u16), 4);
 
-    u16* pAdjust = static_cast<u16*>(RoundDown(
-        reinterpret_cast<u8*>(pHeader) + pContext->GetRemain() - adjustSize,
-        2));
+    pAdjust = reinterpret_cast<u16*>(
+        (reinterpret_cast<u32>(pHeader) + pContext->GetRemain() - adjustSize) &
+        ~1);
 
     if (pContext->GetRemain() <
         adjustSize + (pBlockEnd - reinterpret_cast<u8*>(pHeader))) {
@@ -289,9 +306,9 @@ ArchiveFontBase::ConstructOpAnalyzeGLGR(ConstructContext* pContext,
         }
     }
 
-    u16* pDst = reinterpret_cast<u16*>(pContext->pCurrent);
+    pDst = reinterpret_cast<u16*>(pContext->pCurrent);
     pContext->Advance(adjustSize);
-    u16* pAdjustEnd = pAdjust + numSheet;
+    pAdjustEnd = pAdjust + numSheet;
     std::memmove(pDst, pAdjust, (pAdjustEnd - pAdjust) * sizeof(u16));
 
     pContext->pGlyphIndexAdjustArray = pDst;
