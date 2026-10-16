@@ -966,7 +966,9 @@ config.libs = [
             Object(Matching, "nw4r/math/math_arithmetic.cpp"),
             Object(Matching, "nw4r/math/math_triangular.cpp"),
             Object(Matching, "nw4r/math/math_types.cpp"),
+            Object(Matching, "nw4r/math/math_vec4.cpp"),
             # lyt
+            Object(Matching, "nw4r/lyt/lyt_init.cpp"),
             Object(Matching, "nw4r/lyt/lyt_pane.cpp"),
             Object(Matching, "nw4r/lyt/lyt_group.cpp"),
             Object(Matching, "nw4r/lyt/lyt_layout.cpp"),
