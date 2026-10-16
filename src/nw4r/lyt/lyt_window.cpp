@@ -484,7 +484,40 @@ void Window::DrawFrame(const math::VEC2& rBase, const Frame& rFrame,
     detail::DrawQuad(point, size, 1, texCoords,                                \
                      useVtxColor ? vtxColors : NULL, alpha);
 
-    DRAW_FRAME(LT, TEXTUREFLIP_NONE);
+    // The top-left corner is written out here (same as GetLTTexCoord, but
+    // the corner values live in this function's own locals)
+    GetLTFrameSize(&point, &size, rBase, mSize, rFrameSize);
+    {
+        u8 ltx;
+        u8 lty;
+        int iy;
+        int ix;
+        const TextureFlipInfo& rInfo = GetTexutreFlipInfo(TEXTUREFLIP_NONE);
+        math::VEC2* pTexCoords = texCoords[0];
+        ix = rInfo.idx[FLIPINDEX_X];
+        iy = rInfo.idx[FLIPINDEX_Y];
+
+        f32 th = texSize.height;
+        f32 tw = texSize.width;
+        math::VEC2 tsize(tw, th);
+        ltx = rInfo.coords[VERTEXCOLOR_LT][ix];
+        lty = rInfo.coords[VERTEXCOLOR_LT][iy];
+
+        pTexCoords[VERTEXCOLOR_LT][ix] = pTexCoords[VERTEXCOLOR_LB][ix] = ltx;
+        pTexCoords[VERTEXCOLOR_LT][iy] = pTexCoords[VERTEXCOLOR_RT][iy] = lty;
+
+        pTexCoords[VERTEXCOLOR_RB][ix] = pTexCoords[VERTEXCOLOR_RT][ix] =
+            ltx + size.width /
+            ((rInfo.coords[VERTEXCOLOR_RT][ix] - ltx) * tsize[ix]);
+
+        pTexCoords[VERTEXCOLOR_RB][iy] = pTexCoords[VERTEXCOLOR_LB][iy] =
+            lty + size.height /
+            ((rInfo.coords[VERTEXCOLOR_LB][iy] - lty) * tsize[iy]);
+    }
+
+    detail::DrawQuad(point, size, 1, texCoords,
+                     useVtxColor ? vtxColors : NULL, alpha);
+
     DRAW_FRAME(RT, TEXTUREFLIP_H);
     DRAW_FRAME(RB, TEXTUREFLIP_180);
     DRAW_FRAME(LB, TEXTUREFLIP_V);
@@ -645,16 +678,16 @@ WindowFrameSize Window::GetFrameSize(u8 frameNum, const Frame* pFrames) {
     return frameSize;
 }
 
-Material* Window::GetContentMaterial() const {
-    return GetMaterial();
-}
-
 Material* Window::GetFrameMaterial(u32 idx) const {
     if (idx >= mFrameNum) {
         return NULL;
     }
 
     return mFrames[idx].pMaterial;
+}
+
+Material* Window::GetContentMaterial() const {
+    return GetMaterial();
 }
 
 } // namespace lyt
