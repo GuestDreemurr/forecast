@@ -143,7 +143,6 @@ private:
     void UpdateLoadingBlockIndex(bool started);
 
     inline void UpdateLoopAddress(u32 startSample, u32 endSample);
-    inline void UpdateDataLoopAddress(s32 endBlock);
     inline void SetLoopEndToZeroBuffer(int endBlock);
     inline void UpdatePauseStatus();
 

@@ -46,39 +46,6 @@ void StrmPlayer::SetLoopEndToZeroBuffer(int endBlock) {
     mPlayFinishFlag = true;
 }
 
-void StrmPlayer::UpdateDataLoopAddress(s32 endBlock) {
-    if (mStrmInfo.loopFlag) {
-        s32 startBlock = endBlock + 1;
-        if (startBlock >= mPlayingBufferBlockCount) {
-            startBlock -= mPlayingBufferBlockCount;
-        }
-
-        ut::AutoInterruptLock lock;
-
-        UpdateLoopAddress(startBlock * mStrmInfo.blockSamples,
-                          mStrmInfo.lastBlockSamples +
-                              (endBlock * mStrmInfo.blockSamples));
-
-        if (mStrmInfo.format == WaveFile::FORMAT_ADPCM) {
-            if (mVoice->GetFormat() == AxVoice::FORMAT_ADPCM) {
-                mVoice->SetVoiceType(AxVoice::VOICE_TYPE_NORMAL);
-
-                for (int i = 0; i < mChannelCount; i++) {
-                    mVoice->SetAdpcmLoop(i, &mChannels[i].adpcmInfo.loopParam);
-                }
-            }
-
-            if (endBlock == mPlayingBufferBlockCount - 1) {
-                mSkipUpdateAdpcmLoop = true;
-            }
-        }
-
-        return;
-    }
-
-    SetLoopEndToZeroBuffer(endBlock);
-}
-
 void StrmPlayer::UpdatePauseStatus() {
     ut::AutoInterruptLock lock;
 
@@ -155,10 +122,6 @@ bool StrmPlayer::Prepare(StrmBufferPool* pBufferPool,
 
     case LOAD_RESULT_FAILED: {
         Shutdown();
-        break;
-    }
-
-    case LOAD_RESULT_CANCELED: {
         break;
     }
 
@@ -377,7 +340,38 @@ void StrmPlayer::UpdatePlayingBlockIndex() {
     }
 
     if (mPlayingDataBlockIndex == mLastBlockIndex - 1) {
-        UpdateDataLoopAddress(mPlayingBufferBlockIndex + 1);
+        // UpdateDataLoopAddress is written out here: its locals are named
+        // locals of this function, which gives the target's registers
+        s32 endBlock = mPlayingBufferBlockIndex + 1;
+
+        if (mStrmInfo.loopFlag) {
+            s32 startBlock = endBlock + 1;
+            if (startBlock >= mPlayingBufferBlockCount) {
+                startBlock -= mPlayingBufferBlockCount;
+            }
+
+            ut::AutoInterruptLock lock;
+
+            UpdateLoopAddress(startBlock * mStrmInfo.blockSamples,
+                              mStrmInfo.lastBlockSamples +
+                                  (endBlock * mStrmInfo.blockSamples));
+
+            if (mStrmInfo.format == WaveFile::FORMAT_ADPCM) {
+                if (mVoice->GetFormat() == AxVoice::FORMAT_ADPCM) {
+                    mVoice->SetVoiceType(AxVoice::VOICE_TYPE_NORMAL);
+
+                    for (int i = 0; i < mChannelCount; i++) {
+                        mVoice->SetAdpcmLoop(i, &mChannels[i].adpcmInfo.loopParam);
+                    }
+                }
+
+                if (endBlock == mPlayingBufferBlockCount - 1) {
+                    mSkipUpdateAdpcmLoop = true;
+                }
+            }
+        } else {
+            SetLoopEndToZeroBuffer(endBlock);
+        }
     }
 }
 
@@ -413,17 +407,13 @@ void StrmPlayer::UpdateLoadingBlockIndex(bool started) {
                               blockSize, mStrmInfo.blockHeaderOffset,
                               needUpdateAdpcmLoop, pCallback, this,
                               mLoaderUserData)) {
-    case LOAD_RESULT_FINISHED: {
-        pCallback->OnLoad(true);
-        break;
-    }
-
     case LOAD_RESULT_FAILED: {
         Shutdown();
         break;
     }
 
-    case LOAD_RESULT_CANCELED: {
+    case LOAD_RESULT_FINISHED: {
+        pCallback->OnLoad(true);
         break;
     }
 
