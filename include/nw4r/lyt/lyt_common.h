@@ -6,6 +6,7 @@
 #include <nw4r/ut.h>
 
 #include <revolution/GX.h>
+#include <revolution/TPL.h>
 
 namespace nw4r {
 namespace lyt {
@@ -166,6 +167,8 @@ void DrawQuad(const math::VEC2& rBase, const Size& rSize, u8 num,
               const TexCoord* pCoords, const ut::Color* pColors);
 void DrawQuad(const math::VEC2& rBase, const Size& rSize, u8 num,
               const TexCoord* pCoords, const ut::Color* pColors, u8 alpha);
+
+void InitTexObj(GXTexObj* pTexObj, TPLPalette* pPalette, u32 id);
 
 } // namespace detail
 } // namespace lyt

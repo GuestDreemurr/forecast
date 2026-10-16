@@ -52,7 +52,8 @@ public:
     virtual u8 GetVtxColorElement(u32 idx) const;       // at 0x34
     virtual void SetVtxColorElement(u32 idx, u8 value); // at 0x38
 
-    virtual void Append(const TexMap& rTexMap); // at 0x64
+    virtual void Append(TPLPalette* pPalette);       // at 0x64
+    virtual void Append(const GXTexObj& rTexObj); // at 0x68
 
 protected:
     ut::Color mVtxColors[VERTEXCOLOR_MAX]; // at 0xD4

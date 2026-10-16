@@ -60,7 +60,13 @@ Picture::~Picture() {
     mTexCoordAry.Free();
 }
 
-void Picture::Append(const TexMap& rTexMap) {
+void Picture::Append(TPLPalette* pPalette) {
+    GXTexObj texObj;
+    detail::InitTexObj(&texObj, pPalette, 0);
+    Append(texObj);
+}
+
+void Picture::Append(const GXTexObj& rTexObj) {
     if (mpMaterial->GetTextureNum() >= mpMaterial->GetTextureCap() ||
         mpMaterial->GetTextureNum() >= mpMaterial->GetTexCoordGenCap()) {
         return;
@@ -69,7 +75,7 @@ void Picture::Append(const TexMap& rTexMap) {
     u8 idx = mpMaterial->GetTextureNum();
 
     mpMaterial->SetTextureNum(idx + 1);
-    mpMaterial->SetTexture(idx, rTexMap);
+    mpMaterial->SetTexture(idx, rTexObj);
 
     mpMaterial->SetTexCoordGenNum(mpMaterial->GetTextureNum());
     mpMaterial->SetTexCoordGen(idx, TexCoordGen());

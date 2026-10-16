@@ -35,6 +35,9 @@ void GXInitTexObjWrapMode(GXTexObj* obj, GXTexWrapMode wrap_s,
 void GXInitTexObjFilter(GXTexObj* obj, GXTexFilter min_filt,
                         GXTexFilter mag_filt);
 
+void GXInitTexObjUserData(GXTexObj* obj, void* user_data);
+void* GXGetTexObjUserData(const GXTexObj* obj);
+
 void GXGetTexObjAll(GXTexObj* obj, void* image_ptr, u16* width, u16* height,
                     GXTexFmt* format, GXTexWrapMode* wrap_s,
                     GXTexWrapMode* wrap_t, GXBool* mipmap);

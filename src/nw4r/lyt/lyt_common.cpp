@@ -218,6 +218,40 @@ void DrawQuad(const math::VEC2& rBase, const Size& rSize, u8 num,
     DrawQuad(rBase, rSize, num, pCoords, pColors ? colorWork : NULL);
 }
 
+void InitTexObj(GXTexObj* pTexObj, TPLPalette* pPalette, u32 id) {
+    if (reinterpret_cast<u32>(pPalette->descriptorArray) < 0x80000000) {
+        TPLBind(pPalette);
+    }
+
+    TPLDescriptor* pDesc = TPLGet(pPalette, id);
+
+    GXBool mipMap =
+        pDesc->textureHeader->minLOD != pDesc->textureHeader->maxLOD;
+
+    if (pDesc->CLUTHeader != NULL) {
+        GXInitTexObjCI(pTexObj, pDesc->textureHeader->data,
+                       pDesc->textureHeader->width,
+                       pDesc->textureHeader->height,
+                       static_cast<GXTexFmt>(pDesc->textureHeader->format),
+                       pDesc->textureHeader->wrapS, pDesc->textureHeader->wrapT,
+                       mipMap, 0);
+
+        GXInitTexObjUserData(pTexObj, pDesc->CLUTHeader);
+    } else {
+        GXInitTexObj(pTexObj, pDesc->textureHeader->data,
+                     pDesc->textureHeader->width, pDesc->textureHeader->height,
+                     static_cast<GXTexFmt>(pDesc->textureHeader->format),
+                     pDesc->textureHeader->wrapS, pDesc->textureHeader->wrapT,
+                     mipMap);
+    }
+
+    GXInitTexObjLOD(pTexObj, pDesc->textureHeader->minFilter,
+                    pDesc->textureHeader->magFilter,
+                    pDesc->textureHeader->minLOD, pDesc->textureHeader->maxLOD,
+                    pDesc->textureHeader->LODBias, GX_FALSE,
+                    pDesc->textureHeader->edgeLODEnable, GX_ANISO_1);
+}
+
 } // namespace detail
 } // namespace lyt
 } // namespace nw4r

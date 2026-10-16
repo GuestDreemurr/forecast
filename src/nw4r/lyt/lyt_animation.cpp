@@ -272,8 +272,8 @@ void AnimateTexturePattern(Material* pMaterial,
 
             u16 idx = GetStepCurveValue(frame, pKeys, pTarget->keyNum);
 
-            TexMap texMap(static_cast<TPLPalette*>(ppTexPalettes[idx]), 0);
-            pMaterial->SetTextureNoWrap(pTarget->id, texMap);
+            pMaterial->SetTextureNoWrap(
+                pTarget->id, static_cast<TPLPalette*>(ppTexPalettes[idx]));
         }
     }
 }
