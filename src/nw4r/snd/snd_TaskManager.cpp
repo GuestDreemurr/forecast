@@ -11,6 +11,13 @@ TaskManager& TaskManager::GetInstance() {
     return instance;
 }
 
+// Defined after GetInstance: -ipa file inlines it there, and the deferred
+// LinkList ctor/dtor are emitted after the TaskManager dtor, as in the target.
+TaskManager::TaskManager() : mCurrentTask(NULL) {
+    OSInitMutex(&mMutex);
+    mHeap = MEMCreateUnitHeapEx(sTaskArea, TASK_AREA_SIZE, TASK_SIZE_MAX, 4, 0);
+}
+
 void* TaskManager::Alloc() {
     ut::AutoInterruptLock lock;
 
@@ -67,7 +74,8 @@ bool TaskManager::ExecuteTask() {
 void TaskManager::CancelByTaskId(u32 taskId) {
     ut::AutoInterruptLock lock;
 
-    for (int i = 0; i < PRIORITY_MAX; i++) {
+    for (TaskPriority i = PRIORITY_LOW; i < PRIORITY_MAX;
+         i = static_cast<TaskPriority>(i + 1)) {
         for (TaskList::Iterator it = mTaskList[i].GetBeginIter();
              it != mTaskList[i].GetEndIter();) {
 

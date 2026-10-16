@@ -1030,11 +1030,16 @@ void SoundArchivePlayer::StrmLoader::Cancel(detail::StrmPlayer* pPlayer,
  *
  ******************************************************************************/
 void SoundArchivePlayer::SeqLoadTask::Execute() {
+    // The second loader reset locks the mutex by hand through this local
+    OSMutex* pMutex;
     detail::SoundArchiveLoader loader(*mSoundArchive);
 
     SetLoader(&loader);
     const void* pSeqBin = loader.LoadFile(mFileId, mAllocatable);
-    SetLoader(NULL);
+    pMutex = mMutex;
+    OSLockMutex(pMutex);
+    mLoader = NULL;
+    OSUnlockMutex(pMutex);
 
     if (pSeqBin == NULL) {
         Notify(false, NULL, 0);

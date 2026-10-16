@@ -635,7 +635,7 @@ nw4r/g3d/platform/g3d_cpu.cpp:
 	.sdata2     start:0x80332900 end:0x80332908
 
 nw4r/g3d/g3d_state.cpp:
-	.text       start:0x800A5040 end:0x800A887C
+	.text       start:0x800A5040 end:0x800A88E4
 	.ctors      start:0x801792B8 end:0x801792BC
 	.rodata     start:0x801956E8 end:0x80195718
 	.data       start:0x801B6E60 end:0x801B6E78
@@ -1046,6 +1046,15 @@ nw4r/ut/ut_ResFont.cpp:
 	.text       start:0x800D19F0 end:0x800D1CF4
 	.data       start:0x801B7950 end:0x801B79A8
 
+nw4r/ut/ut_ArchiveFontBase.cpp:
+	.text       start:0x800D1CF4 end:0x800D3100
+	.data       start:0x801B79A8 end:0x801B7A00
+	.sbss2      start:0x80333788 end:0x80333790
+
+nw4r/ut/ut_ArchiveFont.cpp:
+	.text       start:0x800D3100 end:0x800D3A0C
+	.data       start:0x801B7A00 end:0x801B7A90
+
 nw4r/ut/ut_CharWriter.cpp:
 	.text       start:0x800D3A0C end:0x800D54CC
 	.bss        start:0x802CB398 end:0x802CB3B8
@@ -1072,6 +1081,12 @@ nw4r/math/math_triangular.cpp:
 nw4r/math/math_types.cpp:
 	.text       start:0x800D7D84 end:0x800D81EC
 	.sdata2     start:0x80332CD0 end:0x80332CE0
+
+nw4r/math/math_vec4.cpp:
+	.text       start:0x800D81EC end:0x800D82C4
+
+nw4r/lyt/lyt_init.cpp:
+	.text       start:0x800D82C4 end:0x800D82F8
 
 nw4r/lyt/lyt_pane.cpp:
 	.text       start:0x800D82F8 end:0x800D91B4

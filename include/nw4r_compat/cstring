@@ -9,6 +9,6 @@ extern "C" int stricmp(const char*, const char*);
 namespace std {
 inline char* strncat(char* d, const char* s, size_t n) { return ::strncat(d, (char*)s, n); }
 using ::memset; using ::memcpy; using ::memcmp; using ::memmove; using ::strncpy; using ::strlen; using ::strcmp;
-using ::strncmp; using ::stricmp; using ::strcpy; using ::strcat; using ::strchr; using ::uintptr_t;
+using ::strncmp; using ::stricmp; using ::strcpy; using ::strcat; using ::strchr; using ::strstr; using ::uintptr_t;
 }
 #endif
