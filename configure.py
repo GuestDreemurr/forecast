@@ -912,7 +912,7 @@ config.libs = [
             Object(Matching, "nw4r/snd/snd_MmlSeqTrack.cpp"),
             Object(Matching, "nw4r/snd/snd_MmlSeqTrackAllocator.cpp"),
             Object(Matching, "nw4r/snd/snd_NandSoundArchive.cpp"),
-            Object(NonMatching, "nw4r/snd/snd_RemoteSpeaker.cpp"),
+            Object(Matching, "nw4r/snd/snd_RemoteSpeaker.cpp"),
             Object(Matching, "nw4r/snd/snd_RemoteSpeakerManager.cpp"),
             Object(Matching, "nw4r/snd/snd_SeqFile.cpp"),
             Object(Matching, "nw4r/snd/snd_SeqPlayer.cpp"),

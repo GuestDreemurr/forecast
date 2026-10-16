@@ -134,15 +134,18 @@ inline void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
 }
 
 void RemoteSpeaker::Update() {
-    if (mCommandBusyFlag) {
+    SpeakerCommand command;
+
+    // The else-return leaves a dead `blr` before the inlined switch
+    if (!mCommandBusyFlag) {
+        command =
+            mUserCommand != COMMAND_NONE ? mUserCommand : mInternalCommand;
+
+        mUserCommand = COMMAND_NONE;
+        mInternalCommand = COMMAND_NONE;
+    } else {
         return;
     }
-
-    SpeakerCommand command =
-        mUserCommand != COMMAND_NONE ? mUserCommand : mInternalCommand;
-
-    mUserCommand = COMMAND_NONE;
-    mInternalCommand = COMMAND_NONE;
 
     ExecCommand(command);
 }
