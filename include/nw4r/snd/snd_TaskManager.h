@@ -41,11 +41,7 @@ private:
     static const int TASK_AREA_SIZE = TASK_COUNT_MAX * TASK_SIZE_MAX + 0x44;
 
 private:
-    TaskManager() : mCurrentTask(NULL) {
-        OSInitMutex(&mMutex);
-        mHeap = MEMCreateUnitHeapEx(sTaskArea, TASK_AREA_SIZE, TASK_SIZE_MAX,
-                                    4, 0);
-    }
+    TaskManager();
 
     void Free(Task* pTask) {
         ut::AutoInterruptLock lock;

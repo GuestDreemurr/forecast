@@ -934,7 +934,7 @@ config.libs = [
             Object(NonMatching, "nw4r/snd/snd_StrmPlayer.cpp"),
             Object(Matching, "nw4r/snd/snd_StrmSound.cpp"),
             Object(Matching, "nw4r/snd/snd_StrmSoundHandle.cpp"),
-            Object(NonMatching, "nw4r/snd/snd_TaskManager.cpp"),
+            Object(Matching, "nw4r/snd/snd_TaskManager.cpp"),
             Object(Matching, "nw4r/snd/snd_TaskThread.cpp"),
             Object(Matching, "nw4r/snd/snd_Voice.cpp"),
             Object(Matching, "nw4r/snd/snd_VoiceManager.cpp"),
