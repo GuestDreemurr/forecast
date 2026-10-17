@@ -469,16 +469,6 @@ static void process_service_attr_rsp (tCONN_CB *p_ccb, UINT8 *p_reply, UINT16 le
         SDP_TRACE_WARNING2("list_len: %d, list_byte_count: %d",
             p_ccb->list_len, list_byte_count);
 #endif
-        if (p_ccb->rsp_list == NULL)
-        {
-            p_ccb->rsp_list = (UINT8 *)GKI_getbuf (SDP_MAX_LIST_BYTE_COUNT);
-            if (p_ccb->rsp_list == NULL)
-            {
-                SDP_TRACE_ERROR0 ("SDP - no gki buf to save rsp");
-                sdp_disconnect (p_ccb, SDP_NO_RESOURCES);
-                return;
-            }
-        }
         memcpy (&p_ccb->rsp_list[p_ccb->list_len], p_reply, list_byte_count);
         p_ccb->list_len += list_byte_count;
         p_reply         += list_byte_count;
@@ -628,16 +618,6 @@ static void process_service_search_attr_rsp (tCONN_CB *p_ccb, UINT8 *p_reply, UI
         SDP_TRACE_WARNING2("list_len: %d, list_byte_count: %d",
             p_ccb->list_len, lists_byte_count);
 #endif
-        if (p_ccb->rsp_list == NULL)
-        {
-            p_ccb->rsp_list = (UINT8 *)GKI_getbuf (SDP_MAX_LIST_BYTE_COUNT);
-            if (p_ccb->rsp_list == NULL)
-            {
-                SDP_TRACE_ERROR0 ("SDP - no gki buf to save rsp");
-                sdp_disconnect (p_ccb, SDP_NO_RESOURCES);
-                return;
-            }
-        }
         memcpy (&p_ccb->rsp_list[p_ccb->list_len], p_reply, lists_byte_count);
         p_ccb->list_len += lists_byte_count;
         p_reply         += lists_byte_count;
