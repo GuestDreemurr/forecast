@@ -1510,7 +1510,7 @@ Runtime.PPCEABI.H/__init_cpp_exceptions.cpp:
 	.text       start:0x80161FB8 end:0x80162028
 	.ctors      start:0x80179240 end:0x80179244
 	.dtors      start:0x80179320 end:0x80179328
-	.sdata      start:0x80330948 end:0x80330950
+	.sdata      start:0x80330948 end:0x8033094C
 
 Runtime.PPCEABI.H/Gecko_setjmp.s:
 	.text       start:0x80162028 end:0x8016223C

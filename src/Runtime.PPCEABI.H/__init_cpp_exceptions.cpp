@@ -27,21 +27,15 @@ extern __eti_init_info _eti_init_info[];
 
 static int fragmentID = -2;
 
-/* clang-format off */
-static char* GetR2() {
-  register char* ret;
-  asm {
-    mr ret, r2
-  }
-
-  return ret;
-}
-/* clang-format on */
-
 void __init_cpp_exceptions(void) {
-    char* R2;
+    register char* R2;
+
     if (fragmentID == -2) {
-        R2 = GetR2();
+        /* clang-format off */
+        asm {
+            mr R2, r2
+        }
+        /* clang-format on */
         fragmentID = __register_fragment(_eti_init_info, R2);
     }
 }
