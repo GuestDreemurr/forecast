@@ -717,19 +717,11 @@ SoundStartable::StartResult SoundArchivePlayer::PrepareSeqImpl(
 
         char streamBuffer[FILE_STREAM_BUFFER_SIZE];
 
-        ut::FileStream* pFileStream = mSoundArchive->detail_OpenFileStream(
-            pSndInfo->fileId, streamBuffer, sizeof(streamBuffer));
+        detail::FileStreamHandle stream(mSoundArchive->detail_OpenFileStream(
+            pSndInfo->fileId, streamBuffer, sizeof(streamBuffer)));
 
-        if (pHeap->GetFreeSize() < pFileStream->GetSize()) {
-            if (pFileStream != NULL) {
-                pFileStream->Close();
-            }
-
+        if (pHeap->GetFreeSize() < stream->GetSize()) {
             return SoundStartable::START_ERR_NOT_ENOUGH_PLAYER_HEAP;
-        }
-
-        if (pFileStream != NULL) {
-            pFileStream->Close();
         }
     }
 
@@ -1068,7 +1060,7 @@ void SoundArchivePlayer::SeqLoadTask::Cancel() {
  *
  ******************************************************************************/
 void SoundArchivePlayer::StrmHeaderLoadTask::Execute() {
-    static u8 sHeaderBuffer[FILE_STREAM_BUFFER_SIZE];
+    static u8 sHeaderBuffer[FILE_STREAM_BUFFER_SIZE] ALIGN(32);
     static OSMutex sMutex;
     static bool sInitialized = false;
 
@@ -1207,10 +1199,13 @@ void SoundArchivePlayer::StrmDataLoadTask::Execute() {
     s32 bytesRead = mFileStream->Read(mBuffer, mSize);
 
     {
-        ut::detail::AutoLock<OSMutex> lock(*mMutex);
+        OSMutex* pMutex = mMutex;
+        OSLockMutex(pMutex);
 
         mFileStream->Close();
         mFileStream = NULL;
+
+        OSUnlockMutex(pMutex);
     }
 
     if (bytesRead == DVD_RESULT_CANCELED) {
@@ -1235,10 +1230,10 @@ void SoundArchivePlayer::StrmDataLoadTask::Execute() {
         }
 
         if (mCallback != NULL) {
-            u32 len = ut::RoundUp(mBlockSize, 32);
+            const void* pSrc;
+            u32 len = (mBlockSize + 31) & ~31;
 
-            const void* pSrc =
-                static_cast<u8*>(mBuffer) + mBlockHeaderOffset + i * len;
+            pSrc = static_cast<u8*>(mBuffer) + mBlockHeaderOffset + i * len;
 
             void* pDst = mCallback->GetBuffer(i);
 
